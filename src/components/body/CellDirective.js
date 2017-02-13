@@ -13,6 +13,7 @@ export default function CellDirective($rootScope, $compile) {
       column: '=',
       row: '=',
       expanded: '=',
+      loading: '=',
       hasChildren: '=',
       onTreeToggle: '&',
       onCheckboxChange: '&',
@@ -46,10 +47,15 @@ export default function CellDirective($rootScope, $compile) {
           }
 
           $scope.$watch('cell.row', () => {
+            if (cellScope && cellScope.doNotRecreate) //bgmd
+              return;
             if (cellScope) {
+              var editing = cellScope.editing; //bgmd
               cellScope.$destroy();
 
               createCellScope();
+
+              cellScope.editing = editing; //bgmd
 
               cellScope.$cell = ctrl.value;
               cellScope.$row = ctrl.row;

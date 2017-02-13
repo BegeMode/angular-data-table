@@ -14,6 +14,7 @@ export default function BodyDirective() {
       expanded: '=?',
       onPage: '&',
       onTreeToggle: '&',
+      onTreeLoader: '&', //bgmd
       onSelect: '&',
       onRowClick: '&',
       onRowDblClick: '&',
@@ -36,6 +37,7 @@ export default function BodyDirective() {
                         options="body.options"
                         on-group-toggle="body.onGroupToggle(group)"
                         expanded="body.getRowExpanded(r)"
+                        loading="body.getRowLoading(r)"
                         tabindex="{{$index}}"
                         row="r">
           </dt-group-row>
@@ -56,6 +58,7 @@ export default function BodyDirective() {
                   columns="body.columnsByPin"
                   has-children="body.getRowHasChildren(r)"
                   expanded="body.getRowExpanded(r)"
+                  loading="body.getRowLoading(r)"
                   ng-style="body.rowStyles(r)">
           </dt-row>
         </dt-scroller>

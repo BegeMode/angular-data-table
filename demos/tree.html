@@ -78,7 +78,9 @@
     <dtable options="options" 
         rows="data" class="material"
         expanded="expanded"
-        on-tree-toggle="treeToggled(cell)"></dtable>
+        on-tree-toggle="treeToggled(cell)"
+        on-tree-loader="treeLoader(cell, row)">
+    </dtable>
 
     <script src="../jspm_packages/system.js"></script>
     <script src="../config.js"></script>
@@ -122,6 +124,27 @@
 
           $scope.treeToggled = function (row, cell) {
             console.log('toggled!')
+          };
+
+          $scope.treeLoader = function(cell, row){
+            console.log('treeLoader!');
+            var data = [{
+              'company': 'Bubble',
+              'revenue': '$1,440,443,111',
+              'sales': '$999,509,433,777,564',
+              parentCompany: 'Apple XYZ South2'
+            }, {
+              'company': 'Hubble',
+              'revenue': '$1,440,443,111',
+              'sales': '$999,509,433,777,564',
+              parentCompany: 'Apple XYZ South2'
+            }];
+            //return Promise.resolve(data);
+            return new Promise(function(resolve, reject){
+              setTimeout(() => {
+                resolve(data);
+              }, 2000);
+            });
           };
 
           $scope.data = [{
@@ -173,7 +196,8 @@
               'company': 'Apple XYZ South2',
               'revenue': '$1,440,443,111',
               'sales': '$999,509,433,777,564',
-              parentCompany: 'Apple XYZ'
+              parentCompany: 'Apple XYZ',
+              _lazyChildren: true
             }];
         });
       });

@@ -30,6 +30,8 @@ export default class BodyController {
   init() {
     this.tempRows = [];
     this.watchListeners = [];
+    //bgmd
+    this.loading = [];
 
     this.setTreeAndGroupColumns();
     this.setConditionalWatches();
@@ -133,6 +135,10 @@ export default class BodyController {
   }
 
   rowsUpdated(newVal, oldVal) {
+    if (this.noNeedRowsUpdated) {
+      this.noNeedRowsUpdated = false;
+      return;
+    }
     if (!newVal) {
       this.getRows(true);
     } else {
@@ -296,9 +302,19 @@ export default class BodyController {
     const parentProp = this.treeColumn ?
       this.treeColumn.relationProp :
       this.groupColumn.prop;
+    
+    const treeProp = this.treeColumn ? this.treeColumn.prop : ''; //bgmd
 
     for (let i = 0, len = this.rows.length; i < len; i += 1) {
       const row = this.rows[i];
+
+      //bgmd for lazy load
+      if (row._lazyChildren) {
+        if (treeProp && !this.rowsByGroup[row[treeProp]]) {
+          this.rowsByGroup[row[treeProp]] = []
+        }
+      }
+
       // build groups
       const relVal = row[parentProp];
       if (relVal) {
@@ -334,7 +350,8 @@ export default class BodyController {
           row.$$depth = parent.$$depth + 1;
 
           if (parent.$$children) {
-            parent.$$children.push(row[prop]);
+            if(!parent.$$children.includes(row[prop]))
+              parent.$$children.push(row[prop]);
           } else {
             parent.$$children = [row[prop]];
           }
@@ -571,6 +588,20 @@ export default class BodyController {
     return undefined;
   }
 
+   /**  bgmd
+   * Calculates if a row is loading data now  for tree grids.
+   * @param  {row}
+   * @return {boolean}
+   */
+  getRowLoading(row) {
+    if (this.treeColumn) {
+      return this.loading[row[this.treeColumn.prop]];
+    } else if (this.groupColumn) {
+      return this.loading[row.name];
+    }
+  }
+
+
   refresh(type) {
     if (this.options.scrollbarV) {
       this.getRows(true);
@@ -605,6 +636,29 @@ export default class BodyController {
    */
   onTreeToggled(row, cell) {
     const val = row[this.treeColumn.prop];
+    //bgmd 
+    var self = this;
+    if (row._lazyChildren && !row._loaded_) {
+      this.expanded[val] = false;
+      this.loading[val] = true;
+      this.onTreeLoad(row, cell).then(function (data) {
+        row._loaded_ = true;
+        self.rows = self.rows.concat(data);
+        self.noNeedRowsUpdated = true;
+        self.buildRowsByGroup();
+        self.onTreeToggledProcess(row, cell);
+        self.loading[val] = false;
+        self.options.$outer.$digest();
+      }).catch(function (error) {
+        self.loading[val] = false;
+      });
+    }
+    else
+      this.onTreeToggledProcess(row, cell);
+  }
+
+  onTreeToggledProcess(row, cell) {
+    const val = row[this.treeColumn.prop];
     this.expanded[val] = !this.expanded[val];
 
     this.refreshTree();
@@ -614,6 +668,20 @@ export default class BodyController {
       cell,
     });
   }
+
+  /** bgmd
+   * Tree leap load event from a cell
+   * @param  {row model}
+   * @param  {cell model}
+   */
+  onTreeLoad(row, cell) {
+    console.log('onTreeLoad');
+    return this.onTreeLoader({
+      row: row,
+      cell: cell
+    });
+  }
+
 
   refreshGroups() {
     this.refresh(TREE_TYPES.GROUP);

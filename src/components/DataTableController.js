@@ -236,6 +236,18 @@ export default class DataTableController {
     });
   }
 
+  /** bgmd
+   * Invoked when a tree leaf need to to lazy load
+   * @param  {row model}
+   * @param  {cell model}
+   */
+  onTreeLoad(row, cell) {
+    return this.onTreeLoader({
+      row: row,
+      cell: cell
+    });
+  }
+  
   /**
    * Invoked when the body triggers a page change.
    * @param  {offset}

@@ -37,6 +37,7 @@ export default class CellController {
       'dt-tree-toggle': true,
       'icon-right': !this.expanded,
       'icon-down': this.expanded,
+      'icon-loading': this.loading  //bgmd
     };
   }
 
