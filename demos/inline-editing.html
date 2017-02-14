@@ -73,18 +73,22 @@
                 name: "Name",
                 prop: "name",
                 width: 300,
+                editor: 'text',
                 cellRenderer: function($scope){
                   $scope.doNotRecreate = true; //не пересоздавать scope после изменения cell.row
-                  return '<div><div ng-dblclick="editing = true" ng-show="!editing"><strong>{{$cell}}</strong></div><div><input ng-show="editing" type="text" ng-model="$cell" ng-change="changed($cell, $row, $column)" ng-blur="editing = false" /></div>';
+                  //return '<div ng-dblclick="editing = true" ng-show="!editing"><strong>{{$cell}}</strong></div><div><input ng-show="editing" type="text" ng-model="$cell" ng-change="changed($cell, $row, $column)" ng-blur="editing = false" /></div>';
+                  return '<strong>{{$cell}}</strong>';
                 }
               },
               {
                 name: "Gender",
-                prop: "gender"
+                prop: "gender",
+                editor: 'text',
               },
               {
                 name: "Company",
-                prop: "company"
+                prop: "company",
+                editor: 'textarea',
               }
             ]
           };
@@ -97,11 +101,11 @@
             $scope.code = JSON.stringify($scope.data, null, 2)
           }, true)
 
-          $scope.changed = function(cellVal, row, col){
+          /*$scope.changed = function(cellVal, row, col){
             //var idx = $scope.data.indexOf(row);
             row[col.prop] = cellVal;
             //$scope.data[idx] = row;
-          }
+          }*/
 
         });
       });

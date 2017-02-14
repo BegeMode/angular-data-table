@@ -42,39 +42,70 @@ export default function CellDirective($rootScope, $compile) {
           let cellScope;
 
           // extend the outer scope onto our new cell scope
-          if (ctrl.column.template || ctrl.column.cellRenderer) {
+          if (ctrl.column.template || ctrl.column.cellRenderer || ctrl.column.editor) {
             createCellScope();
           }
 
           $scope.$watch('cell.row', () => {
-            if (cellScope && cellScope.doNotRecreate) //bgmd
+            if (cellScope && cellScope._initialized) //bgmd
               return;
             if (cellScope) {
-              var editing = cellScope.editing; //bgmd
+              /*var editing = cellScope.editing; //bgmd
               cellScope.$destroy();
 
               createCellScope();
 
               cellScope.editing = editing; //bgmd
-
+              */
+              cellScope._initialized = true;
               cellScope.$cell = ctrl.value;
               cellScope.$row = ctrl.row;
               cellScope.$column = ctrl.column;
               cellScope.$$watchers = null;
             }
+            //bgmd
+            let editorWrapper = null;
+            let el = '<span>{{$cell}}</span>'; //bgmd
+            if (ctrl.column.editor) {
+              editorWrapper = {};
+              editorWrapper.begin = `<div ng-dblclick="editing = true" ng-show="!editing">`;
+              editorWrapper.end =  `</div>
+                                    <div>
+                                      <input ng-show="editing" type="text" ng-model="$cell" ng-change="changed($cell, $row, $column)" ng-blur="editing = false" style="width:100%;"/>
+                                    </div>`;
+              cellScope.changed = function (cellVal, row, col) {
+                //var idx = $scope.data.indexOf(row);
+                row[col.prop] = cellVal;
+                //$scope.data[idx] = row;
+              };
 
+            }// bgmd
             if (ctrl.column.template) {
               content.empty();
-              const elm = angular.element(`<span>${ctrl.column.template.trim()}</span>`);
+              el = `<span>${ctrl.column.template.trim()}</span>`; //bgmd
+              if (editorWrapper) {
+                el = editorWrapper.begin + el + editorWrapper.end;
+              }
+              const elm = angular.element(el);
               content.append($compile(elm)(cellScope));
             } else if (ctrl.column.cellRenderer) {
               content.empty();
-              const elm = angular.element(ctrl.column.cellRenderer(cellScope, content));
+              el = ctrl.column.cellRenderer(cellScope, content); //bgmd
+              if (editorWrapper) {
+                el = editorWrapper.begin + el + editorWrapper.end;
+              }
+              const elm = angular.element(el);
               content.append($compile(elm)(cellScope));
             } else {
-              content[0].innerHTML = ctrl.getValue();
+              if (editorWrapper) {
+                el = editorWrapper.begin + el + editorWrapper.end;
+                const elm = angular.element(el);
+                content.append($compile(elm)(cellScope));
+              }
+              else
+                content[0].innerHTML = ctrl.getValue();
             }
-          }, true);
+          }, false);
 
           function createCellScope() {
             cellScope = ctrl.options.$outer.$new(false);
