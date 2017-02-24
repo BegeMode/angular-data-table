@@ -55,4 +55,31 @@ export default class RowController {
     });
   }
 
+  /** bgmd
+   *
+   */
+  getChanges() {
+    if (!this.row._original)
+      return null;
+    let result = {};
+    for (var prop in this.row._original) {
+      if (this.row._original.hasOwnProperty(prop)) {
+        let value = this.row._original[prop];
+        if (value !== this.row[prop])
+          result[prop] = this.row[prop];
+      }
+    }
+    return Object.keys(result).length == 0? null : result;
+  }
+
+  submitChanges() {
+    if (!this.row._original)
+      return;
+    let result = {};
+    for (var prop in this.row._original) {
+      if (this.row._original.hasOwnProperty(prop)) {
+        this.row._original[prop] = this.row[prop];
+      }
+    }
+  }
 }

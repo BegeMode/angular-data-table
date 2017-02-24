@@ -41,6 +41,11 @@
         margin:50px auto;
       }
 
+      a{
+        cursor: pointer;
+        color: #0000FF;
+      }
+
     </style>
     <link href="../dist/dataTable.css" media="all" rel="stylesheet" />
     <link href="../dist/themes/material.css" media="all" rel="stylesheet" />
@@ -89,6 +94,14 @@
                 name: "Company",
                 prop: "company",
                 editor: 'textarea',
+              },
+              {
+                name: 'Actions',
+                width: 200,
+                template: '<a ng-click="destroyApp($row)">DELETE</a> | <a ng-click="display($row, $rowCtrl);">LOG</a>' 
+                /*cellRenderer: function($scope){
+                  return '<a ng-click="destroyApp($row)">DELETE</a> | <a ng-click="display($row);">LOG</a>';
+                }*/
               }
             ]
           };
@@ -106,6 +119,16 @@
             row[col.prop] = cellVal;
             //$scope.data[idx] = row;
           }*/
+          $scope.destroyApp = function(row){
+            console.log('deleting', row);
+            $scope.data.splice($scope.data.indexOf(row), 1);
+          }
+
+          $scope.display = function(row, rowCtrl){
+            console.log(row);
+            var ch = rowCtrl.rowChanges();
+            console.log(ch);
+          }
 
         });
       });

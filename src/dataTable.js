@@ -13,6 +13,7 @@ import SelectionDirective from './components/body/SelectionDirective';
 import RowDirective from './components/body/RowDirective';
 import GroupRowDirective from './components/body/GroupRowDirective';
 import CellDirective from './components/body/CellDirective';
+import FocusOnDirective from './components/body/FocusOnDirective';
 import FooterDirective from './components/footer/FooterDirective';
 import PagerDirective from './components/footer/PagerDirective';
 
@@ -35,4 +36,5 @@ export default angular
   .directive('dtGroupRow', GroupRowDirective)
   .directive('dtCell', CellDirective)
   .directive('dtFooter', FooterDirective)
-  .directive('dtPager', PagerDirective);
+  .directive('dtPager', PagerDirective)
+  .directive('focusOn', FocusOnDirective);

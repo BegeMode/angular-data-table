@@ -81,4 +81,16 @@ export default class CellController {
     return val;
   }
 
+  /*changed(cellVal, row, col) {
+    //var idx = $scope.data.indexOf(row);
+    row[col.prop] = cellVal;
+    //$scope.data[idx] = row;
+  }
+
+  edit(cellVal, row) {
+    this.editing = !this.editing;
+    return this.editing;
+  }*/
+
+
 }
