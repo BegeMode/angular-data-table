@@ -41,6 +41,10 @@
         margin:50px auto;
       }
 
+      .dt-row-even{
+        background:#f6f7f8;
+      }
+
       a{
         cursor: pointer;
         color: #0000FF;
@@ -55,7 +59,7 @@
   <body ng-app="app" ng-controller="HomeController">
 
     <p>Double click a name to edit</p>
-    <dtable options="options" rows="data" class="material"></dtable>
+    <dtable options="options" rows="data" class="material" style="height: 800px;"></dtable>
 
     <script src="../jspm_packages/system.js"></script>
     <script src="../config.js"></script>
@@ -72,18 +76,18 @@
             rowHeight: 50,
             headerHeight: 50,
             footerHeight: false,
-            scrollbarV: false,
+            scrollbarV: true,
             columns: [
               {
                 name: "Name",
                 prop: "name",
                 width: 300,
                 editor: 'text',
-                cellRenderer: function($scope){
+                /*cellRenderer: function($scope){
                   $scope.doNotRecreate = true; //не пересоздавать scope после изменения cell.row
                   //return '<div ng-dblclick="editing = true" ng-show="!editing"><strong>{{$cell}}</strong></div><div><input ng-show="editing" type="text" ng-model="$cell" ng-change="changed($cell, $row, $column)" ng-blur="editing = false" /></div>';
                   return '<strong>{{$cell}}</strong>';
-                }
+                }*/
               },
               {
                 name: "Gender",
@@ -99,15 +103,12 @@
                 name: 'Actions',
                 width: 200,
                 template: '<a ng-click="destroyApp($row)">DELETE</a> | <a ng-click="display($row, $rowCtrl);">LOG</a>' 
-                /*cellRenderer: function($scope){
-                  return '<a ng-click="destroyApp($row)">DELETE</a> | <a ng-click="display($row);">LOG</a>';
-                }*/
               }
             ]
           };
 
           $http.get('/demos/data/100.json').success(function(data) {
-            $scope.data = data.splice(0, 15);
+            $scope.data = data.splice(0, 20);
           });
 
           $scope.$watch('data', function(){
@@ -121,7 +122,8 @@
           }*/
           $scope.destroyApp = function(row){
             console.log('deleting', row);
-            $scope.data.splice($scope.data.indexOf(row), 1);
+            var i = $scope.data.indexOf(row);
+            $scope.data.splice(i, 1);
           }
 
           $scope.display = function(row, rowCtrl){

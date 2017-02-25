@@ -48,7 +48,7 @@ export default class DataTableController {
 
         this.onSorted();
       }
-    });
+    });//, true);
   }
 
   /**

@@ -20,7 +20,7 @@ export default function CellDirective($rootScope, $compile) {
       onCheckboxChange: '&',
     },
     template:
-      `<div class="dt-cell"
+    `<div class="dt-cell"
             data-title="{{::cell.column.name}}"
             ng-style="cell.styles()"
             ng-class="cell.cellClass()">
@@ -48,41 +48,51 @@ export default function CellDirective($rootScope, $compile) {
           }
 
           $scope.$watch('cell.row', () => {
-            if (cellScope && cellScope._initialized) //bgmd
-              return;
             if (cellScope) {
-              /*var editing = cellScope.editing; //bgmd
-              cellScope.$destroy();
-
-              createCellScope();
-
-              cellScope.editing = editing; //bgmd
-              */
-              cellScope._initialized = true;
+              //cellScope.$destroy(); bgmd
+              //createCellScope(); bgmd
+              cellScope.getValue = ctrl.getValue;
               cellScope.$cell = ctrl.value;
               cellScope.$row = ctrl.row;
               cellScope.$column = ctrl.column;
-              cellScope.$$watchers = null;
-              cellScope.$rowCtrl = {
-                rowChanges: ctrl.rowCtrl.getChanges.bind(ctrl.rowCtrl),
-                submitChanges: ctrl.rowCtrl.submitChanges.bind(ctrl.rowCtrl),
+              //cellScope.$$watchers = null; bgmd
+              if (!cellScope.$rowCtrl) {
+                cellScope.$rowCtrl = {
+                  rowChanges: ctrl.rowCtrl.getChanges.bind(ctrl.rowCtrl),
+                  submitChanges: ctrl.rowCtrl.submitChanges.bind(ctrl.rowCtrl),
+                }
               }
             }
             //bgmd
+            if (ctrl.column.template || ctrl.column.cellRenderer || ctrl.column.editor) {
+              if (ctrl._rendered)
+                return;
+              renderCell();
+            }
+            else
+              content[0].innerHTML = ctrl.getValue();
+            ctrl._rendered = true;
+          }, false);
+
+          function createCellScope() {
+            cellScope = ctrl.options.$outer.$new(false);
+            cellScope.getValue = ctrl.getValue;
+          }
+
+          function renderCell() {
             let editorWrapper = null;
-            let el = '<span>{{$cell}}</span>'; //bgmd
             if (ctrl.column.editor) {
               let tag = ctrl.column.editor == 'textarea' ? 'textarea' : 'input';
               editorWrapper = {};
               editorWrapper.begin = `<div ng-dblclick="edit($cell, $row)" ng-show="!editing">`;
-              editorWrapper.end =  `</div>
+              editorWrapper.end = `</div>
                                     <div>
                                       <${tag} ng-show="editing" type="${ctrl.column.editor}" ng-model="$cell" ng-change="changed($cell, $row, $column)" 
                                              ng-blur="edit($cell, $row)" style="width:100%;" focus-on="editing"/>
                                     </div>`;
-              
+
               if (!ctrl.row._original)
-                ctrl.row._original = {};  
+                ctrl.row._original = {};
               ctrl.row._original[ctrl.column.prop] = ctrl.value;
 
               cellScope.edit = function (cellVal, row) {
@@ -96,39 +106,24 @@ export default function CellDirective($rootScope, $compile) {
               };
 
             }// bgmd
+            let el = '<span>{{$cell}}</span>'; //bgmd
             if (ctrl.column.template) {
-              content.empty();
               el = `<span>${ctrl.column.template.trim()}</span>`; //bgmd
-              if (editorWrapper) {
-                el = editorWrapper.begin + el + editorWrapper.end;
-              }
-              const elm = angular.element(el);
-              content.append($compile(elm)(cellScope));
-            } else if (ctrl.column.cellRenderer) {
-              content.empty();
-              el = ctrl.column.cellRenderer(cellScope, content); //bgmd
-              if (editorWrapper) {
-                el = editorWrapper.begin + el + editorWrapper.end;
-              }
-              const elm = angular.element(el);
-              content.append($compile(elm)(cellScope));
-            } else {
-              if (editorWrapper) {
-                el = editorWrapper.begin + el + editorWrapper.end;
-                const elm = angular.element(el);
-                content.append($compile(elm)(cellScope));
-              }
-              else
-                content[0].innerHTML = ctrl.getValue();
             }
-          }, false);
+            else if (ctrl.column.cellRenderer) {
+              el = ctrl.column.cellRenderer(cellScope, content); //bgmd
+            }
 
-          function createCellScope() {
-            cellScope = ctrl.options.$outer.$new(false);
-            cellScope.getValue = ctrl.getValue;
+            if (editorWrapper) {
+              el = editorWrapper.begin + el + editorWrapper.end;
+            }
+            const elm = angular.element(el);
+            content.empty();
+            content.append($compile(elm)(cellScope));
+
           }
         },
-      };
+      }
     },
-  };
+  }
 }
