@@ -48,6 +48,9 @@ export default function CellDirective($rootScope, $compile) {
           }
 
           $scope.$watch('cell.row', () => {
+            if (cellScope && cellScope.editing) {
+              return;
+            }
             if (cellScope) {
               //cellScope.$destroy(); bgmd
               //createCellScope(); bgmd
@@ -72,7 +75,7 @@ export default function CellDirective($rootScope, $compile) {
             else
               content[0].innerHTML = ctrl.getValue();
             ctrl._rendered = true;
-          }, false);
+          }, true);
 
           function createCellScope() {
             cellScope = ctrl.options.$outer.$new(false);
