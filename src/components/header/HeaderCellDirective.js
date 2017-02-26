@@ -21,6 +21,7 @@ export default function HeaderCellDirective($compile) {
             draggable="true"
             data-id="{{column.$id}}"
             ng-style="hcell.styles()"
+            style="height:100%;"
             title="{{::hcell.column.name}}">
         <div resizable="hcell.column.resizable"
              on-resize="hcell.onResized(width, hcell.column)"
@@ -35,6 +36,9 @@ export default function HeaderCellDirective($compile) {
                 ng-click="hcell.onSorted($event)">
           </span>
           <span ng-class="hcell.sortClass()">{{hcell.column.sortPriority}}</span>
+          <div ng-if="hcell.column.filter">
+            <input type="text" ng-model-options="{ debounce: 100 }" placeholder="Filter {{hcell.column.name}}" ng-click="prev($event)" ng-model="$parent.filterKeywords" style="width:100%;"/>
+          </div>
         </div>
       </div>`,
     compile() {
@@ -44,7 +48,7 @@ export default function HeaderCellDirective($compile) {
 
           let cellScope;
 
-          if (ctrl.column.headerTemplate || ctrl.column.headerRenderer) {
+          if (ctrl.column.headerTemplate || ctrl.column.headerRenderer || ctrl.column.headerFilterTemplate) {
             cellScope = ctrl.options.$outer.$new(false);
 
             // copy some props
@@ -53,15 +57,27 @@ export default function HeaderCellDirective($compile) {
           }
 
           if (ctrl.column.headerTemplate) {
-            const elm = angular.element(`<span>${ctrl.column.headerTemplate.trim()}</span>`);
+            let el = `<span>${ctrl.column.headerTemplate.trim()}</span>`;
+            //if (ctrl.column.headerFilterTemplate)
+            //  el += '<br>' + ctrl.column.headerFilterTemplate;  
+            const elm = angular.element(el);
             angular.element(label).append($compile(elm)(cellScope));
           } else if (ctrl.column.headerRenderer) {
-            const elm = angular.element(ctrl.column.headerRenderer($elm));
+            let el = ctrl.column.headerRenderer($elm);
+            //if (ctrl.column.headerFilterTemplate)
+            //  el += '<br>' + ctrl.column.headerFilterTemplate;  
+            const elm = angular.element(el);
             angular.element(label).append($compile(elm)(cellScope)[0]);
           } else {
             let val = ctrl.column.name;
             if (angular.isUndefined(val) || val === null) val = '';
-            label.textContent = val;
+            /*if (ctrl.column.headerFilterTemplate) {
+              let el = `<span>${val}</span><br>` + ctrl.column.headerFilterTemplate;
+              const elm = angular.element(el);
+              angular.element(label).append($compile(elm)(cellScope));
+            }
+            else*/
+              label.textContent = val;
           }
         },
       };

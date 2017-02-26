@@ -76,6 +76,8 @@ export default function DataTableDirective($window, $timeout, $parse) {
             ctrl.options.columns = columns;
           }
 
+          //ctrl.setFilterTemplate(); //bgmd
+
           ctrl.inheritColumnSortableProps();
           ctrl.transposeColumnDefaults();
           ctrl.options.internal.scrollBarWidth = ScrollbarWidth();

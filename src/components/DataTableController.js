@@ -112,6 +112,14 @@ export default class DataTableController {
     });
   }
 
+  setFilterTemplate() {
+    angular.forEach(this.options.columns, (column) => {
+      if (column.filter) {
+        column.headerFilterTemplate = `<input type="text" ng-model-options="{ debounce: 100 }" placeholder="Filter names" ng-click="prev($event)" ng-model="$parent.filterKeywords" style="width:100%;"/>`;
+      }
+    });
+  }
+
   /**
    * Calculate column groups and widths
    */

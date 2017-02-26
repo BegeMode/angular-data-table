@@ -74,7 +74,7 @@
         module.controller('HomeController', function($scope, $http){
           $scope.options = {
             rowHeight: 50,
-            headerHeight: 50,
+            headerHeight: 100,
             footerHeight: false,
             scrollbarV: true,
             columns: [
@@ -83,6 +83,7 @@
                 prop: "name",
                 width: 300,
                 editor: 'text',
+                filter: 'text',
                 /*cellRenderer: function($scope){
                   $scope.doNotRecreate = true; //не пересоздавать scope после изменения cell.row
                   //return '<div ng-dblclick="editing = true" ng-show="!editing"><strong>{{$cell}}</strong></div><div><input ng-show="editing" type="text" ng-model="$cell" ng-change="changed($cell, $row, $column)" ng-blur="editing = false" /></div>';
