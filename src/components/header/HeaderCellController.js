@@ -24,6 +24,16 @@ export default class HeaderCellController {
     if (this.$scope.$parent.$parent.$parent.$parent.dt) {
       this.dt = this.$scope.$parent.$parent.$parent.$parent.dt;
     }
+    //bgmd
+    if (this.column.filter) {
+      let self = this;
+      this.$scope.$watch(() => this.filterKeywords, function (newVal) {
+        self.onFilter({
+          column: self.column,
+          filterKeywords: newVal,
+        });
+      });
+    }  
   }
   /**
    * Calculates the styles for the header cell directive
@@ -70,6 +80,13 @@ export default class HeaderCellController {
         modifierPressed: event.shiftKey,
       });
     }
+  }
+  /** bgmd
+  * Handle the click event in the filter input
+  * @param {object} event 
+  */
+  onFilterClick($event) {
+    $event.stopPropagation();
   }
 
   /**

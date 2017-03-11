@@ -13,6 +13,7 @@ export default function HeaderDirective($timeout) {
       selectedRows: '=?',
       allRows: '=',
       onSort: '&',
+      onFiltered: '&',
       onResize: '&',
     },
     template: `
@@ -26,6 +27,7 @@ export default function HeaderDirective($timeout) {
             <dt-header-cell
               ng-repeat="column in header.columns['left'] track by column.$id"
               on-sort="header.onSorted(column, modifierPressed)"
+              on-filter="header.onFilter(column, filterKeywords)"
               options="header.options"
               sort-type="header.options.sortType"
               on-resize="header.onResized(column, width)"
@@ -41,6 +43,7 @@ export default function HeaderDirective($timeout) {
               ng-repeat="column in header.columns['center'] track by column.$id"
               on-checkbox-change="header.onCheckboxChanged()"
               on-sort="header.onSorted(column, modifierPressed)"
+              on-filter="header.onFilter(column, filterKeywords)"
               sort-type="header.options.sortType"
               selected="header.isSelected()"
               on-resize="header.onResized(column, width)"
@@ -57,6 +60,7 @@ export default function HeaderDirective($timeout) {
               ng-repeat="column in header.columns['right'] track by column.$id"
               on-checkbox-change="header.onCheckboxChanged()"
               on-sort="header.onSorted(column, modifierPressed)"
+              on-filter="header.onFilter(column, filterKeywords)"
               sort-type="header.options.sortType"
               selected="header.isSelected()"
               on-resize="header.onResized(column, width)"

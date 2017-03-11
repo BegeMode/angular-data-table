@@ -10,6 +10,7 @@ export default function HeaderCellDirective($compile) {
       options: '=',
       column: '=',
       onSort: '&',
+      onFilter: '&', //bgmd
       sortType: '=',
       onResize: '&',
       selected: '=',
@@ -37,7 +38,7 @@ export default function HeaderCellDirective($compile) {
           </span>
           <span ng-class="hcell.sortClass()">{{hcell.column.sortPriority}}</span>
           <div ng-if="hcell.column.filter">
-            <input type="text" ng-model-options="{ debounce: 100 }" placeholder="Filter {{hcell.column.name}}" ng-click="prev($event)" ng-model="$parent.filterKeywords" style="width:100%;"/>
+            <input type="text" ng-model-options="{ debounce: 100 }" placeholder="Filter {{hcell.column.name}}" ng-click="hcell.onFilterClick($event)" ng-model="hcell.filterKeywords" style="width:100%;"/>
           </div>
         </div>
       </div>`,

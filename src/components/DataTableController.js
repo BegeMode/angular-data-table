@@ -46,6 +46,7 @@ export default class DataTableController {
       if (newVal) {
         watch();
 
+        this.createFilters(); //bgmd
         this.onSorted();
       }
     });//, true);
@@ -230,6 +231,83 @@ export default class DataTableController {
     if (this.options.internal && this.options.internal.setYOffset) {
       this.options.internal.setYOffset(0);
     }
+  }
+
+  createFilters() {
+    this.filters = {
+      list: []
+    };
+    const self = this;
+    this.options.columns.forEach((col, index) => {
+      if (!col.filter)
+        return;  
+      let filter = {
+        name: col.name,
+        prop: col.prop,
+        rowsBefore: null,
+        rowsAfter: null,
+        phrase: null,
+        order: index
+      };
+      self.filters.list.push(filter);
+      self.filters[col.name] = filter;
+    });
+    if (this.filters.list.length) {
+      this.filters.list[0].rowsBefore = this.rows;
+      this.filters.list[0].rowsAfter = this.rows;
+    }
+  }
+
+  /** bgmd
+   * Process filter
+   * @param {object} column 
+   * @param {string} filterKeywords 
+   */
+  onFilter(column, filterKeywords) {
+    console.log('DataTableController onFilter', column, filterKeywords); 
+    if (!this.rows) {
+      return;
+    }
+    let filter = this.filters[column.name];
+    if (!filter) {
+      return;
+    }
+    filter.phrase = filterKeywords;
+    if (!filter.rowsBefore) {
+      let i = filter.order - 1;
+      while (i >= 0) {
+        let prev = this.filters.list[i];
+        if (prev.rowsAfter) {
+          filter.rowsBefore = prev.rowsAfter;
+          break;
+        }
+        i--;
+      }
+    }
+    this.rows = this.filterPipe(filter); 
+  }
+  /** bgmd
+   * Filter pipeline
+   * @param {object} filter 
+   */
+
+  filterPipe(filter) {
+    let result = this.rows;
+    for (let i = filter.order; i < this.filters.list.length; i++) {
+      let f = this.filters.list[i];
+      if (i > filter.order) {
+        if (!f.phrase) {
+          f.rowsBefore = null;
+          f.rowsAfter = null;
+          continue;
+        }
+        f.rowsBefore = result;
+      }
+      result = f.rowsAfter = f.rowsBefore.filter(function (row) {
+        return row[f.prop].toLowerCase().indexOf(f.phrase) !== -1 || !f.phrase;
+      });
+    }  
+    return result;
   }
 
   /**

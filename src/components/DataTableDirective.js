@@ -16,6 +16,7 @@ export default function DataTableDirective($window, $timeout, $parse) {
       expanded: '=?',
       onSelect: '&',
       onSort: '&',
+      //onFilter: '&', //bgmd
       onTreeToggle: '&',
       onPage: '&',
       onRowClick: '&',
@@ -40,7 +41,8 @@ export default function DataTableDirective($window, $timeout, $parse) {
                      on-resize="dt.onResized(column, width)"
                      selected-rows="dt.selected"
                      all-rows="dt.rows"
-                     on-sort="dt.onSorted()">
+                     on-sort="dt.onSorted()"
+                     on-filtered="dt.onFilter(column, filterKeywords)">
           </dt-header>
           <dt-body rows="dt.rows"
                    selected="dt.selected"

@@ -50,6 +50,16 @@ export default class HeaderController {
     });
   }
 
+  /** bgmd
+   * Passes filter data to DataTableController
+   * @param {object} column 
+   * @param {string} filterKeywords 
+   */
+
+  onFilter(column, filterKeywords) {
+    this.onFiltered({ column: column, filterKeywords: filterKeywords });
+  };
+
   /**
    * Returns the styles by group for the headers.
    * @param  {scope}
