@@ -232,7 +232,9 @@ export default class DataTableController {
       this.options.internal.setYOffset(0);
     }
   }
-
+  /** bgmd
+  * create filter's helper object
+  */
   createFilters() {
     this.filters = {
       list: []
@@ -264,7 +266,6 @@ export default class DataTableController {
    * @param {string} filterKeywords 
    */
   onFilter(column, filterKeywords) {
-    console.log('DataTableController onFilter', column, filterKeywords); 
     if (!this.rows) {
       return;
     }
@@ -286,11 +287,11 @@ export default class DataTableController {
     }
     this.rows = this.filterPipe(filter); 
   }
+  
   /** bgmd
    * Filter pipeline
    * @param {object} filter 
    */
-
   filterPipe(filter) {
     let result = this.rows;
     for (let i = filter.order; i < this.filters.list.length; i++) {
@@ -308,6 +309,34 @@ export default class DataTableController {
       });
     }  
     return result;
+  }
+
+  /** bgmd
+   * Invoked when a columns reordered
+   */
+  onHeaderReorder() {
+    //console.info('onHeaderReorder');
+    if (!this.filters || !this.filters.list.length)
+      return;  
+    const initRows = this.filters.list[0].rowsBefore;
+    //const list = this.filters.list;
+    this.filters.list = [];
+    const self = this;
+    this.options.columns.forEach((col, index) => {
+      if (!col.filter)
+        return;  
+      let filter = self.filters[col.name];
+      filter.rowsBefore = null;
+      filter.rowsAfter = null;
+      filter.order = index;
+      self.filters.list.push(filter);
+    });
+    if (this.filters.list.length) {
+      this.filters.list[0].rowsBefore = initRows;
+      this.filters.list[0].rowsAfter = initRows;
+    }
+    //filter rows again starting with first column
+    this.rows = this.filterPipe(this.filters.list[0]);
   }
 
   /**

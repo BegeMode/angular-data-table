@@ -55,7 +55,6 @@ export default class HeaderController {
    * @param {object} column 
    * @param {string} filterKeywords 
    */
-
   onFilter(column, filterKeywords) {
     this.onFiltered({ column: column, filterKeywords: filterKeywords });
   };

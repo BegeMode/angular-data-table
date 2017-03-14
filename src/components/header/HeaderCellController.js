@@ -27,7 +27,7 @@ export default class HeaderCellController {
     //bgmd
     if (this.column.filter) {
       let self = this;
-      this.$scope.$watch(() => this.filterKeywords, function (newVal) {
+      this.$scope.$watch(() => this.column.filterKeywords, function (newVal) {
         self.onFilter({
           column: self.column,
           filterKeywords: newVal,

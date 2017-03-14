@@ -38,7 +38,7 @@ export default function HeaderCellDirective($compile) {
           </span>
           <span ng-class="hcell.sortClass()">{{hcell.column.sortPriority}}</span>
           <div ng-if="hcell.column.filter">
-            <input type="text" ng-model-options="{ debounce: 100 }" placeholder="Filter {{hcell.column.name}}" ng-click="hcell.onFilterClick($event)" ng-model="hcell.filterKeywords" style="width:100%;"/>
+            <input type="{{hcell.column.filter}}" ng-model-options="{ debounce: 500 }" placeholder="Filter {{hcell.column.name}}" ng-click="hcell.onFilterClick($event)" ng-model="hcell.column.filterKeywords" style="width:100%;"/>
           </div>
         </div>
       </div>`,

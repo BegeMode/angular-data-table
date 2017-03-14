@@ -42,7 +42,8 @@ export default function DataTableDirective($window, $timeout, $parse) {
                      selected-rows="dt.selected"
                      all-rows="dt.rows"
                      on-sort="dt.onSorted()"
-                     on-filtered="dt.onFilter(column, filterKeywords)">
+                     on-filtered="dt.onFilter(column, filterKeywords)"
+                     on-reordered="dt.onHeaderReorder()">
           </dt-header>
           <dt-body rows="dt.rows"
                    selected="dt.selected"

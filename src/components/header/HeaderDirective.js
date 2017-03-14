@@ -14,6 +14,7 @@ export default function HeaderDirective($timeout) {
       allRows: '=',
       onSort: '&',
       onFiltered: '&',
+      onReordered: '&',
       onResize: '&',
     },
     template: `
@@ -102,6 +103,7 @@ export default function HeaderDirective($timeout) {
 
             return undefined;
           });
+          ctrl.onReordered(); //bgmd 
         });
       };
 
