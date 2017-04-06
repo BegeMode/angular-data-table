@@ -110,8 +110,8 @@
             ]
           };
 
-          $http.get('/demos/data/100.json').success(function(data) {
-            $scope.data = data.splice(0, 20);
+          $http.get('/demos/data/100.json').then(function(data) {
+            $scope.data = data.data.splice(0, 20);
           });
 
           $scope.$watch('data', function(){

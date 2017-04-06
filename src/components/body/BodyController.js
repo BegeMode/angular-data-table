@@ -696,4 +696,8 @@ export default class BodyController {
 
     this.refreshGroups();
   }
+
+  rowsResorted(event, row) {
+    console.log(event);
+  }
 }

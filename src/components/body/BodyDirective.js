@@ -29,7 +29,9 @@ export default function BodyDirective() {
           <div class="bar"></div>
         </div>
       </div>
-      <div class="dt-body" ng-style="body.styles()" dt-selection>
+      <div class="dt-body" ng-style="body.styles()" dt-selection
+               sortable="true"
+               on-sortable-sort="rowsResorted(event, row)">
         <dt-scroller class="dt-body-scroller">
           <dt-group-row ng-repeat-start="r in body.tempRows track by $index"
                         ng-if="r.group"

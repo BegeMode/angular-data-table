@@ -29,7 +29,7 @@ export default function RowDirective() {
       ctrl.options.internal.styleTranslator.register($scope.$index, $elm);
     },
     template: `
-      <div class="dt-row">
+      <div class="dt-row" draggable="true">
         <div class="dt-row-left dt-row-block"
              ng-if="rowCtrl.columns['left'].length"
              ng-style="rowCtrl.stylesByGroup('left')">
