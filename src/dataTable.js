@@ -4,6 +4,7 @@ import './utils/polyfill';
 
 import ResizableDirective from './components/header/ResizableDirective';
 import SortableDirective from './components/header/SortableDirective';
+import DraggableRowDirective from './components/body/DraggableDirective';
 import DataTableDirective from './components/DataTableDirective';
 import HeaderDirective from './components/header/HeaderDirective';
 import HeaderCellDirective from './components/header/HeaderCellDirective';
@@ -27,6 +28,7 @@ export default angular
   .directive('dtable', DataTableDirective)
   .directive('resizable', ResizableDirective)
   .directive('sortable', SortableDirective)
+  .directive('draggableRow', DraggableRowDirective)
   .directive('dtHeader', HeaderDirective)
   .directive('dtHeaderCell', HeaderCellDirective)
   .directive('dtBody', BodyDirective)

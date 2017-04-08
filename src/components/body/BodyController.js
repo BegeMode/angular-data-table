@@ -402,6 +402,25 @@ export default class BodyController {
   }
 
   /**
+   * Returns if the row is draggable
+   * @param  {row}
+   * @return {Boolean}
+   */
+  isDraggable(row){
+    return true;
+  }
+
+  /**
+   * handles `dragend` event
+   * @param {object} event 
+   * @param {object} row 
+   * @param {object} rowTo 
+   */ 
+  onDropRow(event, row, rowTo){
+    console.log('onDropRow', row, rowTo);
+  }
+
+  /**
    * Creates a tree of the existing expanded values
    * @return {array} the built tree
    */
@@ -697,7 +716,4 @@ export default class BodyController {
     this.refreshGroups();
   }
 
-  rowsResorted(event, row) {
-    console.log(event);
-  }
 }

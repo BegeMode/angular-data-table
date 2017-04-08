@@ -151,7 +151,7 @@ System.config({
       "fs": "github:jspm/nodelibs-fs@0.1.2",
       "process": "github:jspm/nodelibs-process@0.1.2"
     },
-    "npm:brace-expansion@1.1.6": {
+    "npm:brace-expansion@1.1.7": {
       "balanced-match": "npm:balanced-match@0.4.2",
       "concat-map": "npm:concat-map@0.0.1"
     },
@@ -224,7 +224,7 @@ System.config({
       "util": "github:jspm/nodelibs-util@0.1.0"
     },
     "npm:minimatch@3.0.3": {
-      "brace-expansion": "npm:brace-expansion@1.1.6",
+      "brace-expansion": "npm:brace-expansion@1.1.7",
       "path": "github:jspm/nodelibs-path@0.1.0"
     },
     "npm:mkdirp@0.5.1": {

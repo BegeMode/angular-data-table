@@ -4,16 +4,17 @@
  * https://jsfiddle.net/hrohxze0/6/
  * @param {function}
  */
-export default function DraggableDirective() {
+export default function DraggableRowDirective() {
   return {
     restrict: 'A',
     scope: {
-      isSortable: '=draggable',
+      isDraggable: '=draggableRow',
       onDrop: '&',
     },
     link($scope, $element) {
       let dragEl;
       let nextEl;
+      let toEl;
 
       function findParentDraggable(elem) {
         var el = elem;
@@ -38,27 +39,7 @@ export default function DraggableDirective() {
       }
 
       function onDragEnter(e) {
-        const target = findParentDraggable(e.target);
-        //const target = findParentDraggable(e.target);
-        if (dragEl == target) {
-          console.log('equal');
-          return;
-        }
-        console.log('not equal!!!!!!!!!!!!!!!!!!!!', dragEl);
-        var newDiv = document.createElement("div");
-        var newContent = document.createTextNode("Hi there and greetings!"); 
-        newDiv.appendChild(newContent); 
-        var cln = dragEl.cloneNode(true);
-        target.parentNode.insertBefore(cln, target);
-        //target.parentNode.insertBefore(dragEl, target);
-        //target.parentNode.removeChild(dragEl);
-        return;
-
-        if (isbefore(dragEl, target)) {
-          target.parentNode.insertBefore(dragEl, target);
-        } else if (target.nextSibling && target.hasAttribute('draggable')) {
-          target.parentNode.insertBefore(dragEl, target.nextSibling.nextSibling);
-        }
+        toEl = e.target;
       }
 
       function onDragEnd(evt) {
@@ -69,16 +50,18 @@ export default function DraggableDirective() {
         $element.off('dragend', onDragEnd);
         $element.off('dragenter', onDragEnter);
 
-        if (nextEl !== dragEl.nextSibling) {
-          $scope.onSortableSort({
+        const target = findParentDraggable(toEl);
+        if (target !== dragEl) {
+          $scope.onDrop({
             event: evt,
-            columnId: angular.element(dragEl).attr('data-id'),
+            row: dragEl,
+            rowTo: target
           });
         }
       }
 
       function onDragStart(evt) {
-        if (!$scope.isSortable) return;
+        if (!$scope.isDraggable) return;
 
         evt = evt.originalEvent || evt;
 

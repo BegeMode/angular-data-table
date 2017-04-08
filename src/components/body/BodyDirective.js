@@ -29,9 +29,9 @@ export default function BodyDirective() {
           <div class="bar"></div>
         </div>
       </div>
-      <div class="dt-body" ng-style="body.styles()" dt-selection
-               sortable="true"
-               on-sortable-sort="rowsResorted(event, row)">
+      <div class="dt-body" ng-style="body.styles()" dt-selection 
+               draggable-row="true"
+               on-drop="body.onDropRow(event, row, rowTo)">
         <dt-scroller class="dt-body-scroller">
           <dt-group-row ng-repeat-start="r in body.tempRows track by $index"
                         ng-if="r.group"
@@ -61,7 +61,8 @@ export default function BodyDirective() {
                   has-children="body.getRowHasChildren(r)"
                   expanded="body.getRowExpanded(r)"
                   loading="body.getRowLoading(r)"
-                  ng-style="body.rowStyles(r)">
+                  ng-style="body.rowStyles(r)"
+                  is-draggable="body.isDraggable(r)">
           </dt-row>
         </dt-scroller>
         <div ng-if="body.rows && !body.rows.length"
