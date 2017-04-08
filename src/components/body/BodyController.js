@@ -1,4 +1,5 @@
 import { isOldAngular } from '../../utils/utils';
+import 'array.prototype.move';
 
 const TREE_TYPES = {
   GROUP: 'refreshGroups',
@@ -416,8 +417,26 @@ export default class BodyController {
    * @param {object} row 
    * @param {object} rowTo 
    */ 
-  onDropRow(event, row, rowTo){
-    console.log('onDropRow', row, rowTo);
+  onDropRow(event, indexFrom, indexTo){
+    const from = this.rows.find((value) => value.$$index == indexFrom);
+    const parent = this.rows.find((value) => value.$$index == indexTo);
+    let self = this;
+    this.onMoveRow({ rowFrom: from, rowTo: parent }).then(() => {
+      if (self.treeColumn) {
+        //change parent
+        from[self.treeColumn.relationProp] = parent[self.treeColumn.prop];
+        self.buildRowsByGroup();
+        self.refreshTree();
+      } else {
+        //merely replace
+        self.rows.move(indexFrom, indexTo);
+        if (self.groupColumn) {
+          self.refreshGroups();
+        }
+        else
+          self.getRows(true);
+      }
+    }).catch((err) => console.error(err));;  
   }
 
   /**

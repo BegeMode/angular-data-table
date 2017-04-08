@@ -10,10 +10,12 @@ export default class DataTableController {
    */
 
   /* @ngInject */
-  constructor($scope, $filter) {
+  constructor($scope, $filter, $q, $attrs) {
     Object.assign(this, {
       $scope,
       $filter,
+      $q,
+      $attrs
     });
 
     if (isOldAngular()) {
@@ -464,5 +466,16 @@ export default class DataTableController {
     this.onRowDblClick({
       row,
     });
+  }
+
+  moveRow(rowFrom, rowTo) {
+    if (!this.$attrs.onMoveRow) {
+      return this.$q.resolve();
+    }  
+    let promise = this.onMoveRow(rowFrom, rowTo);
+    if (!(promise instanceof this.$q)) {
+      throw new Error('onMoveRow must return $q instance');
+    }
+    return promise;
   }
 }

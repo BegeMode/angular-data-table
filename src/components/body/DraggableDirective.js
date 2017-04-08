@@ -19,7 +19,7 @@ export default function DraggableRowDirective() {
       function findParentDraggable(elem) {
         var el = elem;
         do {
-          if (el.hasAttribute('draggable')) {
+          if (el.hasAttribute && el.hasAttribute('draggable')) {
             return el;
           }
         }
@@ -39,6 +39,7 @@ export default function DraggableRowDirective() {
       }
 
       function onDragEnter(e) {
+        console.log(dragEl.style.cursor);
         toEl = e.target;
       }
 
@@ -51,11 +52,14 @@ export default function DraggableRowDirective() {
         $element.off('dragenter', onDragEnter);
 
         const target = findParentDraggable(toEl);
+        const indexFrom = +dragEl.getAttribute('rowindex');
+        const indexTo = +target.getAttribute('rowindex');
+        //console.log('onDragEnd', dragEl, target);
         if (target !== dragEl) {
           $scope.onDrop({
             event: evt,
-            row: dragEl,
-            rowTo: target
+            indexFrom: indexFrom,
+            indexTo: indexTo
           });
         }
       }
@@ -71,7 +75,7 @@ export default function DraggableRowDirective() {
 
         evt.dataTransfer.effectAllowed = 'move';
         evt.dataTransfer.setData('Text', dragEl.textContent);
-
+        
         $element.on('dragenter', onDragEnter);
         $element.on('dragend', onDragEnd);
       }

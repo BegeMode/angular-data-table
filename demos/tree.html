@@ -79,7 +79,8 @@
         rows="data" class="material"
         expanded="expanded"
         on-tree-toggle="treeToggled(cell)"
-        on-tree-loader="treeLoader(cell, row)">
+        on-tree-loader="treeLoader(cell, row)"
+        on-move-row="moveRow(rowFrom, rowTo)">
     </dtable>
 
     <script src="../jspm_packages/system.js"></script>
@@ -90,7 +91,7 @@
       System.import('dataTable').then(function (dt) {
         var module = angular.module('app', [ dt.default.name ]);
 
-        module.controller('HomeController', function ($scope, $http) {
+        module.controller('HomeController', function ($scope, $http, $q) {
           $scope.options = {
             rowHeight: 50,
             footerHeight: false,
@@ -125,6 +126,11 @@
           $scope.treeToggled = function (row, cell) {
             console.log('toggled!')
           };
+
+          $scope.moveRow = function(rowFrom, rowTo){
+            console.log('moveRow!')
+            return $q.resolve();
+          }
 
           $scope.treeLoader = function(cell, row){
             console.log('treeLoader!');
