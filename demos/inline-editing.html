@@ -112,6 +112,8 @@
 
           $http.get('/demos/data/100.json').then(function(data) {
             $scope.data = data.data.splice(0, 20);
+            $scope.data[0]._noEdit = true;
+            $scope.data[1]._noEdit = true;
           });
 
           $scope.$watch('data', function(){

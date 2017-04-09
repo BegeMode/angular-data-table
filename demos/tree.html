@@ -98,13 +98,15 @@
             scrollbarV: true,
             headerHeight: 50,
             columnMode: 'flex',
+            rowDraggable: true,
             columns: [
               { 
                 name: "Company", 
                 prop: "company", 
                 flexGrow: 2,
                 isTreeColumn: true,
-                relationProp: 'parentCompany'
+                relationProp: 'parentCompany',
+                parentRelationProp: 'company'
               },
               { 
                 name: "Revenue", 

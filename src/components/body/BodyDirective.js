@@ -31,7 +31,7 @@ export default function BodyDirective() {
         </div>
       </div>
       <div class="dt-body" ng-style="body.styles()" dt-selection 
-               draggable-row="true"
+               draggable-row="body.options.rowDraggable"
                on-drop="body.onDropRow(event, indexFrom, indexTo)">
         <dt-scroller class="dt-body-scroller">
           <dt-group-row ng-repeat-start="r in body.tempRows track by $index"

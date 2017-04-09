@@ -84,7 +84,7 @@ export default function CellDirective($rootScope, $compile) {
 
           function renderCell() {
             let editorWrapper = null;
-            if (ctrl.column.editor) {
+            if (ctrl.column.editor && !ctrl.row._noEdit) {
               let tag = ctrl.column.editor == 'textarea' ? 'textarea' : 'input';
               editorWrapper = {};
               editorWrapper.begin = `<div ng-dblclick="edit($cell, $row)" ng-show="!editing">`;
@@ -123,7 +123,6 @@ export default function CellDirective($rootScope, $compile) {
             const elm = angular.element(el);
             content.empty();
             content.append($compile(elm)(cellScope));
-
           }
         },
       }
