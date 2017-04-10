@@ -1,5 +1,4 @@
 import { isOldAngular } from '../../utils/utils';
-import 'array.prototype.move';
 
 const TREE_TYPES = {
   GROUP: 'refreshGroups',
