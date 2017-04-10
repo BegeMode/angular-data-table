@@ -15,7 +15,6 @@ System.config({
 
   map: {
     "angular": "npm:angular@1.6.4",
-    "array.prototype.move": "npm:array.prototype.move@0.0.3",
     "babel": "npm:babel-core@6.24.0",
     "babel-runtime": "npm:babel-runtime@6.23.0",
     "core-js": "npm:core-js@2.4.1",
