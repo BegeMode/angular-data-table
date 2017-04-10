@@ -100,7 +100,7 @@ export const TableDefaults = {
    * Whether columns can be reordered.
    * @type {boolean}
    */
-  reorderable: true,
+  reorderable: false,
 
   /**
    * The row height, which is necessary to calculate
@@ -121,7 +121,10 @@ export const TableDefaults = {
    */
   selectable: false,
 
-  // If yes then columns can be sorted.
+  /**
+   * If yes then the column can be sorted.
+   * @type {boolean}
+   */
   sortable: true,
 
   // sorting by single or multiple columns
@@ -136,6 +139,17 @@ export const TableDefaults = {
    * @type {boolean}
    */
   modifierActive: true,
+  /**
+   * If yes then the rows can be drag and drop.
+   * @type {boolean}
+   */
+  rowDraggable: false,
+  /**
+   * This function uses in inline edit for stopping edit concrete row
+   * @type {function}
+   * @return {boolean}
+   */
+  editFilter: null
 };
 
 /**
@@ -255,16 +269,15 @@ export const ColumnDefaults = {
   resizable: true,
 
   /**
-   * Default sort ('asc' or 'desc') for the column
-   * @type {string}
-   */
-  sort: undefined,
-
-  /**
    * If yes then the column can be sorted.
    * @type {boolean}
    */
   sortable: true,
+  /**
+   * Default sort ('asc' or 'desc') for the column
+   * @type {string}
+   */
+  sort: undefined,
 
   /**
    * If you want to sort a column by a special property

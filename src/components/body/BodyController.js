@@ -424,7 +424,10 @@ export default class BodyController {
     this.onMoveRow({ rowFrom: from, rowTo: parent }).then(() => {
       if (self.treeColumn) {
         //change parent
-        from[self.treeColumn.relationProp] = parent[self.treeColumn.prop];
+        if (this.treeColumn.parentRelationProp)
+          from[self.treeColumn.relationProp] = parent[self.treeColumn.parentRelationProp];
+        else
+          from[self.treeColumn.relationProp] = parent[self.treeColumn.prop];
         self.buildRowsByGroup();
         self.refreshTree();
       } else {
@@ -477,6 +480,9 @@ export default class BodyController {
     if ((this.treeColumn || this.groupColumn) && !this.rowsByGroup) {
       return false;
     }
+
+    //clear $$index
+    this.tempRows.forEach((value) => delete value.$$index);
 
     let temp;
 

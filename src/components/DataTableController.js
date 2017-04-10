@@ -293,6 +293,7 @@ export default class DataTableController {
   /** bgmd
    * Filter pipeline
    * @param {object} filter 
+   * @return {object} filtered rows 
    */
   filterPipe(filter) {
     let result = this.rows;

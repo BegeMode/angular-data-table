@@ -85,29 +85,30 @@ export default function CellDirective($rootScope, $compile) {
           function renderCell() {
             let editorWrapper = null;
             if (ctrl.column.editor && !ctrl.row._noEdit) {
-              let tag = ctrl.column.editor == 'textarea' ? 'textarea' : 'input';
-              editorWrapper = {};
-              editorWrapper.begin = `<div ng-dblclick="edit($cell, $row)" ng-show="!editing">`;
-              editorWrapper.end = `</div>
+              if (ctrl.options.editFilter && ctrl.options.editFilter(ctrl.row)) {
+                let tag = ctrl.column.editor == 'textarea' ? 'textarea' : 'input';
+                editorWrapper = {};
+                editorWrapper.begin = `<div ng-dblclick="edit($cell, $row)" ng-show="!editing">`;
+                editorWrapper.end = `</div>
                                     <div>
                                       <${tag} ng-show="editing" type="${ctrl.column.editor}" ng-model="$cell" ng-change="changed($cell, $row, $column)" 
                                              ng-blur="edit($cell, $row)" style="width:100%;" focus-on="editing"/>
                                     </div>`;
 
-              if (!ctrl.row._original)
-                ctrl.row._original = {};
-              ctrl.row._original[ctrl.column.prop] = ctrl.value;
+                if (!ctrl.row._original)
+                  ctrl.row._original = {};
+                ctrl.row._original[ctrl.column.prop] = ctrl.value;
 
-              cellScope.edit = function (cellVal, row) {
-                this.editing = !this.editing;
-                return this.editing;
-              };
-              cellScope.changed = function (cellVal, row, col) {
-                //var idx = $scope.data.indexOf(row);
-                row[col.prop] = cellVal;
-                //$scope.data[idx] = row;
-              };
-
+                cellScope.edit = function (cellVal, row) {
+                  this.editing = !this.editing;
+                  return this.editing;
+                };
+                cellScope.changed = function (cellVal, row, col) {
+                  //var idx = $scope.data.indexOf(row);
+                  row[col.prop] = cellVal;
+                  //$scope.data[idx] = row;
+                };
+              }
             }// bgmd
             let el = '<span>{{$cell}}</span>'; //bgmd
             if (ctrl.column.template) {

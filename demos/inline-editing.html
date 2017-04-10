@@ -77,6 +77,7 @@
             headerHeight: 100,
             footerHeight: false,
             scrollbarV: true,
+            editFilter: (row) => { return row.name != 'Ethel Price'; },
             columns: [
               {
                 name: "Name",
@@ -112,7 +113,6 @@
 
           $http.get('/demos/data/100.json').then(function(data) {
             $scope.data = data.data.splice(0, 20);
-            $scope.data[0]._noEdit = true;
             $scope.data[1]._noEdit = true;
           });
 
@@ -134,7 +134,7 @@
           $scope.display = function(row, rowCtrl){
             console.log(row);
             var ch = rowCtrl.rowChanges();
-            console.log(ch);
+            console.log('rowChanges', ch);
           }
 
         });

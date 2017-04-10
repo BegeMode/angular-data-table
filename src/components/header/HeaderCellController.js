@@ -28,6 +28,7 @@ export default class HeaderCellController {
     if (this.column.filter) {
       let self = this;
       this.$scope.$watch(() => this.column.filterKeywords, function (newVal) {
+        if(!angular.isUndefined(newVal))
         self.onFilter({
           column: self.column,
           filterKeywords: newVal,
