@@ -18,6 +18,7 @@ export default function BodyDirective() {
       onSelect: '&',
       onRowClick: '&',
       onRowDblClick: '&',
+      onMoveRow: '&'
     },
     scope: true,
     template: `
@@ -29,7 +30,9 @@ export default function BodyDirective() {
           <div class="bar"></div>
         </div>
       </div>
-      <div class="dt-body" ng-style="body.styles()" dt-selection>
+      <div class="dt-body" ng-style="body.styles()" dt-selection 
+               draggable-row="body.options.rowDraggable"
+               on-drop="body.onDropRow(event, indexFrom, indexTo)">
         <dt-scroller class="dt-body-scroller">
           <dt-group-row ng-repeat-start="r in body.tempRows track by $index"
                         ng-if="r.group"
@@ -45,6 +48,7 @@ export default function BodyDirective() {
                   ng-if="!r.group"
                   row="body.getRowValue($index)"
                   tabindex="{{$index}}"
+                  rowindex="{{r.$$index}}"
                   columns="body.columns"
                   column-widths="body.columnWidths"
                   ng-keydown="selCtrl.keyDown($event, $index, r)"
@@ -59,7 +63,8 @@ export default function BodyDirective() {
                   has-children="body.getRowHasChildren(r)"
                   expanded="body.getRowExpanded(r)"
                   loading="body.getRowLoading(r)"
-                  ng-style="body.rowStyles(r)">
+                  ng-style="body.rowStyles(r)"
+                  is-draggable="body.isDraggable(r)">
           </dt-row>
         </dt-scroller>
         <div ng-if="body.rows && !body.rows.length"

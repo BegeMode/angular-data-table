@@ -103,6 +103,7 @@
   "jspm": {
     "dependencies": {
       "angular": "npm:angular@^1.5.8",
+      "array.prototype.move": "npm:array.prototype.move@^0.0.3",
       "jspm/nodelibs-assert": "github:jspm/nodelibs-assert@^0.1.0"
     },
     "devDependencies": {
@@ -120,5 +121,6 @@
     "moduleIds": false,
     "comments": false,
     "compact": false
-  }
+  },
+  "dependencies": {}
 }

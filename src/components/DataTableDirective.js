@@ -22,7 +22,8 @@ export default function DataTableDirective($window, $timeout, $parse) {
       onRowClick: '&',
       onRowDblClick: '&',
       onColumnResize: '&',
-      onTreeLoader: '&'
+      onTreeLoader: '&',
+      onMoveRow: '&'
     },
     controllerAs: 'dt',
     template(element) {
@@ -56,7 +57,8 @@ export default function DataTableDirective($window, $timeout, $parse) {
                    options="dt.options"
                    on-page="dt.onBodyPage(offset, size)"
                    on-tree-toggle="dt.onTreeToggled(row, cell)"
-                   on-tree-loader="dt.onTreeLoad(row, cell)">   
+                   on-tree-loader="dt.onTreeLoad(row, cell)"   
+                   on-move-row="dt.moveRow(rowFrom, rowTo)">   
            </dt-body>
           <dt-footer ng-if="dt.options.footerHeight || dt.options.paging.mode"
                      ng-style="{ height: dt.options.footerHeight + 'px' }"

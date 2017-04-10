@@ -14,6 +14,7 @@ export default function RowDirective() {
       loading: '=',
       expanded: '=',
       selected: '=',
+      isDraggable: '=',
       hasChildren: '=',
       options: '=',
       onCheckboxChange: '&',
@@ -27,9 +28,9 @@ export default function RowDirective() {
 
       // register w/ the style translator
       ctrl.options.internal.styleTranslator.register($scope.$index, $elm);
-    },
+    }, 
     template: `
-      <div class="dt-row">
+      <div class="dt-row" draggable={{rowCtrl.isDraggable}}>
         <div class="dt-row-left dt-row-block"
              ng-if="rowCtrl.columns['left'].length"
              ng-style="rowCtrl.stylesByGroup('left')">
