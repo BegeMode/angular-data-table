@@ -69,6 +69,8 @@ export default class BodyController {
         this.groupColumn = this.options.columns.find(c => c.group);
       } else {
         this.groupColumn = undefined;
+        if(!this.treeColumn.parentRelationProp)
+          this.treeColumn.parentRelationProp = this.treeColumn.prop;
       }
     }
   }
@@ -302,8 +304,9 @@ export default class BodyController {
     const parentProp = this.treeColumn ?
       this.treeColumn.relationProp :
       this.groupColumn.prop;
-    
-    const treeProp = this.treeColumn ? this.treeColumn.prop : ''; //bgmd
+    let treeProp = '';
+    if(this.treeColumn)
+      treeProp = this.treeColumn.parentRelationProp? this.treeColumn.parentRelationProp : this.treeColumn.prop; //bgmd
 
     for (let i = 0, len = this.rows.length; i < len; i += 1) {
       const row = this.rows[i];
@@ -311,7 +314,7 @@ export default class BodyController {
       //bgmd for lazy load
       if (row._lazyChildren) {
         if (treeProp && !this.rowsByGroup[row[treeProp]]) {
-          this.rowsByGroup[row[treeProp]] = []
+          this.rowsByGroup[row[treeProp]] = [];
         }
       }
 
@@ -327,10 +330,10 @@ export default class BodyController {
 
       // build indexes
       if (this.treeColumn) {
-        const prop = this.treeColumn.prop;
+        const prop = this.treeColumn.parentRelationProp;
         this.index[row[prop]] = row;
 
-        if (angular.isUndefined(row[parentProp])) {
+        if (!row[parentProp]) {
           row.$$depth = 0;
         } else {
           let parent = this.index[row[parentProp]];
@@ -402,15 +405,6 @@ export default class BodyController {
   }
 
   /**
-   * Returns if the row is draggable
-   * @param  {row}
-   * @return {Boolean}
-   */
-  isDraggable(row){
-    return true;
-  }
-
-  /**
    * handles `dragend` event
    * @param {object} event 
    * @param {object} row 
@@ -452,7 +446,7 @@ export default class BodyController {
     function addChildren(fromArray, toArray, level) {
       fromArray.forEach((row) => {
         const relVal = row[self.treeColumn.relationProp];
-        const key = row[self.treeColumn.prop];
+        const key = row[self.treeColumn.parentRelationProp];
         const groupRows = self.rowsByGroup[key];
         const expanded = self.expanded[key];
 
@@ -623,7 +617,7 @@ export default class BodyController {
    */
   getRowExpanded(row) {
     if (this.treeColumn) {
-      return this.expanded[row[this.treeColumn.prop]];
+      return row && this.treeColumn.parentRelationProp? this.expanded[row[this.treeColumn.parentRelationProp]] : false;
     } else if (this.groupColumn) {
       return this.expanded[row.name];
     }
@@ -638,7 +632,7 @@ export default class BodyController {
    */
   getRowLoading(row) {
     if (this.treeColumn) {
-      return this.loading[row[this.treeColumn.prop]];
+      return this.loading[row[this.treeColumn.parentRelationProp]];
     } else if (this.groupColumn) {
       return this.loading[row.name];
     }
@@ -663,7 +657,7 @@ export default class BodyController {
   getRowHasChildren(row) {
     if (!this.treeColumn) return undefined;
 
-    const children = this.rowsByGroup[row[this.treeColumn.prop]];
+    const children = this.rowsByGroup[row[this.treeColumn.parentRelationProp]];
 
     return angular.isDefined(children) || (children && !children.length);
   }
@@ -678,7 +672,7 @@ export default class BodyController {
    * @param  {cell model}
    */
   onTreeToggled(row, cell) {
-    const val = row[this.treeColumn.prop];
+    const val = row[this.treeColumn.parentRelationProp];
     //bgmd 
     var self = this;
     if (row._lazyChildren && !row._loaded_) {
@@ -691,9 +685,10 @@ export default class BodyController {
         self.buildRowsByGroup();
         self.onTreeToggledProcess(row, cell);
         self.loading[val] = false;
-        self.options.$outer.$digest();
+        //self.options.$outer.$digest();
       }).catch(function (error) {
         self.loading[val] = false;
+        console.error(error);
       });
     }
     else
@@ -701,7 +696,7 @@ export default class BodyController {
   }
 
   onTreeToggledProcess(row, cell) {
-    const val = row[this.treeColumn.prop];
+    const val = row[this.treeColumn.parentRelationProp];
     this.expanded[val] = !this.expanded[val];
 
     this.refreshTree();
@@ -718,7 +713,6 @@ export default class BodyController {
    * @param  {cell model}
    */
   onTreeLoad(row, cell) {
-    console.log('onTreeLoad');
     return this.onTreeLoader({
       row: row,
       cell: cell
