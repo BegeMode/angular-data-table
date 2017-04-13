@@ -306,7 +306,7 @@ export default class BodyController {
       this.groupColumn.prop;
     let treeProp = '';
     if(this.treeColumn)
-      treeProp = this.treeColumn.parentRelationProp? this.treeColumn.parentRelationProp : this.treeColumn.prop; //bgmd
+      treeProp = this.treeColumn.parentRelationProp; //bgmd
 
     for (let i = 0, len = this.rows.length; i < len; i += 1) {
       const row = this.rows[i];
@@ -405,6 +405,15 @@ export default class BodyController {
   }
 
   /**
+   * Returns if the row is draggable
+   * @param  {row}
+   * @return {Boolean}
+   */
+  isDraggable(row){
+    return this.options.rowDraggable;
+  }
+  
+  /**
    * handles `dragend` event
    * @param {object} event 
    * @param {object} row 
@@ -417,10 +426,7 @@ export default class BodyController {
     this.onMoveRow({ rowFrom: from, rowTo: parent }).then(() => {
       if (self.treeColumn) {
         //change parent
-        if (this.treeColumn.parentRelationProp)
-          from[self.treeColumn.relationProp] = parent[self.treeColumn.parentRelationProp];
-        else
-          from[self.treeColumn.relationProp] = parent[self.treeColumn.prop];
+        from[self.treeColumn.relationProp] = parent[self.treeColumn.parentRelationProp];
         self.buildRowsByGroup();
         self.refreshTree();
       } else {
@@ -593,7 +599,7 @@ export default class BodyController {
       // if i am a child
       styles['dt-leaf'] = this.rowsByGroup[row[this.treeColumn.relationProp]];
       // if i have children
-      styles['dt-has-leafs'] = this.rowsByGroup[row[this.treeColumn.prop]];
+      styles['dt-has-leafs'] = this.rowsByGroup[row[this.treeColumn.parentRelationProp]];
       // the depth
       styles[`dt-depth-${row.$$depth}`] = true;
     }

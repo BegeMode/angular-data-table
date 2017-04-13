@@ -93,7 +93,8 @@
           $scope.loadData = function() {
             $scope.data = undefined;
 
-            $http.get('/demos/data/olympics.json').success(function(data) {
+            $http.get('/demos/data/olympics.json').then(function(data) {
+              console.log('data', data);
               $scope.data = data;
 
               if ($scope.hasPaging) {

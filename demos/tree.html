@@ -147,7 +147,7 @@
               parentCompany: 'Apple XYZ South2'
             }];
             //return Promise.resolve(data);
-            return new Promise(function(resolve, reject){
+            return new $q(function(resolve, reject){
               setTimeout(() => {
                 resolve(data);
               }, 2000);
