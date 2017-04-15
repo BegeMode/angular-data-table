@@ -48,6 +48,9 @@ export default function CellDirective($rootScope, $compile) {
           }
 
           $scope.$watch('cell.row', () => {
+            if (cellScope && cellScope.editing && ctrl.row._editing[ctrl.column.prop]) {
+              return;
+            }
             if (cellScope) {
               cellScope.getValue = ctrl.getValue;
               cellScope.$cell = ctrl.value;
@@ -73,7 +76,7 @@ export default function CellDirective($rootScope, $compile) {
             else
               content[0].innerHTML = ctrl.getValue();
             ctrl._rendered = true;
-          }, false);
+          }, !ctrl.options.readOnly);
 
           function createCellScope() {
             cellScope = ctrl.options.$outer.$new(false);

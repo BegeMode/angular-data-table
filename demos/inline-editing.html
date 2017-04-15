@@ -83,6 +83,7 @@
             scrollbarV: true,
             rowDraggable: true,
             editFilter: (row) => { return row.name != 'Ethel Price'; },
+            actionFilter: (row) => { return row.name != 'Ethel Price'; },
             columns: [
               {
                 name: "Name",
@@ -111,7 +112,7 @@
               {
                 name: 'Actions',
                 width: 200,
-                template: '<a ng-click="destroyApp($row)">DELETE</a> | <a ng-click="display($row, $rowCtrl);">LOG</a>' 
+                template: '<div ng-if="actionFilter($row)"><a ng-click="destroyApp($row)">DELETE</a> | <a ng-click="display($row, $rowCtrl);">LOG</a></div>' 
               }
             ]
           };
@@ -140,6 +141,9 @@
             console.log(row);
             var ch = rowCtrl.rowChanges();
             console.log('rowChanges', ch);
+          }
+          $scope.actionFilter = function(row) { 
+            return row.name != 'Ethel Price'; 
           }
 
         });

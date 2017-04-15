@@ -79,7 +79,8 @@
         expanded="expanded"
         on-tree-toggle="treeToggled(cell)"
         on-tree-loader="treeLoader(cell, row)"
-        on-move-row="moveRow(rowFrom, rowTo)">
+        on-move-row="moveRow(rowFrom, rowTo)"
+        on-row-dbl-click="dblClick(row)">
     </dtable>
 
     <script src="../jspm_packages/system.js"></script>
@@ -131,6 +132,10 @@
           $scope.moveRow = function(rowFrom, rowTo){
             console.log('moveRow!')
             return $q.resolve();
+          }
+
+          $scope.dblClick = function(row) { 
+            console.log('onRowDblClick', row); 
           }
 
           $scope.treeLoader = function(cell, row){
