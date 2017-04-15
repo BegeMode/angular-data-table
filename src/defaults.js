@@ -160,6 +160,11 @@ export const TableDefaults = {
    * @type {boolean}
    */
   filterPlaceholder: 'Filter',
+  /**
+   * If yes then tree will be toggled by double click
+   * @type {boolean}
+   */
+  treeToggleDblClick: false,
 };
 
 /**

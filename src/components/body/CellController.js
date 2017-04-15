@@ -1,5 +1,32 @@
-export default class CellController {
+import { isOldAngular } from '../../utils/utils';
 
+export default class CellController {
+  /* @ngInject */
+  constructor($scope) {
+    Object.assign(this, {
+      $scope,
+    });
+
+    if (isOldAngular()) {
+      this.$onInit();
+    }
+  }
+
+  $onInit() {
+    this.init();
+  }
+
+  init() {
+    if (this.options.treeToggleDblClick && this.column.isTreeColumn) {
+      var self = this;
+      this.listener = this.$scope.$on('rowDblClick', function (event, data) {
+        if (data.index == self.row.$$index) {
+          self.treeToggle();
+        }
+      });
+      this.$scope.$on('$destroy', this.listener);
+    }
+  }
   /**
    * Calculates the styles for the Cell Directive
    * @return {styles object}
@@ -47,6 +74,10 @@ export default class CellController {
    */
   onTreeToggled(evt) {
     evt.stopPropagation();
+    this.treeToggle();
+  }
+
+  treeToggle() {
     this.expanded = !this.expanded;
     this.onTreeToggle({
       cell: {
@@ -80,17 +111,5 @@ export default class CellController {
 
     return val;
   }
-
-  /*changed(cellVal, row, col) {
-    //var idx = $scope.data.indexOf(row);
-    row[col.prop] = cellVal;
-    //$scope.data[idx] = row;
-  }
-
-  edit(cellVal, row) {
-    this.editing = !this.editing;
-    return this.editing;
-  }*/
-
 
 }
