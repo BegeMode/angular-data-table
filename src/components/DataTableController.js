@@ -308,7 +308,7 @@ export default class DataTableController {
         f.rowsBefore = result;
       }
       result = f.rowsAfter = f.rowsBefore.filter(function (row) {
-        return row[f.prop].toLowerCase().indexOf(f.phrase) !== -1 || !f.phrase;
+        return (row[f.prop] && row[f.prop].toLowerCase().indexOf(f.phrase) !== -1) || !f.phrase;
       });
     }  
     return result;
