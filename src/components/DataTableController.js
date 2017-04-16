@@ -314,6 +314,19 @@ export default class DataTableController {
     return result;
   }
 
+  reFilter() {
+    if (!this.rows) {
+      return;
+    }
+    let filter = this.filters[column.name];
+    if (!this.filters.list.length) {
+      return;
+    }
+    let f = this.filters.list[0];
+    f.rowsBefore = this.rows;
+    this.rows = this.filterPipe(filter); 
+  }
+
   /** bgmd
    * Invoked when a columns reordered
    */
@@ -348,6 +361,7 @@ export default class DataTableController {
    * @param  {cell model}
    */
   onTreeToggled(row, cell) {
+    this.reFilter();
     this.onTreeToggle({
       row,
       cell,
