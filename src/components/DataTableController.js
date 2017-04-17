@@ -318,13 +318,13 @@ export default class DataTableController {
     if (!this.rows) {
       return;
     }
-    let filter = this.filters[column.name];
     if (!this.filters.list.length) {
       return;
     }
-    let f = this.filters.list[0];
-    f.rowsBefore = this.rows;
+    let filter = this.filters.list[0];
+    filter.rowsBefore = this.rows;
     this.rows = this.filterPipe(filter); 
+    //this.options.$outer.$digest();
   }
 
   /** bgmd
