@@ -38,12 +38,23 @@ export default class BodyController {
 
     this.$scope.$watch('body.options.columns', (newVal) => {
       if (newVal) {
+        let filter = this.filterChanged();
+        if (filter) {
+          if (this.treeColumn || this.groupColumn) {
+            this._applyFilter = filter;
+            this.rowsUpdated();
+          }
+          else
+            this.rows = this.doFilter(filter);
+          return;
+        }
         const origTreeColumn = angular.copy(this.treeColumn);
         const origGroupColumn = angular.copy(this.groupColumn);
 
         this.setTreeAndGroupColumns();
 
         this.setConditionalWatches();
+
 
         if ((this.treeColumn && origTreeColumn !== this.treeColumn) ||
           (this.groupColumn && origGroupColumn !== this.groupColumn)) {
@@ -55,10 +66,15 @@ export default class BodyController {
             this.refreshGroups();
           }
         }
+        this.createFilters();
       }
     }, true);
-
-    this.$scope.$watchCollection('body.rows', this.rowsUpdated.bind(this));
+  
+    let self = this;
+    this.$scope.$watchCollection('body.rows', this.rowsUpdated.bind(this));/*(newVal) => {
+      //self.rows = self.doFilter();
+      self.rowsUpdated(self.rows);
+    });*/
   }
 
   setTreeAndGroupColumns() {
@@ -449,15 +465,28 @@ export default class BodyController {
     const temp = [];
     const self = this;
 
+    if (!this.filteredRows)
+      this.filteredRows = this.rows;    
+    //rows filtering
+    let flt = false;
+    if (this._applyFilter) {
+      this.filteredRows = this.doFilter(this._applyFilter);
+      this._applyFilter = null;
+      flt = true;
+    }
+    
     function addChildren(fromArray, toArray, level) {
       fromArray.forEach((row) => {
         const relVal = row[self.treeColumn.relationProp];
         const key = row[self.treeColumn.parentRelationProp];
         const groupRows = self.rowsByGroup[key];
+        if (flt && groupRows && groupRows.length > 0)
+          self.expanded[key] = true;  
         const expanded = self.expanded[key];
 
         if (level > 0 || !relVal) {
-          toArray.push(row);
+          if (self.filteredRows.includes(row))
+            toArray.push(row);
           if (groupRows && groupRows.length > 0 && expanded) {
             addChildren(groupRows, toArray, level + 1);
           }
@@ -531,7 +560,6 @@ export default class BodyController {
     if (this.options.internal && this.options.internal.styleTranslator) {
       this.options.internal.styleTranslator.update(this.tempRows);
     }
-
     return this.tempRows;
   }
 
@@ -689,9 +717,9 @@ export default class BodyController {
         self.rows = self.rows.concat(data);
         self.noNeedRowsUpdated = true;
         self.buildRowsByGroup();
+        self.filteredRows = self.doFilter();
         self.onTreeToggledProcess(row, cell);
         self.loading[val] = false;
-        //self.options.$outer.$digest();
       }).catch(function (error) {
         self.loading[val] = false;
         console.error(error);
@@ -738,6 +766,140 @@ export default class BodyController {
     this.expanded[row.name] = !this.expanded[row.name];
 
     this.refreshGroups();
+  }
+
+  /**
+   * Defines and return changhed column's filter
+   * @returns {object} filter object
+   */
+  filterChanged() {
+    if (!this.filters)
+      return false;
+    for (let i = 0; i < this.options.columns.length; i++) {
+      let column = this.options.columns[i];
+      if (!column.filter)
+        continue;
+     let filter = this.filters[column.name];
+     if (filter && filter.phrase != column.filterKeywords) {
+       filter.phrase = column.filterKeywords;
+       return filter;//{ col: column, filterKeywords: column.filterKeywords };
+      }
+    }
+    return false;
+  }
+
+  /** bgmd
+  * create filter's helper object
+  */
+  createFilters() {
+    if (this.filters) {
+      return this.headerReordered();
+    }
+    this.filters = {
+      list: []
+    };
+    const self = this;
+    this.options.columns.forEach((col, index) => {
+      if (!col.filter)
+        return;  
+      let filter = {
+        name: col.name,
+        prop: col.prop,
+        rowsBefore: null,
+        rowsAfter: null,
+        phrase: null,
+        order: index
+      };
+      self.filters.list.push(filter);
+      self.filters[col.name] = filter;
+    });
+  }
+
+  /**
+   * Change filter objects after columns reordered
+   * @returns {object} filtered rows
+   */
+  headerReordered() {
+    //console.info('onHeaderReorder');
+    if (!this.filters || !this.filters.list.length)
+      return;  
+    const initRows = this.filters.list[0].rowsBefore;
+    //const list = this.filters.list;
+    this.filters.list = [];
+    const self = this;
+    this.options.columns.forEach((col, index) => {
+      if (!col.filter)
+        return;  
+      let filter = self.filters[col.name];
+      filter.rowsBefore = null;
+      filter.rowsAfter = null;
+      filter.order = index;
+      self.filters.list.push(filter);
+    });
+    if (this.filters.list.length) {
+      this.filters.list[0].rowsBefore = initRows;
+      this.filters.list[0].rowsAfter = initRows;
+    }
+    //filter rows again starting with first column
+    this.rows = this.doFilter(this.filters.list[0]);
+  }
+  
+  /** bgmd
+   * Filter pipeline
+   * @param {object} filter 
+   * @return {object} filtered rows 
+   */
+  filterPipe(filter) {
+    let result = this.rows;
+    for (let i = filter.order; i < this.filters.list.length; i++) {
+      let f = this.filters.list[i];
+      if (i > filter.order) {
+        if (!f.phrase) {
+          f.rowsBefore = null;
+          f.rowsAfter = null;
+          continue;
+        }
+        f.rowsBefore = result;
+      }
+      result = f.rowsAfter = f.rowsBefore.filter(function (row) {
+        return (row[f.prop] && row[f.prop].toLowerCase().indexOf(f.phrase) !== -1) || !f.phrase;
+      });
+    }  
+    return result;
+  }
+
+  /**
+   * Row filtering 
+   * @param {object} current changed filter object 
+   * @returns {object} filtered rows
+   */
+  doFilter(filter) {
+    if (!this.rows || !this.filters || !this.filters.list.length) {
+      return this.rows;
+    }
+    if (this.filters.list.length && !this.filters.list[0].rowsBefore) {
+      this.filters.list[0].rowsBefore = this.rows;
+      this.filters.list[0].rowsAfter = this.rows;
+    }
+    if (filter) {
+      if (!filter.rowsBefore) {
+        let i = filter.order - 1;
+        while (i >= 0) {
+          let prev = this.filters.list[i];
+          if (prev.rowsAfter) {
+            filter.rowsBefore = prev.rowsAfter;
+            break;
+          }
+          i--;
+        }
+      }
+    }
+    else {
+      filter = this.filters.list[0];
+      filter.rowsBefore = this.rows;
+    }  
+    let rows = this.filterPipe(filter); 
+    return rows;
   }
 
 }
