@@ -129,9 +129,16 @@ export default function DataTableDirective($window, $timeout, $parse) {
 
             if (visible) {
               resize();
+              $timeout(checkSize, 500);
             } else {
               $timeout(checkVisibility, 100);
             }
+          };
+
+          const checkSize = () => {
+            let el1 = document.getElementsByClassName('dt-body');
+            if ($elm[0].offsetHeight - el1[0].offsetHeight > 100) 
+              resize();
           };
 
           checkVisibility();
