@@ -71,10 +71,11 @@ export default class BodyController {
     }, true);
   
     let self = this;
-    this.$scope.$watchCollection('body.rows', this.rowsUpdated.bind(this));/*(newVal) => {
-      //self.rows = self.doFilter();
-      self.rowsUpdated(self.rows);
-    });*/
+    this.$scope.$watchCollection('body.rows', (newVal, oldVal) => { //this.rowsUpdated.bind(this));
+      if (newVal && oldVal && newVal.length != oldVal.length)
+        self.filteredRows = self.doFilter();
+      self.rowsUpdated(newVal, oldVal);
+    });
   }
 
   setTreeAndGroupColumns() {
@@ -171,9 +172,9 @@ export default class BodyController {
       }
 
       if (this.options.scrollbarV) {
-        const refresh = newVal && oldVal && (newVal.length === oldVal.length
-          || newVal.length < oldVal.length);
-
+        const refresh = newVal && oldVal && newVal.length != oldVal.length; 
+        /*const refresh = newVal && oldVal && (newVal.length === oldVal.length
+          || newVal.length < oldVal.length);*/
         this.getRows(refresh);
       } else {
         let rows = this.rows;

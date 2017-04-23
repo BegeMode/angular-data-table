@@ -365,7 +365,7 @@ export default class DataTableController {
     if (!this.$attrs.onMoveRow) {
       return this.$q.resolve();
     }  
-    let promise = this.onMoveRow(rowFrom, rowTo);
+    let promise = this.onMoveRow({ rowFrom: rowFrom, rowTo: rowTo });
     if (!(promise instanceof this.$q)) {
       throw new Error('onMoveRow must return $q instance');
     }
