@@ -42,9 +42,7 @@ export default function DataTableDirective($window, $timeout, $parse) {
                      on-resize="dt.onResized(column, width)"
                      selected-rows="dt.selected"
                      all-rows="dt.rows"
-                     on-sort="dt.onSorted()"
-                     on-filtered="dt.onFilter(column, filterKeywords)"
-                     on-reordered="dt.onHeaderReorder()">
+                     on-sort="dt.onSorted()">
           </dt-header>
           <dt-body rows="dt.rows"
                    selected="dt.selected"
@@ -131,9 +129,16 @@ export default function DataTableDirective($window, $timeout, $parse) {
 
             if (visible) {
               resize();
+              $timeout(checkSize, 500);
             } else {
               $timeout(checkVisibility, 100);
             }
+          };
+
+          const checkSize = () => {
+            let el1 = document.getElementsByClassName('dt-body');
+            if ($elm[0].offsetHeight - el1[0].offsetHeight > 100) 
+              resize();
           };
 
           checkVisibility();

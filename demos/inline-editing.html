@@ -45,6 +45,10 @@
         background:#f6f7f8;
       }
 
+      .dt-row{
+        border: 1px solid red;
+      }
+
       a{
         cursor: pointer;
         color: #0000FF;
@@ -73,12 +77,14 @@
 
         module.controller('HomeController', function($scope, $http){
           $scope.options = {
-            rowHeight: 50,
+            rowHeight: 52,
             headerHeight: 100,
             footerHeight: false,
             scrollbarV: true,
             rowDraggable: true,
             editFilter: (row) => { return row.name != 'Ethel Price'; },
+            actionFilter: (row) => { return row.name != 'Ethel Price'; },
+            reorderable: true,
             columns: [
               {
                 name: "Name",
@@ -107,7 +113,7 @@
               {
                 name: 'Actions',
                 width: 200,
-                template: '<a ng-click="destroyApp($row)">DELETE</a> | <a ng-click="display($row, $rowCtrl);">LOG</a>' 
+                template: '<div ng-if="actionFilter($row)"><a ng-click="destroyApp($row)">DELETE</a> | <a ng-click="display($row, $rowCtrl);">LOG</a></div>' 
               }
             ]
           };
@@ -136,6 +142,9 @@
             console.log(row);
             var ch = rowCtrl.rowChanges();
             console.log('rowChanges', ch);
+          }
+          $scope.actionFilter = function(row) { 
+            return row.name != 'Ethel Price'; 
           }
 
         });

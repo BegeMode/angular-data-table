@@ -149,7 +149,22 @@ export const TableDefaults = {
    * @type {function}
    * @return {boolean}
    */
-  editFilter: null
+  editFilter: null,
+  /**
+   * True if data in table is read only. To need for optimization in CellDirective ($scope.$watch('cell.row'))
+   * @type {boolean}
+   */
+  readOnly: false,
+  /**
+   * Placeholder for filter field
+   * @type {boolean}
+   */
+  filterPlaceholder: 'Filter',
+  /**
+   * If yes then tree will be toggled by double click
+   * @type {boolean}
+   */
+  treeToggleDblClick: false,
 };
 
 /**

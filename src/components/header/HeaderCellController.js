@@ -45,7 +45,7 @@ export default class HeaderCellController {
       width: `${this.column.width}px`,
       minWidth: `${this.column.minWidth}px`,
       maxWidth: `${this.column.maxWidth}px`,
-      height: `${this.column.height}px`,
+      height: this.column.height? `${this.column.height}px` : '100%',
     };
   }
 

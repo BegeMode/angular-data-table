@@ -1,12 +1,28 @@
 import KEYS from '../../utils/keys';
+import { isOldAngular } from '../../utils/utils';
 
 export default class SelectionController {
 
   /* @ngInject*/
   constructor($scope) {
+    this.$scope = $scope;
     this.body = $scope.body;
     this.options = $scope.body.options;
     this.selected = $scope.body.selected;
+
+    if (isOldAngular()) {
+      this.$onInit();
+    }
+  }
+
+  $onInit() {
+    this.init();
+  }
+
+  init() {
+    if (this.options && this.options.columns) {
+      this.hasTreeColumn = this.options.columns.find(c => c.isTreeColumn) != null;
+    }
   }
 
   /**
@@ -61,7 +77,12 @@ export default class SelectionController {
       event.preventDefault();
       this.selectRow(event, index, row);
     }
-
+    if (this.options.treeToggleDblClick && this.hasTreeColumn) {
+      this.$scope.$broadcast('rowDblClick', {
+        row: row,
+        index: index
+      });
+    }
     this.body.onRowDblClick({ row });
   }
 

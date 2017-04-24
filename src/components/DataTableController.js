@@ -48,7 +48,6 @@ export default class DataTableController {
       if (newVal) {
         watch();
 
-        this.createFilters(); //bgmd
         this.onSorted();
       }
     });//, true);
@@ -115,13 +114,13 @@ export default class DataTableController {
     });
   }
 
-  setFilterTemplate() {
+  /*setFilterTemplate() {
     angular.forEach(this.options.columns, (column) => {
       if (column.filter) {
         column.headerFilterTemplate = `<input type="text" ng-model-options="{ debounce: 100 }" placeholder="Filter names" ng-click="prev($event)" ng-model="$parent.filterKeywords" style="width:100%;"/>`;
       }
     });
-  }
+  }*/
 
   /**
    * Calculate column groups and widths
@@ -234,114 +233,7 @@ export default class DataTableController {
       this.options.internal.setYOffset(0);
     }
   }
-  /** bgmd
-  * create filter's helper object
-  */
-  createFilters() {
-    this.filters = {
-      list: []
-    };
-    const self = this;
-    this.options.columns.forEach((col, index) => {
-      if (!col.filter)
-        return;  
-      let filter = {
-        name: col.name,
-        prop: col.prop,
-        rowsBefore: null,
-        rowsAfter: null,
-        phrase: null,
-        order: index
-      };
-      self.filters.list.push(filter);
-      self.filters[col.name] = filter;
-    });
-    if (this.filters.list.length) {
-      this.filters.list[0].rowsBefore = this.rows;
-      this.filters.list[0].rowsAfter = this.rows;
-    }
-  }
-
-  /** bgmd
-   * Process filter
-   * @param {object} column 
-   * @param {string} filterKeywords 
-   */
-  onFilter(column, filterKeywords) {
-    if (!this.rows) {
-      return;
-    }
-    let filter = this.filters[column.name];
-    if (!filter) {
-      return;
-    }
-    filter.phrase = filterKeywords;
-    if (!filter.rowsBefore) {
-      let i = filter.order - 1;
-      while (i >= 0) {
-        let prev = this.filters.list[i];
-        if (prev.rowsAfter) {
-          filter.rowsBefore = prev.rowsAfter;
-          break;
-        }
-        i--;
-      }
-    }
-    this.rows = this.filterPipe(filter); 
-  }
   
-  /** bgmd
-   * Filter pipeline
-   * @param {object} filter 
-   * @return {object} filtered rows 
-   */
-  filterPipe(filter) {
-    let result = this.rows;
-    for (let i = filter.order; i < this.filters.list.length; i++) {
-      let f = this.filters.list[i];
-      if (i > filter.order) {
-        if (!f.phrase) {
-          f.rowsBefore = null;
-          f.rowsAfter = null;
-          continue;
-        }
-        f.rowsBefore = result;
-      }
-      result = f.rowsAfter = f.rowsBefore.filter(function (row) {
-        return row[f.prop].toLowerCase().indexOf(f.phrase) !== -1 || !f.phrase;
-      });
-    }  
-    return result;
-  }
-
-  /** bgmd
-   * Invoked when a columns reordered
-   */
-  onHeaderReorder() {
-    //console.info('onHeaderReorder');
-    if (!this.filters || !this.filters.list.length)
-      return;  
-    const initRows = this.filters.list[0].rowsBefore;
-    //const list = this.filters.list;
-    this.filters.list = [];
-    const self = this;
-    this.options.columns.forEach((col, index) => {
-      if (!col.filter)
-        return;  
-      let filter = self.filters[col.name];
-      filter.rowsBefore = null;
-      filter.rowsAfter = null;
-      filter.order = index;
-      self.filters.list.push(filter);
-    });
-    if (this.filters.list.length) {
-      this.filters.list[0].rowsBefore = initRows;
-      this.filters.list[0].rowsAfter = initRows;
-    }
-    //filter rows again starting with first column
-    this.rows = this.filterPipe(this.filters.list[0]);
-  }
-
   /**
    * Invoked when a tree is collasped/expanded
    * @param  {row model}
@@ -473,7 +365,7 @@ export default class DataTableController {
     if (!this.$attrs.onMoveRow) {
       return this.$q.resolve();
     }  
-    let promise = this.onMoveRow(rowFrom, rowTo);
+    let promise = this.onMoveRow({ rowFrom: rowFrom, rowTo: rowTo });
     if (!(promise instanceof this.$q)) {
       throw new Error('onMoveRow must return $q instance');
     }

@@ -79,7 +79,8 @@
         expanded="expanded"
         on-tree-toggle="treeToggled(cell)"
         on-tree-loader="treeLoader(cell, row)"
-        on-move-row="moveRow(rowFrom, rowTo)">
+        on-move-row="moveRow(rowFrom, rowTo)"
+        on-row-dbl-click="dblClick(row)">
     </dtable>
 
     <script src="../jspm_packages/system.js"></script>
@@ -95,9 +96,10 @@
             rowHeight: 50,
             footerHeight: false,
             scrollbarV: true,
-            headerHeight: 50,
+            headerHeight: 80,
             columnMode: 'flex',
             rowDraggable: true,
+            treeToggleDblClick: true,
             columns: [
               { 
                 name: "Company", 
@@ -105,17 +107,20 @@
                 flexGrow: 2,
                 isTreeColumn: true,
                 relationProp: 'parentCompany',
-                parentRelationProp: 'company'
+                parentRelationProp: 'company',
+                filter:'text'
               },
               { 
                 name: "Revenue", 
                 flexGrow: 1,
-                prop: "revenue" 
+                prop: "revenue", 
+                filter:'text'
               },
               { 
                 name: "Sales", 
                 flexGrow: 1,
-                prop: "sales"
+                prop: "sales",
+                filter:'text'
               }
             ]
           };
@@ -133,6 +138,10 @@
             return $q.resolve();
           }
 
+          $scope.dblClick = function(row) { 
+            console.log('onRowDblClick', row); 
+          }
+
           $scope.treeLoader = function(cell, row){
             console.log('treeLoader!');
             var data = [{
@@ -147,7 +156,7 @@
               parentCompany: 'Apple XYZ South2'
             }];
             //return Promise.resolve(data);
-            return new Promise(function(resolve, reject){
+            return new $q(function(resolve, reject){
               setTimeout(() => {
                 resolve(data);
               }, 2000);

@@ -94,8 +94,14 @@ export default function PopoverDirective($animate, $compile, $document, $http,
        * Displays the popover on the page
        */
       function display() {
+        if ($scope.$parent.$column && ($scope.$parent.$column.width - 5) >= $element.width()) {
+          //Text has not overflowed
+          return;
+        }
         // Cancel exit timeout
         cancelTimeout();
+        //refresh popover text
+        $scope.options.text = $attributes.popoverText;
 
         const elm = $document[0].getElementById($scope.options.popoverId);
         if ($scope.popover && elm) return;
@@ -223,7 +229,8 @@ export default function PopoverDirective($animate, $compile, $document, $http,
           popover.css({
             top: `${top}px`,
             left: `${left}px`,
-            height: '300px',
+            height: popoverDimensions.height, //'300px',
+            'overflow-x': 'hidden'
           });
 
           if ($scope.options.showCaret) {
