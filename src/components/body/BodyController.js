@@ -72,8 +72,10 @@ export default class BodyController {
   
     let self = this;
     this.$scope.$watchCollection('body.rows', (newVal, oldVal) => { //this.rowsUpdated.bind(this));
-      if (newVal && oldVal && newVal.length != oldVal.length)
+      if (self.treeColumn && !self._dueFiltering_ && newVal && oldVal && newVal.length != oldVal.length) {
         self.filteredRows = self.doFilter();
+      }
+      self._dueFiltering_ = false;
       self.rowsUpdated(newVal, oldVal);
     });
   }
@@ -878,6 +880,7 @@ export default class BodyController {
     if (!this.rows || !this.filters || !this.filters.list.length) {
       return this.rows;
     }
+    this._dueFiltering_ = true;
     if (this.filters.list.length && !this.filters.list[0].rowsBefore) {
       this.filters.list[0].rowsBefore = this.rows;
       this.filters.list[0].rowsAfter = this.rows;

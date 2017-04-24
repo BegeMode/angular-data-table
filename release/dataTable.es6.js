@@ -3,6 +3,28 @@ import 'angular';
 /* eslint-disable no-extend-native, no-bitwise */
 
 (function extendArray() {
+  // Taken from Reid's answer at http://stackoverflow.com/questions/5306680/move-an-array-element-from-one-array-position-to-another
+  /**
+   * Array.prototype.move() - move element with shift from old_index to new_index
+   */
+  if(!Array.prototype.move) {
+    Array.prototype.move = function (old_index, new_index) {
+        while (old_index < 0) {
+            old_index += this.length;
+        }
+        while (new_index < 0) {
+            new_index += this.length;
+        }
+        if (new_index >= this.length) {
+            var k = new_index - this.length;
+            while ((k--) + 1) {
+                this.push(undefined);
+            }
+        }
+        this.splice(new_index, 0, this.splice(old_index, 1)[0]);
+        return this; // for testing purposes
+    };
+  }
   /**
    * Array.prototype.find()
    * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find
@@ -224,73 +246,128 @@ function SortableDirective() {
 }
 
 /**
+ * Sortable Directive
+ * http://jsfiddle.net/RubaXa/zLq5J/3/
+ * https://jsfiddle.net/hrohxze0/6/
+ * @param {function}
+ */
+function DraggableRowDirective() {
+  return {
+    restrict: 'A',
+    scope: {
+      isDraggable: '=draggableRow',
+      onDrop: '&',
+    },
+    link($scope, $element) {
+      let dragEl;
+      let nextEl;
+      let toEl;
+
+      function findParentDraggable(elem) {
+        var el = elem;
+        do {
+          if (el.hasAttribute && el.hasAttribute('draggable')) {
+            return el;
+          }
+        }
+        while (el = el.parentNode);
+        return null;
+      }
+
+      function onDragEnter(e) {
+        console.log(dragEl.style.cursor);
+        toEl = e.target;
+      }
+
+      function onDragEnd(evt) {
+        evt.preventDefault();
+
+        dragEl.classList.remove('dt-clone');
+
+        $element.off('dragend', onDragEnd);
+        $element.off('dragenter', onDragEnter);
+
+        const target = findParentDraggable(toEl);
+        const indexFrom = +dragEl.getAttribute('rowindex');
+        const indexTo = +target.getAttribute('rowindex');
+        //console.log('onDragEnd', dragEl, target);
+        if (target !== dragEl) {
+          $scope.onDrop({
+            event: evt,
+            indexFrom: indexFrom,
+            indexTo: indexTo
+          });
+        }
+      }
+
+      function onDragStart(evt) {
+        if (!$scope.isDraggable) return;
+
+        evt = evt.originalEvent || evt;
+
+        dragEl = evt.target;
+        nextEl = dragEl.nextSibling;
+        dragEl.classList.add('dt-clone');
+
+        evt.dataTransfer.effectAllowed = 'move';
+        evt.dataTransfer.setData('Text', dragEl.textContent);
+        
+        $element.on('dragenter', onDragEnter);
+        $element.on('dragend', onDragEnd);
+      }
+
+      $element.on('dragstart', onDragStart);
+
+      $scope.$on('$destroy', () => {
+        $element.off('dragstart', onDragStart);
+      });
+    },
+  };
+}
+
+/**
  * Default Table Options
  * @type {object}
  */
 const TableDefaults = {
 
-  // Enable vertical scrollbars
-  scrollbarV: true,
-
-  // Enable horz scrollbars
-  // scrollbarH: true,
-
-  // The row height, which is necessary
-  // to calculate the height for the lazy rendering.
-  rowHeight: 30,
-
-  // flex
-  // force
-  // standard
-  columnMode: 'standard',
-
-  // Loading message presented when the array is undefined
-  loadingMessage: 'Loading...',
-
-  // Message to show when array is presented
-  // but contains no values
-  emptyMessage: 'No data to display',
-
-  // The minimum header height in pixels.
-  // pass falsey for no header
-  headerHeight: 30,
-
-  // The minimum footer height in pixels.
-  // pass falsey for no footer
-  footerHeight: 0,
-
-  paging: {
-    // if external paging is turned on
-    externalPaging: false,
-
-    // Page size
-    size: undefined,
-
-    // Total count
-    count: 0,
-
-    // Page offset
-    offset: 0,
-
-    // Loading indicator
-    loadingIndicator: false,
-  },
-
-  // if users can select itmes
-  selectable: false,
-
-  // if users can select mutliple items
-  multiSelect: false,
-
-  // checkbox selection vs row click
+  /**
+   * Checkbox selection (true) vs. row click (false)
+   * @type {boolean}
+   */
   checkboxSelection: false,
 
-  // if you can reorder columns
-  reorderable: true,
+  /**
+   * Options: 'flex', 'force', 'standard'
+   * @type {string}
+   */
+  columnMode: 'standard',
 
-  // sorting by single or multiple columns
-  sortType: 'multiple',
+  /**
+   * Message to show when array is presented
+   * but contains no values
+   * @type {string}
+   */
+  emptyMessage: 'No data to display',
 
+  /**
+   * The minimum footer height in pixels.
+   * pass falsey for no footer
+   * @type {number}
+   */
+  footerHeight: 0,
+
+  /**
+   * The minimum header height in pixels.
+   * pass falsey for no header
+   * @type {number}
+   */
+  headerHeight: 30,
+
+  /**
+   * Internal options
+   * @type {Object}
+   */
   internal: {
     offsetX: 0,
     offsetY: 0,
@@ -298,6 +375,123 @@ const TableDefaults = {
     bodyHeight: 300,
   },
 
+  /**
+   * Loading indicator
+   * @type {boolean}
+   */
+  loadingIndicator: false,
+
+  /**
+   *Loading message presented when the array is undefined
+   * @type {boolean}
+   */
+  loadingMessage: 'Loading...',
+
+  /**
+   * Whether multiple rows can be selected at once.
+   * @type {boolean}
+   */
+  multiSelect: false,
+
+  /**
+   * The default paging Options
+   * @type {Object}
+   */
+  paging: {
+    /**
+     * Total count
+     * @type {number}
+     */
+    count: 0,
+
+    /**
+     * Page offset
+     * @type {number}
+     */
+    offset: 0,
+
+    /**
+     * The paging mode to use: 'internal', 'external', null (none)
+     * @type: {string}
+     */
+    mode: null,
+
+    /**
+     * Page size
+     * @type {number}
+     */
+    size: 10,
+  },
+
+  /**
+   * Whether columns can be reordered.
+   * @type {boolean}
+   */
+  reorderable: false,
+
+  /**
+   * The row height, which is necessary to calculate
+   * the height for the lazy rendering.
+   * @type {number}
+   */
+  rowHeight: 30,
+
+  /**
+   * Enable vertical scrollbars
+   * @type {boolean}
+   */
+  scrollbarV: true,
+
+  /**
+   * Whether rows are selectable.
+   * @type {boolean}
+   */
+  selectable: false,
+
+  /**
+   * If yes then the column can be sorted.
+   * @type {boolean}
+   */
+  sortable: true,
+
+  // sorting by single or multiple columns
+  /**
+   * Whether sorting can be done on single or multiple columns.
+   * @type {string}
+   */
+  sortType: 'multiple',
+
+  /**
+   * Whether sorting modifier key is active.
+   * @type {boolean}
+   */
+  modifierActive: true,
+  /**
+   * If yes then the rows can be drag and drop.
+   * @type {boolean}
+   */
+  rowDraggable: false,
+  /**
+   * This function uses in inline edit for stopping edit concrete row
+   * @type {function}
+   * @return {boolean}
+   */
+  editFilter: null,
+  /**
+   * True if data in table is read only. To need for optimization in CellDirective ($scope.$watch('cell.row'))
+   * @type {boolean}
+   */
+  readOnly: false,
+  /**
+   * Placeholder for filter field
+   * @type {boolean}
+   */
+  filterPlaceholder: 'Filter',
+  /**
+   * If yes then tree will be toggled by double click
+   * @type {boolean}
+   */
+  treeToggleDblClick: false,
 };
 
 /**
@@ -306,78 +500,139 @@ const TableDefaults = {
  */
 const ColumnDefaults = {
 
-  // pinned to the left
-  frozenLeft: false,
-
-  // pinned to the right
-  frozenRight: false,
-
-  // body cell css class name
-  className: undefined,
-
-  // header cell css class name
-  headerClassName: undefined,
-
-  // The grow factor relative to other columns. Same as the flex-grow
-  // API from http://www.w3.org/TR/css3-flexbox/. Basically,
-  // take any available extra width and distribute it proportionally
-  // according to all columns' flexGrow values.
-  flexGrow: 0,
-
-  // Minimum width of the column.
-  minWidth: 100,
-
-  // Maximum width of the column.
-  maxWidth: undefined,
-
-  // The width of the column, by default (in pixels).
-  width: 150,
-
-  // If yes then the column can be resized, otherwise it cannot.
-  resizable: true,
-
-  // Custom sort comparator
-  // pass false if you want to server sort
-  comparator: undefined,
-
-  // If yes then the column can be sorted.
-  sortable: true,
-
-  // Default sort asecending/descending for the column
-  sort: undefined,
-
-  // If you want to sort a column by a special property
-  // See an example in demos/sort.html
-  sortBy: undefined,
-
-  // The cell renderer that returns content for table column header
-  headerRenderer: undefined,
-
-  // The cell renderer function(scope, elm) that returns React-renderable content for table cell.
-  cellRenderer: undefined,
-
-  // The getter function(value) that returns the cell data for the cellRenderer.
-  // If not provided, the cell data will be collected from row data instead.
-  cellDataGetter: undefined,
-
-  // Grows all rows by this column value
-  // Only one column can have this set, cannot be combined with isTreeColumn
-  group: false,
-
-  // Adds +/- button and makes a secondary call to load nested data
-  // Only one column can have this set, cannot be combined with isGroupColumn
-  isTreeColumn: false,
-
-  // Adds the checkbox selection to the column
-  isCheckboxColumn: false,
-
-  // Toggles the checkbox column in the header
-  // for selecting all values given to the grid
-  headerCheckbox: false,
-
-  // Whether the column can automatically resize to fill space in the table.
+  /**
+   * Whether the column can automatically resize to fill space in the table.
+   * @type {boolean}
+   */
   canAutoResize: true,
 
+  /**
+   * The getter function(value) that returns the cell data for the cellRenderer.
+   * If not provided, the cell data will be collected from row data instead.
+   * @type {function}
+   */
+  cellDataGetter: undefined,
+
+  /**
+   * The cell renderer function(scope, elm) that returns React-renderable content for table cell.
+   * @type {function}
+   */
+  cellRenderer: undefined,
+
+  /**
+   * body cell css class name
+   * @type {string}
+   */
+  className: undefined,
+
+  /**
+   * Custom sort comparator
+   * pass false if you want to server sort
+   * @type {function|boolean}
+   */
+  comparator: undefined,
+
+  /**
+   * The grow factor relative to other columns. Same as the flex-grow
+   * API from http://www.w3.org/TR/css3-flexbox/. Basically,
+   * take any available extra width and distribute it proportionally
+   * according to all columns' flexGrow values.
+   * @type {number}
+   */
+  flexGrow: 0,
+
+  /**
+   * Pinned to the left
+   * @type {boolean}
+   */
+  frozenLeft: false,
+
+  /**
+   * Pinned to the right
+   * @type {boolean}
+   */
+  frozenRight: false,
+
+  /**
+   * Grows all rows by this column value
+   * Only one column can have this set, cannot be combined with isTreeColumn
+   * @type {boolean}
+   */
+  group: false,
+
+  /**
+   * Toggles the checkbox column in the header
+   * for selecting all values given to the grid
+   * @type {boolean}
+   */
+  headerCheckbox: false,
+
+  /**
+   * header cell css class name
+   * @type {string}
+   */
+  headerClassName: undefined,
+
+  /**
+   * The cell renderer that returns content for table column header
+   * @type {function}
+   */
+  headerRenderer: undefined,
+
+  /**
+   * Adds the checkbox selection to the column
+   * @type {boolean}
+   */
+  isCheckboxColumn: false,
+
+  /**
+   * Adds +/- button and makes a secondary call to load nested data
+   * Only one column can have this set, cannot be combined with isGroupColumn
+   * @type {boolean}
+   */
+  isTreeColumn: false,
+
+  /**
+   * Maximum width of the column.
+   * @type {number}
+   */
+  maxWidth: undefined,
+
+  /**
+   * Minimum width of the column.
+   * @type {number}
+   */
+  minWidth: 100,
+
+  /**
+   * If yes then the column can be resized, otherwise it cannot.
+   * @type {boolean}
+   */
+  resizable: true,
+
+  /**
+   * If yes then the column can be sorted.
+   * @type {boolean}
+   */
+  sortable: true,
+  /**
+   * Default sort ('asc' or 'desc') for the column
+   * @type {string}
+   */
+  sort: undefined,
+
+  /**
+   * If you want to sort a column by a special property
+   * See an example in demos/sort.html
+   * @type {string}
+   */
+  sortBy: undefined,
+
+  /**
+   * The width of the column, by default (in pixels).
+   * @type {number}
+   */
+  width: 150,
 };
 
 /**
@@ -692,10 +947,12 @@ class DataTableController {
    */
 
   /* @ngInject */
-  constructor($scope, $filter) {
+  constructor($scope, $filter, $q, $attrs) {
     Object.assign(this, {
       $scope,
       $filter,
+      $q,
+      $attrs
     });
 
     if (isOldAngular()) {
@@ -730,7 +987,7 @@ class DataTableController {
 
         this.onSorted();
       }
-    });
+    });//, true);
   }
 
   /**
@@ -783,6 +1040,24 @@ class DataTableController {
       this.options.columns[i] = column;
     }
   }
+
+  /**
+   * If undefined, set column sortable property to table sortable property value
+   */
+  inheritColumnSortableProps() {
+    angular.forEach(this.options.columns, (column) => {
+      column.sortable = angular.isDefined(column.sortable) ?
+        column.sortable : this.options.sortable;
+    });
+  }
+
+  /*setFilterTemplate() {
+    angular.forEach(this.options.columns, (column) => {
+      if (column.filter) {
+        column.headerFilterTemplate = `<input type="text" ng-model-options="{ debounce: 100 }" placeholder="Filter names" ng-click="prev($event)" ng-model="$parent.filterKeywords" style="width:100%;"/>`;
+      }
+    });
+  }*/
 
   /**
    * Calculate column groups and widths
@@ -895,7 +1170,7 @@ class DataTableController {
       this.options.internal.setYOffset(0);
     }
   }
-
+  
   /**
    * Invoked when a tree is collasped/expanded
    * @param  {row model}
@@ -908,6 +1183,18 @@ class DataTableController {
     });
   }
 
+  /** bgmd
+   * Invoked when a tree leaf need to to lazy load
+   * @param  {row model}
+   * @param  {cell model}
+   */
+  onTreeLoad(row, cell) {
+    return this.onTreeLoader({
+      row: row,
+      cell: cell
+    });
+  }
+  
   /**
    * Invoked when the body triggers a page change.
    * @param  {offset}
@@ -1009,6 +1296,17 @@ class DataTableController {
     this.onRowDblClick({
       row,
     });
+  }
+
+  moveRow(rowFrom, rowTo) {
+    if (!this.$attrs.onMoveRow) {
+      return this.$q.resolve();
+    }  
+    let promise = this.onMoveRow({ rowFrom: rowFrom, rowTo: rowTo });
+    if (!(promise instanceof this.$q)) {
+      throw new Error('onMoveRow must return $q instance');
+    }
+    return promise;
   }
 }
 
@@ -1149,11 +1447,14 @@ function DataTableDirective($window, $timeout, $parse) {
       expanded: '=?',
       onSelect: '&',
       onSort: '&',
+      //onFilter: '&', //bgmd
       onTreeToggle: '&',
       onPage: '&',
       onRowClick: '&',
       onRowDblClick: '&',
       onColumnResize: '&',
+      onTreeLoader: '&',
+      onMoveRow: '&'
     },
     controllerAs: 'dt',
     template(element) {
@@ -1184,9 +1485,11 @@ function DataTableDirective($window, $timeout, $parse) {
                    column-widths="dt.columnWidths"
                    options="dt.options"
                    on-page="dt.onBodyPage(offset, size)"
-                   on-tree-toggle="dt.onTreeToggled(row, cell)">
+                   on-tree-toggle="dt.onTreeToggled(row, cell)"
+                   on-tree-loader="dt.onTreeLoad(row, cell)"   
+                   on-move-row="dt.moveRow(rowFrom, rowTo)">   
            </dt-body>
-          <dt-footer ng-if="dt.options.footerHeight"
+          <dt-footer ng-if="dt.options.footerHeight || dt.options.paging.mode"
                      ng-style="{ height: dt.options.footerHeight + 'px' }"
                      on-page="dt.onFooterPage(offset, size)"
                      paging="dt.options.paging">
@@ -1207,6 +1510,9 @@ function DataTableDirective($window, $timeout, $parse) {
             ctrl.options.columns = columns;
           }
 
+          //ctrl.setFilterTemplate(); //bgmd
+
+          ctrl.inheritColumnSortableProps();
           ctrl.transposeColumnDefaults();
           ctrl.options.internal.scrollBarWidth = ScrollbarWidth();
 
@@ -1254,9 +1560,16 @@ function DataTableDirective($window, $timeout, $parse) {
 
             if (visible) {
               resize();
+              $timeout(checkSize, 500);
             } else {
               $timeout(checkVisibility, 100);
             }
+          };
+
+          const checkSize = () => {
+            let el1 = document.getElementsByClassName('dt-body');
+            if ($elm[0].offsetHeight - el1[0].offsetHeight > 100) 
+              resize();
           };
 
           checkVisibility();
@@ -1361,10 +1674,10 @@ class HeaderController {
 
   /**
    * Invoked when a column sort direction has changed
-   * @param  {object} scope
-   * @param  {object} column
+   * @param  {object} sortedColumn
+   * @param  {object} modifierPressed
    */
-  onSorted(sortedColumn) {
+  onSorted(sortedColumn, modifierPressed) {
     // if sort type is single, then only one column can be sorted at once,
     // so we set the sort to undefined for the other columns
     function unsortColumn(column) {
@@ -1373,7 +1686,8 @@ class HeaderController {
       }
     }
 
-    if (this.options.sortType === 'single') {
+    if ((this.options.sortType === 'single' && !(this.options.modifierActive && modifierPressed)) ||
+        (this.options.sortType === 'multiple' && this.options.modifierActive && modifierPressed)) {
       this.columns.left.forEach(unsortColumn);
       this.columns.center.forEach(unsortColumn);
       this.columns.right.forEach(unsortColumn);
@@ -1383,6 +1697,15 @@ class HeaderController {
       column: sortedColumn,
     });
   }
+
+  /** bgmd
+   * Passes filter data to DataTableController
+   * @param {object} column 
+   * @param {string} filterKeywords 
+   */
+  onFilter(column, filterKeywords) {
+    this.onFiltered({ column: column, filterKeywords: filterKeywords });
+  };
 
   /**
    * Returns the styles by group for the headers.
@@ -1432,6 +1755,8 @@ function HeaderDirective($timeout) {
       selectedRows: '=?',
       allRows: '=',
       onSort: '&',
+      onFiltered: '&',
+      onReordered: '&',
       onResize: '&',
     },
     template: `
@@ -1444,7 +1769,8 @@ function HeaderDirective($timeout) {
                on-sortable-sort="columnsResorted(event, columnId)">
             <dt-header-cell
               ng-repeat="column in header.columns['left'] track by column.$id"
-              on-sort="header.onSorted(column)"
+              on-sort="header.onSorted(column, modifierPressed)"
+              on-filter="header.onFilter(column, filterKeywords)"
               options="header.options"
               sort-type="header.options.sortType"
               on-resize="header.onResized(column, width)"
@@ -1459,7 +1785,8 @@ function HeaderDirective($timeout) {
             <dt-header-cell
               ng-repeat="column in header.columns['center'] track by column.$id"
               on-checkbox-change="header.onCheckboxChanged()"
-              on-sort="header.onSorted(column)"
+              on-sort="header.onSorted(column, modifierPressed)"
+              on-filter="header.onFilter(column, filterKeywords)"
               sort-type="header.options.sortType"
               selected="header.isSelected()"
               on-resize="header.onResized(column, width)"
@@ -1475,7 +1802,8 @@ function HeaderDirective($timeout) {
             <dt-header-cell
               ng-repeat="column in header.columns['right'] track by column.$id"
               on-checkbox-change="header.onCheckboxChanged()"
-              on-sort="header.onSorted(column)"
+              on-sort="header.onSorted(column, modifierPressed)"
+              on-filter="header.onFilter(column, filterKeywords)"
               sort-type="header.options.sortType"
               selected="header.isSelected()"
               on-resize="header.onResized(column, width)"
@@ -1517,6 +1845,7 @@ function HeaderDirective($timeout) {
 
             return undefined;
           });
+          ctrl.onReordered(); //bgmd 
         });
       };
 
@@ -1552,6 +1881,17 @@ class HeaderCellController {
     if (this.$scope.$parent.$parent.$parent.$parent.dt) {
       this.dt = this.$scope.$parent.$parent.$parent.$parent.dt;
     }
+    //bgmd
+    if (this.column.filter) {
+      let self = this;
+      this.$scope.$watch(() => this.column.filterKeywords, function (newVal) {
+        if(!angular.isUndefined(newVal))
+        self.onFilter({
+          column: self.column,
+          filterKeywords: newVal,
+        });
+      });
+    }  
   }
   /**
    * Calculates the styles for the header cell directive
@@ -1562,7 +1902,7 @@ class HeaderCellController {
       width: `${this.column.width}px`,
       minWidth: `${this.column.minWidth}px`,
       maxWidth: `${this.column.maxWidth}px`,
-      height: `${this.column.height}px`,
+      height: this.column.height? `${this.column.height}px` : '100%',
     };
   }
 
@@ -1585,7 +1925,7 @@ class HeaderCellController {
   /**
    * Toggles the sorting on the column
    */
-  onSorted() {
+  onSorted(event) {
     if (this.column.sortable) {
       this.column.sort = NextSortDirection(this.sortType, this.column.sort);
 
@@ -1595,8 +1935,16 @@ class HeaderCellController {
 
       this.onSort({
         column: this.column,
+        modifierPressed: event.shiftKey,
       });
     }
+  }
+  /** bgmd
+  * Handle the click event in the filter input
+  * @param {object} event 
+  */
+  onFilterClick($event) {
+    $event.stopPropagation();
   }
 
   /**
@@ -1648,6 +1996,7 @@ function HeaderCellDirective($compile) {
       options: '=',
       column: '=',
       onSort: '&',
+      onFilter: '&', //bgmd
       sortType: '=',
       onResize: '&',
       selected: '=',
@@ -1659,6 +2008,7 @@ function HeaderCellDirective($compile) {
             draggable="true"
             data-id="{{column.$id}}"
             ng-style="hcell.styles()"
+            style="height:100%;"
             title="{{::hcell.column.name}}">
         <div resizable="hcell.column.resizable"
              on-resize="hcell.onResized(width, hcell.column)"
@@ -1670,9 +2020,12 @@ function HeaderCellDirective($compile) {
                    ng-change="hcell.checkboxChangeCallback()" />
           </label>
           <span class="dt-header-cell-label"
-                ng-click="hcell.onSorted()">
+                ng-click="hcell.onSorted($event)">
           </span>
-          <span ng-class="hcell.sortClass()"></span>
+          <span ng-class="hcell.sortClass()">{{hcell.column.sortPriority}}</span>
+          <div ng-if="hcell.column.filter">
+            <input type="{{hcell.column.filter}}" ng-model-options="{ debounce: 500 }" placeholder="{{hcell.options.filterPlaceholder + ' ' + hcell.column.name}}" ng-click="hcell.onFilterClick($event)" ng-model="hcell.column.filterKeywords" style="width:99%;"/>
+          </div>
         </div>
       </div>`,
     compile() {
@@ -1682,7 +2035,7 @@ function HeaderCellDirective($compile) {
 
           let cellScope;
 
-          if (ctrl.column.headerTemplate || ctrl.column.headerRenderer) {
+          if (ctrl.column.headerTemplate || ctrl.column.headerRenderer || ctrl.column.headerFilterTemplate) {
             cellScope = ctrl.options.$outer.$new(false);
 
             // copy some props
@@ -1691,15 +2044,27 @@ function HeaderCellDirective($compile) {
           }
 
           if (ctrl.column.headerTemplate) {
-            const elm = angular.element(`<span>${ctrl.column.headerTemplate.trim()}</span>`);
+            let el = `<span>${ctrl.column.headerTemplate.trim()}</span>`;
+            //if (ctrl.column.headerFilterTemplate)
+            //  el += '<br>' + ctrl.column.headerFilterTemplate;  
+            const elm = angular.element(el);
             angular.element(label).append($compile(elm)(cellScope));
           } else if (ctrl.column.headerRenderer) {
-            const elm = angular.element(ctrl.column.headerRenderer($elm));
+            let el = ctrl.column.headerRenderer($elm);
+            //if (ctrl.column.headerFilterTemplate)
+            //  el += '<br>' + ctrl.column.headerFilterTemplate;  
+            const elm = angular.element(el);
             angular.element(label).append($compile(elm)(cellScope)[0]);
           } else {
             let val = ctrl.column.name;
             if (angular.isUndefined(val) || val === null) val = '';
-            label.textContent = val;
+            /*if (ctrl.column.headerFilterTemplate) {
+              let el = `<span>${val}</span><br>` + ctrl.column.headerFilterTemplate;
+              const elm = angular.element(el);
+              angular.element(label).append($compile(elm)(cellScope));
+            }
+            else*/
+              label.textContent = val;
           }
         },
       };
@@ -1737,18 +2102,31 @@ class BodyController {
   init() {
     this.tempRows = [];
     this.watchListeners = [];
+    //bgmd
+    this.loading = [];
 
     this.setTreeAndGroupColumns();
     this.setConditionalWatches();
 
     this.$scope.$watch('body.options.columns', (newVal) => {
       if (newVal) {
-        const origTreeColumn = this.treeColumn;
-        const origGroupColumn = this.groupColumn;
+        let filter = this.filterChanged();
+        if (filter) {
+          if (this.treeColumn || this.groupColumn) {
+            this._applyFilter = filter;
+            this.rowsUpdated();
+          }
+          else
+            this.rows = this.doFilter(filter);
+          return;
+        }
+        const origTreeColumn = angular.copy(this.treeColumn);
+        const origGroupColumn = angular.copy(this.groupColumn);
 
         this.setTreeAndGroupColumns();
 
         this.setConditionalWatches();
+
 
         if ((this.treeColumn && origTreeColumn !== this.treeColumn) ||
           (this.groupColumn && origGroupColumn !== this.groupColumn)) {
@@ -1760,10 +2138,18 @@ class BodyController {
             this.refreshGroups();
           }
         }
+        this.createFilters();
       }
     }, true);
-
-    this.$scope.$watchCollection('body.rows', this.rowsUpdated.bind(this));
+  
+    let self = this;
+    this.$scope.$watchCollection('body.rows', (newVal, oldVal) => { //this.rowsUpdated.bind(this));
+      if (self.treeColumn && !self._dueFiltering_ && newVal && oldVal && newVal.length != oldVal.length) {
+        self.filteredRows = self.doFilter();
+      }
+      self._dueFiltering_ = false;
+      self.rowsUpdated(newVal, oldVal);
+    });
   }
 
   setTreeAndGroupColumns() {
@@ -1774,6 +2160,8 @@ class BodyController {
         this.groupColumn = this.options.columns.find(c => c.group);
       } else {
         this.groupColumn = undefined;
+        if(!this.treeColumn.parentRelationProp)
+          this.treeColumn.parentRelationProp = this.treeColumn.prop;
       }
     }
   }
@@ -1783,11 +2171,16 @@ class BodyController {
    */
   buildInternalPage() {
     let i;
+    let rowsIndex;
 
     this.tempRows.splice(0, this.tempRows.length);
 
     for (i = 0; i < this.options.paging.size; i += 1) {
-      this.tempRows[i] = this.rows[(this.options.paging.offset * this.options.paging.size) + i];
+      rowsIndex = (this.options.paging.offset * this.options.paging.size) + i;
+
+      if (angular.isDefined(this.rows[rowsIndex])) {
+        this.tempRows[i] = this.rows[rowsIndex];
+      }
     }
   }
 
@@ -1799,10 +2192,10 @@ class BodyController {
     }
 
     if (this.options &&
-        (this.options.scrollbarV ||
-            (!this.options.scrollbarV &&
-              this.options.paging &&
-              this.options.paging.size))) {
+      (this.options.scrollbarV ||
+        (!this.options.scrollbarV &&
+          this.options.paging &&
+          this.options.paging.size))) {
       let sized = false;
 
       this.watchListeners.push(this.$scope.$watch('body.options.paging.size', (newVal, oldVal) => {
@@ -1819,7 +2212,7 @@ class BodyController {
 
       this.watchListeners.push(this.$scope.$watch('body.options.paging.offset', (newVal) => {
         if (this.options.paging.size) {
-          if (!this.options.paging.externalPaging) {
+          if (this.options.paging.mode === 'internal') {
             this.buildInternalPage();
           }
 
@@ -1835,10 +2228,14 @@ class BodyController {
   }
 
   rowsUpdated(newVal, oldVal) {
+    if (this.noNeedRowsUpdated) {
+      this.noNeedRowsUpdated = false;
+      return;
+    }
     if (!newVal) {
       this.getRows(true);
     } else {
-      if (!this.options.paging.externalPaging) {
+      if (this.options.paging.mode !== 'external') {
         this.options.paging.count = newVal.length;
       }
 
@@ -1849,9 +2246,9 @@ class BodyController {
       }
 
       if (this.options.scrollbarV) {
-        const refresh = newVal && oldVal && (newVal.length === oldVal.length
-          || newVal.length < oldVal.length);
-
+        const refresh = newVal && oldVal && newVal.length != oldVal.length; 
+        /*const refresh = newVal && oldVal && (newVal.length === oldVal.length
+          || newVal.length < oldVal.length);*/
         this.getRows(refresh);
       } else {
         let rows = this.rows;
@@ -1862,7 +2259,7 @@ class BodyController {
           rows = this.buildGroups();
         }
 
-        if (this.options.paging.externalPaging) {
+        if (this.options.paging.mode === 'external') {
           // We're using external paging
           const idxs = this.getFirstLastIndexes();
           let idx = idxs.first;
@@ -1871,7 +2268,7 @@ class BodyController {
           while (idx < idxs.last) {
             this.tempRows.push(rows[idx += 1]);
           }
-        } else if (this.options.paging.size) {
+        } else if (this.options.paging.mode === 'internal') {
           // We're using internal paging
           this.buildInternalPage();
         } else {
@@ -1892,9 +2289,9 @@ class BodyController {
 
     if (this.options.scrollbarV) {
       firstRowIndex = Math.max(Math.floor((
-          this.options.internal.offsetY || 0) / this.options.rowHeight, 0), 0);
+        this.options.internal.offsetY || 0) / this.options.rowHeight, 0), 0);
       endIndex = Math.min(firstRowIndex + this.options.paging.size, this.count);
-    } else if (this.options.paging.externalPaging) {
+    } else if (this.options.paging.mode === 'external') {
       firstRowIndex = Math.max(this.options.paging.offset * this.options.paging.size, 0);
       endIndex = Math.min(firstRowIndex + this.options.paging.size, this.count);
     } else {
@@ -1998,9 +2395,20 @@ class BodyController {
     const parentProp = this.treeColumn ?
       this.treeColumn.relationProp :
       this.groupColumn.prop;
+    let treeProp = '';
+    if(this.treeColumn)
+      treeProp = this.treeColumn.parentRelationProp; //bgmd
 
     for (let i = 0, len = this.rows.length; i < len; i += 1) {
       const row = this.rows[i];
+
+      //bgmd for lazy load
+      if (row._lazyChildren) {
+        if (treeProp && !this.rowsByGroup[row[treeProp]]) {
+          this.rowsByGroup[row[treeProp]] = [];
+        }
+      }
+
       // build groups
       const relVal = row[parentProp];
       if (relVal) {
@@ -2013,10 +2421,10 @@ class BodyController {
 
       // build indexes
       if (this.treeColumn) {
-        const prop = this.treeColumn.prop;
+        const prop = this.treeColumn.parentRelationProp;
         this.index[row[prop]] = row;
 
-        if (angular.isUndefined(row[parentProp])) {
+        if (!row[parentProp]) {
           row.$$depth = 0;
         } else {
           let parent = this.index[row[parentProp]];
@@ -2036,7 +2444,8 @@ class BodyController {
           row.$$depth = parent.$$depth + 1;
 
           if (parent.$$children) {
-            parent.$$children.push(row[prop]);
+            if(!parent.$$children.includes(row[prop]))
+              parent.$$children.push(row[prop]);
           } else {
             parent.$$children = [row[prop]];
           }
@@ -2087,6 +2496,43 @@ class BodyController {
   }
 
   /**
+   * Returns if the row is draggable
+   * @param  {row}
+   * @return {Boolean}
+   */
+  isDraggable(row){
+    return this.options.rowDraggable;
+  }
+  
+  /**
+   * handles `dragend` event
+   * @param {object} event 
+   * @param {object} row 
+   * @param {object} rowTo 
+   */ 
+  onDropRow(event, indexFrom, indexTo){
+    const from = this.rows.find((value) => value.$$index == indexFrom);
+    const parent = this.rows.find((value) => value.$$index == indexTo);
+    let self = this;
+    this.onMoveRow({ rowFrom: from, rowTo: parent }).then(() => {
+      if (self.treeColumn) {
+        //change parent
+        from[self.treeColumn.relationProp] = parent[self.treeColumn.parentRelationProp];
+        self.buildRowsByGroup();
+        self.refreshTree();
+      } else {
+        //merely replace
+        self.rows.move(indexFrom, indexTo);
+        if (self.groupColumn) {
+          self.refreshGroups();
+        }
+        else
+          self.getRows(true);
+      }
+    }).catch((err) => console.error(err));  
+  }
+
+  /**
    * Creates a tree of the existing expanded values
    * @return {array} the built tree
    */
@@ -2094,15 +2540,28 @@ class BodyController {
     const temp = [];
     const self = this;
 
+    if (!this.filteredRows)
+      this.filteredRows = this.rows;    
+    //rows filtering
+    let flt = false;
+    if (this._applyFilter) {
+      this.filteredRows = this.doFilter(this._applyFilter);
+      this._applyFilter = null;
+      flt = true;
+    }
+    
     function addChildren(fromArray, toArray, level) {
       fromArray.forEach((row) => {
         const relVal = row[self.treeColumn.relationProp];
-        const key = row[self.treeColumn.prop];
+        const key = row[self.treeColumn.parentRelationProp];
         const groupRows = self.rowsByGroup[key];
+        if (flt && groupRows && groupRows.length > 0)
+          self.expanded[key] = true;  
         const expanded = self.expanded[key];
 
         if (level > 0 || !relVal) {
-          toArray.push(row);
+          if (self.filteredRows.includes(row))
+            toArray.push(row);
           if (groupRows && groupRows.length > 0 && expanded) {
             addChildren(groupRows, toArray, level + 1);
           }
@@ -2124,6 +2583,9 @@ class BodyController {
     if ((this.treeColumn || this.groupColumn) && !this.rowsByGroup) {
       return false;
     }
+
+    //clear $$index
+    this.tempRows.forEach((value) => delete value.$$index);
 
     let temp;
 
@@ -2173,7 +2635,6 @@ class BodyController {
     if (this.options.internal && this.options.internal.styleTranslator) {
       this.options.internal.styleTranslator.update(this.tempRows);
     }
-
     return this.tempRows;
   }
 
@@ -2241,7 +2702,7 @@ class BodyController {
       // if i am a child
       styles['dt-leaf'] = this.rowsByGroup[row[this.treeColumn.relationProp]];
       // if i have children
-      styles['dt-has-leafs'] = this.rowsByGroup[row[this.treeColumn.prop]];
+      styles['dt-has-leafs'] = this.rowsByGroup[row[this.treeColumn.parentRelationProp]];
       // the depth
       styles[`dt-depth-${row.$$depth}`] = true;
     }
@@ -2265,13 +2726,27 @@ class BodyController {
    */
   getRowExpanded(row) {
     if (this.treeColumn) {
-      return this.expanded[row[this.treeColumn.prop]];
+      return row && this.treeColumn.parentRelationProp? this.expanded[row[this.treeColumn.parentRelationProp]] : false;
     } else if (this.groupColumn) {
       return this.expanded[row.name];
     }
 
     return undefined;
   }
+
+   /**  bgmd
+   * Calculates if a row is loading data now  for tree grids.
+   * @param  {row}
+   * @return {boolean}
+   */
+  getRowLoading(row) {
+    if (this.treeColumn) {
+      return this.loading[row[this.treeColumn.parentRelationProp]];
+    } else if (this.groupColumn) {
+      return this.loading[row.name];
+    }
+  }
+
 
   refresh(type) {
     if (this.options.scrollbarV) {
@@ -2291,7 +2766,7 @@ class BodyController {
   getRowHasChildren(row) {
     if (!this.treeColumn) return undefined;
 
-    const children = this.rowsByGroup[row[this.treeColumn.prop]];
+    const children = this.rowsByGroup[row[this.treeColumn.parentRelationProp]];
 
     return angular.isDefined(children) || (children && !children.length);
   }
@@ -2306,7 +2781,31 @@ class BodyController {
    * @param  {cell model}
    */
   onTreeToggled(row, cell) {
-    const val = row[this.treeColumn.prop];
+    const val = row[this.treeColumn.parentRelationProp];
+    //bgmd 
+    var self = this;
+    if (row._lazyChildren && !row._loaded_) {
+      this.expanded[val] = false;
+      this.loading[val] = true;
+      this.onTreeLoad(row, cell).then(function (data) {
+        row._loaded_ = true;
+        self.rows = self.rows.concat(data);
+        self.noNeedRowsUpdated = true;
+        self.buildRowsByGroup();
+        self.filteredRows = self.doFilter();
+        self.onTreeToggledProcess(row, cell);
+        self.loading[val] = false;
+      }).catch(function (error) {
+        self.loading[val] = false;
+        console.error(error);
+      });
+    }
+    else
+      this.onTreeToggledProcess(row, cell);
+  }
+
+  onTreeToggledProcess(row, cell) {
+    const val = row[this.treeColumn.parentRelationProp];
     this.expanded[val] = !this.expanded[val];
 
     this.refreshTree();
@@ -2316,6 +2815,19 @@ class BodyController {
       cell,
     });
   }
+
+  /** bgmd
+   * Tree leap load event from a cell
+   * @param  {row model}
+   * @param  {cell model}
+   */
+  onTreeLoad(row, cell) {
+    return this.onTreeLoader({
+      row: row,
+      cell: cell
+    });
+  }
+
 
   refreshGroups() {
     this.refresh(TREE_TYPES.GROUP);
@@ -2330,6 +2842,142 @@ class BodyController {
 
     this.refreshGroups();
   }
+
+  /**
+   * Defines and return changhed column's filter
+   * @returns {object} filter object
+   */
+  filterChanged() {
+    if (!this.filters)
+      return false;
+    for (let i = 0; i < this.options.columns.length; i++) {
+      let column = this.options.columns[i];
+      if (!column.filter)
+        continue;
+     let filter = this.filters[column.name];
+     if (filter && filter.phrase != column.filterKeywords) {
+       filter.phrase = column.filterKeywords;
+       return filter;//{ col: column, filterKeywords: column.filterKeywords };
+      }
+    }
+    return false;
+  }
+
+  /** bgmd
+  * create filter's helper object
+  */
+  createFilters() {
+    if (this.filters) {
+      return this.headerReordered();
+    }
+    this.filters = {
+      list: []
+    };
+    const self = this;
+    this.options.columns.forEach((col, index) => {
+      if (!col.filter)
+        return;  
+      let filter = {
+        name: col.name,
+        prop: col.prop,
+        rowsBefore: null,
+        rowsAfter: null,
+        phrase: null,
+        order: index
+      };
+      self.filters.list.push(filter);
+      self.filters[col.name] = filter;
+    });
+  }
+
+  /**
+   * Change filter objects after columns reordered
+   * @returns {object} filtered rows
+   */
+  headerReordered() {
+    //console.info('onHeaderReorder');
+    if (!this.filters || !this.filters.list.length)
+      return;  
+    const initRows = this.filters.list[0].rowsBefore;
+    //const list = this.filters.list;
+    this.filters.list = [];
+    const self = this;
+    this.options.columns.forEach((col, index) => {
+      if (!col.filter)
+        return;  
+      let filter = self.filters[col.name];
+      filter.rowsBefore = null;
+      filter.rowsAfter = null;
+      filter.order = index;
+      self.filters.list.push(filter);
+    });
+    if (this.filters.list.length) {
+      this.filters.list[0].rowsBefore = initRows;
+      this.filters.list[0].rowsAfter = initRows;
+    }
+    //filter rows again starting with first column
+    this.rows = this.doFilter(this.filters.list[0]);
+  }
+  
+  /** bgmd
+   * Filter pipeline
+   * @param {object} filter 
+   * @return {object} filtered rows 
+   */
+  filterPipe(filter) {
+    let result = this.rows;
+    for (let i = filter.order; i < this.filters.list.length; i++) {
+      let f = this.filters.list[i];
+      if (i > filter.order) {
+        if (!f.phrase) {
+          f.rowsBefore = null;
+          f.rowsAfter = null;
+          continue;
+        }
+        f.rowsBefore = result;
+      }
+      result = f.rowsAfter = f.rowsBefore.filter(function (row) {
+        return (row[f.prop] && row[f.prop].toLowerCase().indexOf(f.phrase) !== -1) || !f.phrase;
+      });
+    }  
+    return result;
+  }
+
+  /**
+   * Row filtering 
+   * @param {object} current changed filter object 
+   * @returns {object} filtered rows
+   */
+  doFilter(filter) {
+    if (!this.rows || !this.filters || !this.filters.list.length) {
+      return this.rows;
+    }
+    this._dueFiltering_ = true;
+    if (this.filters.list.length && !this.filters.list[0].rowsBefore) {
+      this.filters.list[0].rowsBefore = this.rows;
+      this.filters.list[0].rowsAfter = this.rows;
+    }
+    if (filter) {
+      if (!filter.rowsBefore) {
+        let i = filter.order - 1;
+        while (i >= 0) {
+          let prev = this.filters.list[i];
+          if (prev.rowsAfter) {
+            filter.rowsBefore = prev.rowsAfter;
+            break;
+          }
+          i--;
+        }
+      }
+    }
+    else {
+      filter = this.filters.list[0];
+      filter.rowsBefore = this.rows;
+    }  
+    let rows = this.filterPipe(filter); 
+    return rows;
+  }
+
 }
 
 function BodyDirective() {
@@ -2346,21 +2994,25 @@ function BodyDirective() {
       expanded: '=?',
       onPage: '&',
       onTreeToggle: '&',
+      onTreeLoader: '&', //bgmd
       onSelect: '&',
       onRowClick: '&',
       onRowDblClick: '&',
+      onMoveRow: '&'
     },
     scope: true,
     template: `
       <div
         class="progress-linear"
         role="progressbar"
-        ng-show="body.options.paging.loadingIndicator">
+        ng-show="body.options.loadingIndicator">
         <div class="container">
           <div class="bar"></div>
         </div>
       </div>
-      <div class="dt-body" ng-style="body.styles()" dt-seletion>
+      <div class="dt-body" ng-style="body.styles()" dt-selection 
+               draggable-row="body.options.rowDraggable"
+               on-drop="body.onDropRow(event, indexFrom, indexTo)">
         <dt-scroller class="dt-body-scroller">
           <dt-group-row ng-repeat-start="r in body.tempRows track by $index"
                         ng-if="r.group"
@@ -2368,6 +3020,7 @@ function BodyDirective() {
                         options="body.options"
                         on-group-toggle="body.onGroupToggle(group)"
                         expanded="body.getRowExpanded(r)"
+                        loading="body.getRowLoading(r)"
                         tabindex="{{$index}}"
                         row="r">
           </dt-group-row>
@@ -2375,6 +3028,7 @@ function BodyDirective() {
                   ng-if="!r.group"
                   row="body.getRowValue($index)"
                   tabindex="{{$index}}"
+                  rowindex="{{r.$$index}}"
                   columns="body.columns"
                   column-widths="body.columnWidths"
                   ng-keydown="selCtrl.keyDown($event, $index, r)"
@@ -2388,7 +3042,9 @@ function BodyDirective() {
                   columns="body.columnsByPin"
                   has-children="body.getRowHasChildren(r)"
                   expanded="body.getRowExpanded(r)"
-                  ng-style="body.rowStyles(r)">
+                  loading="body.getRowLoading(r)"
+                  ng-style="body.rowStyles(r)"
+                  is-draggable="body.isDraggable(r)">
           </dt-row>
         </dt-scroller>
         <div ng-if="body.rows && !body.rows.length"
@@ -2542,9 +3198,24 @@ class SelectionController {
 
   /* @ngInject*/
   constructor($scope) {
+    this.$scope = $scope;
     this.body = $scope.body;
     this.options = $scope.body.options;
     this.selected = $scope.body.selected;
+
+    if (isOldAngular()) {
+      this.$onInit();
+    }
+  }
+
+  $onInit() {
+    this.init();
+  }
+
+  init() {
+    if (this.options && this.options.columns) {
+      this.hasTreeColumn = this.options.columns.find(c => c.isTreeColumn) != null;
+    }
   }
 
   /**
@@ -2599,7 +3270,12 @@ class SelectionController {
       event.preventDefault();
       this.selectRow(event, index, row);
     }
-
+    if (this.options.treeToggleDblClick && this.hasTreeColumn) {
+      this.$scope.$broadcast('rowDblClick', {
+        row: row,
+        index: index
+      });
+    }
     this.body.onRowDblClick({ row });
   }
 
@@ -2755,6 +3431,33 @@ class RowController {
     });
   }
 
+  /** bgmd
+   *
+   */
+  getChanges() {
+    if (!this.row._original)
+      return null;
+    let result = {};
+    for (var prop in this.row._original) {
+      if (this.row._original.hasOwnProperty(prop)) {
+        let value = this.row._original[prop];
+        if (value !== this.row[prop])
+          result[prop] = this.row[prop];
+      }
+    }
+    return Object.keys(result).length == 0? null : result;
+  }
+
+  submitChanges() {
+    if (!this.row._original)
+      return;
+    let result = {};
+    for (var prop in this.row._original) {
+      if (this.row._original.hasOwnProperty(prop)) {
+        this.row._original[prop] = this.row[prop];
+      }
+    }
+  }
 }
 
 function RowDirective() {
@@ -2767,8 +3470,10 @@ function RowDirective() {
       row: '=',
       columns: '=',
       columnWidths: '=',
+      loading: '=',
       expanded: '=',
       selected: '=',
+      isDraggable: '=',
       hasChildren: '=',
       options: '=',
       onCheckboxChange: '&',
@@ -2782,9 +3487,9 @@ function RowDirective() {
 
       // register w/ the style translator
       ctrl.options.internal.styleTranslator.register($scope.$index, $elm);
-    },
+    }, 
     template: `
-      <div class="dt-row">
+      <div class="dt-row" draggable={{rowCtrl.isDraggable}}>
         <div class="dt-row-left dt-row-block"
              ng-if="rowCtrl.columns['left'].length"
              ng-style="rowCtrl.stylesByGroup('left')">
@@ -2795,6 +3500,8 @@ function RowDirective() {
                    has-children="rowCtrl.hasChildren"
                    on-checkbox-change="rowCtrl.onCheckboxChanged($event)"
                    selected="rowCtrl.selected"
+                   loading="rowCtrl.loading"
+                   row-ctrl="rowCtrl",
                    expanded="rowCtrl.expanded"
                    row="rowCtrl.row"
                    value="rowCtrl.getValue(column)">
@@ -2807,6 +3514,8 @@ function RowDirective() {
                    column="column"
                    options="rowCtrl.options"
                    has-children="rowCtrl.hasChildren"
+                   loading="rowCtrl.loading"
+                   row-ctrl="rowCtrl",
                    expanded="rowCtrl.expanded"
                    selected="rowCtrl.selected"
                    row="rowCtrl.row"
@@ -2825,6 +3534,8 @@ function RowDirective() {
                    selected="rowCtrl.selected"
                    on-checkbox-change="rowCtrl.onCheckboxChanged($event)"
                    row="rowCtrl.row"
+                   loading="rowCtrl.loading"
+                   row-ctrl="rowCtrl",
                    expanded="rowCtrl.expanded"
                    value="rowCtrl.getValue(column)">
           </dt-cell>
@@ -2885,7 +3596,32 @@ function GroupRowDirective() {
 }
 
 class CellController {
+  /* @ngInject */
+  constructor($scope) {
+    Object.assign(this, {
+      $scope,
+    });
 
+    if (isOldAngular()) {
+      this.$onInit();
+    }
+  }
+
+  $onInit() {
+    this.init();
+  }
+
+  init() {
+    if (this.options.treeToggleDblClick && this.column.isTreeColumn) {
+      var self = this;
+      this.listener = this.$scope.$on('rowDblClick', function (event, data) {
+        if (data.index == self.row.$$index) {
+          self.treeToggle();
+        }
+      });
+      this.$scope.$on('$destroy', this.listener);
+    }
+  }
   /**
    * Calculates the styles for the Cell Directive
    * @return {styles object}
@@ -2923,6 +3659,7 @@ class CellController {
       'dt-tree-toggle': true,
       'icon-right': !this.expanded,
       'icon-down': this.expanded,
+      'icon-loading': this.loading  //bgmd
     };
   }
 
@@ -2932,6 +3669,10 @@ class CellController {
    */
   onTreeToggled(evt) {
     evt.stopPropagation();
+    this.treeToggle();
+  }
+
+  treeToggle() {
     this.expanded = !this.expanded;
     this.onTreeToggle({
       cell: {
@@ -2981,12 +3722,14 @@ function CellDirective($rootScope, $compile) {
       column: '=',
       row: '=',
       expanded: '=',
+      loading: '=',
+      rowCtrl: '<',
       hasChildren: '=',
       onTreeToggle: '&',
       onCheckboxChange: '&',
     },
     template:
-      `<div class="dt-cell"
+    `<div class="dt-cell"
             data-title="{{::cell.column.name}}"
             ng-style="cell.styles()"
             ng-class="cell.cellClass()">
@@ -3009,43 +3752,124 @@ function CellDirective($rootScope, $compile) {
           let cellScope;
 
           // extend the outer scope onto our new cell scope
-          if (ctrl.column.template || ctrl.column.cellRenderer) {
+          if (ctrl.column.template || ctrl.column.cellRenderer || ctrl.column.editor) {
             createCellScope();
           }
 
           $scope.$watch('cell.row', () => {
+            if (cellScope && cellScope.editing && ctrl.row._editing[ctrl.column.prop]) {
+              return;
+            }
             if (cellScope) {
-              cellScope.$destroy();
-
-              createCellScope();
-
+              cellScope.getValue = ctrl.getValue;
               cellScope.$cell = ctrl.value;
               cellScope.$row = ctrl.row;
               cellScope.$column = ctrl.column;
-              cellScope.$$watchers = null;
+              cellScope.editing = false;
+              //a row was edited before scroll
+              if (ctrl.row._editing)
+                cellScope.editing = ctrl.row._editing[ctrl.column.prop]; 
+              cellScope.editFilter = ctrl.options.editFilter;
+              if (!cellScope.$rowCtrl) {
+                cellScope.$rowCtrl = {
+                  rowChanges: ctrl.rowCtrl.getChanges.bind(ctrl.rowCtrl),
+                  submitChanges: ctrl.rowCtrl.submitChanges.bind(ctrl.rowCtrl),
+                };
+              }
             }
-
-            if (ctrl.column.template) {
-              content.empty();
-              const elm = angular.element(`<span>${ctrl.column.template.trim()}</span>`);
-              content.append($compile(elm)(cellScope));
-            } else if (ctrl.column.cellRenderer) {
-              content.empty();
-              const elm = angular.element(ctrl.column.cellRenderer(cellScope, content));
-              content.append($compile(elm)(cellScope));
-            } else {
+            if (ctrl.column.template || ctrl.column.cellRenderer || ctrl.column.editor) {
+              if (ctrl._rendered)
+                return;
+              renderCell();
+            }
+            else
               content[0].innerHTML = ctrl.getValue();
-            }
-          }, true);
+            ctrl._rendered = true;
+          }, !ctrl.options.readOnly);
 
           function createCellScope() {
             cellScope = ctrl.options.$outer.$new(false);
             cellScope.getValue = ctrl.getValue;
           }
+
+          function renderCell() {
+            let editorWrapper = null;
+            let el = '<span>{{$cell}}</span>';  
+            if (ctrl.column.editor) {
+              //for all rows
+              let tag = ctrl.column.editor == 'textarea' ? 'textarea' : 'input';
+              el = '{{$cell}}'; 
+              editorWrapper = {};
+              editorWrapper.begin = `<span ng-dblclick="edit($cell, $row, $column)" ng-show="!editing">`;
+              editorWrapper.end = `</span>
+                                    <div>
+                                      <${tag} ng-show="editing" type="${ctrl.column.editor}" ng-model="$cell" ng-change="changed($cell, $row, $column)" 
+                                             ng-blur="blur($row, $column)" style="width:100%;" focus-on="editing"/>
+                                    </div>`;
+
+              if (!ctrl.row._original)
+                ctrl.row._original = {};
+              ctrl.row._original[ctrl.column.prop] = ctrl.value;
+
+              cellScope._changeEditStatus = function(row, column) {
+                this.editing = !this.editing;
+                if (!row._editing)
+                  row._editing = {};  
+                row._editing[column.prop] = this.editing;
+              };
+
+              cellScope.edit = function(cellVal, row, column) {
+                //console.info('edit()', what, cellVal);
+                if (ctrl.row._noEdit || (cellScope.editFilter && !cellScope.editFilter(row)))
+                  return;  
+                cellScope._changeEditStatus(row, column);
+                //console.log('$id', this.$id, 'editing', this.editing);
+                return this.editing;
+              };
+              
+              cellScope.blur = function(row, column) {
+                if (!this.editing)
+                  return;  
+                this._changeEditStatus(row, column);
+              };
+              
+              cellScope.changed = function(cellVal, row, col) {
+                //var idx = $scope.data.indexOf(row);
+                row[col.prop] = cellVal;
+                //$scope.data[idx] = row;
+              };
+            }// bgmd
+            if (ctrl.column.template) {
+              el = `${ctrl.column.template.trim()}`; //bgmd
+            }
+            else if (ctrl.column.cellRenderer) {
+              el = ctrl.column.cellRenderer(cellScope, content); //bgmd
+            }
+            if (editorWrapper) {
+              el = editorWrapper.begin + el + editorWrapper.end;
+            }
+            const elm = angular.element(el);
+            content.empty();
+            content.append($compile(elm)(cellScope));
+          }
         },
-      };
+      }
     },
-  };
+  }
+}
+
+function FocusOnDirective($timeout) {
+    return {
+        restrict : 'A',
+        link : function($scope,$element,$attr) {
+            $scope.$watch($attr.focusOn,function(_focusVal) {
+                $timeout(function() {
+                    _focusVal ? $element[0].focus() :
+                        $element[0].blur();
+                });
+            });
+        }
+    }
 }
 
 class FooterController {
@@ -3317,20 +4141,24 @@ var POSITION = {
   TOP: 'top',
   BOTTOM: 'bottom',
   CENTER: 'center',
+  MIDDLE: 'middle',
 };
 
 /**
  * Popover Directive
- * @param {object} $q
- * @param {function} $timeout
- * @param {function} $templateCache
- * @param {function} $compile
- * @param {function} PopoverRegistry
  * @param {function} $animate
+ * @param {function} $compile
+ * @param {function} $document
+ * @param {function} $http
+ * @param {object} $q
+ * @param {function} $templateCache
+ * @param {function} $timeout
+ * @param {function} PopoverRegistry
+ * @param {function} PositionHelper
  */
 
-function PopoverDirective($q, $timeout, $templateCache,
-  $compile, PopoverRegistry, PositionHelper, $animate, $document, $http) {
+function PopoverDirective($animate, $compile, $document, $http,
+  $q, $templateCache, $timeout, PopoverRegistry, PositionHelper) {
   /**
    * Loads a template from the template cache
    * @param  {string} template
@@ -3371,88 +4199,124 @@ function PopoverDirective($q, $timeout, $templateCache,
     replace: false,
     link($scope, $element, $attributes) {
       $scope.popover = null;
-      $scope.popoverId = Date.now();
 
       $scope.options = {
-        text: $attributes.popoverText,
-        template: $attributes.popoverTemplate,
-        plain: toBoolean($attributes.popoverPlain || false),
+        alignment: $attributes.popoverAlignment || 'middle',
         placement: $attributes.popoverPlacement || 'right',
-        alignment: $attributes.popoverAlignment || 'center',
-        group: $attributes.popoverGroup,
-        spacing: parseInt($attributes.popoverSpacing, 10) || 0,
+        plain: toBoolean($attributes.popoverPlain || false),
+        popoverId: $attributes.popoverId,
         showCaret: toBoolean($attributes.popoverPlain || false),
+        spacing: parseInt($attributes.popoverSpacing, 10) || 0,
+        template: $attributes.popoverTemplate,
+        text: $attributes.popoverText,
       };
 
-      // attach exit and enter events to element
-      $element.off('mouseenter', display);
-      $element.on('mouseenter', display);
-      $element.off('mouseleave', mouseOut);
-      $element.on('mouseleave', mouseOut);
+      $scope.$on('$destroy', () => {
+        $element.off();
+      });
 
-      function mouseOut() {
+      // attach mouse events to element
+      $element.on('mouseenter', display);
+      $element.on('mouseleave', beginTimeout);
+      $element.on('mousemove', cancelTimeout);
+
+      /**
+       * Begin a timeout of 500ms before hiding popover
+       */
+      function beginTimeout() {
         $scope.exitTimeout = $timeout(remove, 500);
+      }
+
+      /**
+       * Cancel the timeout to keep popover visible
+       */
+      function cancelTimeout() {
+        $timeout.cancel($scope.exitTimeout);
       }
 
       /**
        * Displays the popover on the page
        */
       function display() {
+        if ($scope.$parent.$column && ($scope.$parent.$column.width - 5) >= $element.width()) {
+          //Text has not overflowed
+          return;
+        }
         // Cancel exit timeout
-        $timeout.cancel($scope.exitTimeout);
+        cancelTimeout();
+        //refresh popover text
+        $scope.options.text = $attributes.popoverText;
 
-        const elm = $document[0].getElementById(`#${$scope.popoverId}`);
+        const elm = $document[0].getElementById($scope.options.popoverId);
         if ($scope.popover && elm) return;
 
-        // remove other popovers from the same group
-        if ($scope.options.group) {
-          PopoverRegistry.removeGroup($scope.options.group, $scope.popoverId);
-        }
-
         if ($scope.options.text && !$scope.options.template) {
-          $scope.popover = angular.element(`<div class="dt-popover popover-text
-            popover${$scope.options.placement}" id="${$scope.popoverId}"></div>`);
-
-          $scope.popover.html($scope.options.text);
-          angular.element($document[0].body).append($scope.popover);
-          positionPopover($element, $scope.popover, $scope.options);
-          PopoverRegistry.add($scope.popoverId, {
-            element: $element,
-            popover: $scope.popover,
-            group: $scope.options.group,
-          });
+          displayTextPopover();
         } else {
-          $q.when(loadTemplate($scope.options.template, $scope.options.plain)).then((template) => {
-            if (!angular.isString(template)) {
-              if (template.data && angular.isString(template.data)) {
-                template = template.data;
-              } else {
-                template = '';
-              }
-            }
-
-            $scope.popover = angular.element(`<div class="dt-popover
-              popover-${$scope.options.placement}" id="${$scope.popoverId}"></div>`);
-
-            $scope.popover.html(template);
-            $compile($scope.popover)($scope);
-            angular.element($document.body).append($scope.popover);
-            positionPopover($element, $scope.popover, $scope.options);
-
-            // attach exit and enter events to popover
-            $scope.popover.off('mouseleave', mouseOut);
-            $scope.popover.on('mouseleave', mouseOut);
-            $scope.popover.on('mouseenter', () => {
-              $timeout.cancel($scope.exitTimeout);
-            });
-
-            PopoverRegistry.add($scope.popoverId, {
-              element: $element,
-              popover: $scope.popover,
-              group: $scope.options.group,
-            });
-          });
+          displayTemplatePopover();
         }
+      }
+
+      /**
+       * When using template, load and compile the template prior to appending popover
+       */
+      function displayTemplatePopover() {
+        $q.when(loadTemplate($scope.options.template, $scope.options.plain)).then((template) => {
+          if (!angular.isString(template)) {
+            if (template.data && angular.isString(template.data)) {
+              template = template.data;
+            } else {
+              template = '';
+            }
+          }
+
+          buildElement('template');
+
+          $scope.popover.html(template);
+          $compile($scope.popover)($scope);
+          angular.element($document.body).append($scope.popover);
+          positionPopover($element, $scope.popover, $scope.options);
+
+          managePopover();
+        });
+      }
+
+      /**
+       * With text only, simply build up the popover and append it to body
+       */
+      function displayTextPopover() {
+        buildElement('text');
+
+        $scope.popover.html($scope.options.text);
+        angular.element($document[0].body).append($scope.popover);
+
+        managePopover();
+      }
+
+      function buildElement(type) {
+        $scope.popover = angular.element(`<div
+          class="dt-popover popover${$scope.options.placement}"
+          id="${$scope.options.popoverId}"></div>`);
+
+        if (type === 'text') {
+          $scope.popover.addClass('popover-text');
+        }
+      }
+
+      /**
+       * Position popover, bind handlers, and register popover
+       */
+      function managePopover() {
+        positionPopover($element, $scope.popover, $scope.options);
+
+        // attach mouse events to popover
+        $scope.popover.on('mouseleave', beginTimeout);
+        $scope.popover.on('mousemove', cancelTimeout);
+
+        PopoverRegistry.add($scope.options.popoverId, {
+          element: $element,
+          popover: $scope.popover,
+        });
       }
 
       /**
@@ -3460,11 +4324,12 @@ function PopoverDirective($q, $timeout, $templateCache,
        */
       function remove() {
         if ($scope.popover) {
+          $scope.popover.off();
           $scope.popover.remove();
         }
 
-        $scope.popover = undefined;
-        PopoverRegistry.remove($scope.popoverId);
+        $scope.popover = null;
+        PopoverRegistry.remove($scope.options.popoverId);
       }
 
       /**
@@ -3484,16 +4349,13 @@ function PopoverDirective($q, $timeout, $templateCache,
           if (options.placement === POSITION.RIGHT) {
             left = elDimensions.left + elDimensions.width + options.spacing;
             top = calculateVerticalAlignment();
-          }
-          if (options.placement === POSITION.LEFT) {
+          } else if (options.placement === POSITION.LEFT) {
             left = elDimensions.left - popoverDimensions.width - options.spacing;
             top = calculateVerticalAlignment();
-          }
-          if (options.placement === POSITION.TOP) {
+          } else if (options.placement === POSITION.TOP) {
             top = elDimensions.top - popoverDimensions.height - options.spacing;
             left = calculateHorizontalAlignment();
-          }
-          if (options.placement === POSITION.BOTTOM) {
+          } else if (options.placement === POSITION.BOTTOM) {
             top = elDimensions.top + elDimensions.height + options.spacing;
             left = calculateHorizontalAlignment();
           }
@@ -3511,6 +4373,8 @@ function PopoverDirective($q, $timeout, $templateCache,
           popover.css({
             top: `${top}px`,
             left: `${left}px`,
+            height: popoverDimensions.height, //'300px',
+            'overflow-x': 'hidden'
           });
 
           if ($scope.options.showCaret) {
@@ -3568,17 +4432,13 @@ function PopoverDirective($q, $timeout, $templateCache,
   };
 }
 
-/**
- * Registering to deal with popovers
- * @param {function} $animate
- */
-
-function PopoverRegistry($animate) {
+function PopoverRegistry() {
   const popovers = {};
 
   return {
     add(id, object) {
       popovers[id] = object;
+      return popovers[id];
     },
 
     find(id) {
@@ -3587,19 +4447,6 @@ function PopoverRegistry($animate) {
 
     remove(id) {
       delete popovers[id];
-    },
-
-    removeGroup(group, currentId) {
-      return angular.forEach(popovers, (popoverOb, id) => {
-        if (id === currentId) return;
-
-        if (popoverOb.group && popoverOb.group === group) {
-          $animate.removeClass(popoverOb.popover, 'sw-popover-animate').then(() => {
-            popoverOb.popover.remove();
-            delete popovers[id];
-          });
-        }
-      });
     },
   };
 }
@@ -3618,6 +4465,8 @@ function PositionHelper($log) {
     items.forEach((count, index) => {
       total = (index === 0) ? total += count : total -= count;
     });
+
+    return total;
   }
 
   return {
@@ -3641,7 +4490,7 @@ function PositionHelper($log) {
           return elDimensions.top;
         case POSITION.BOTTOM:
           return elDimensions.top + (elDimensions.height - popoverDimensions.height);
-        case POSITION.CENTER:
+        case POSITION.MIDDLE:
           return elDimensions.top + ((elDimensions.height / 2) - (popoverDimensions.height / 2));
         default:
           return $log.warn('calculateVerticalAlignment issue', this);
@@ -3663,7 +4512,7 @@ function PositionHelper($log) {
             caretDimensions.height / 2,
             1,
           ]);
-        case POSITION.CENTER:
+        case POSITION.MIDDLE:
           return subtractAll([
             popoverDimensions.height / 2,
             caretDimensions.height / 2,
@@ -3874,15 +4723,17 @@ var dataTable = angular
   .directive('dtable', DataTableDirective)
   .directive('resizable', ResizableDirective)
   .directive('sortable', SortableDirective)
+  .directive('draggableRow', DraggableRowDirective)
   .directive('dtHeader', HeaderDirective)
   .directive('dtHeaderCell', HeaderCellDirective)
   .directive('dtBody', BodyDirective)
   .directive('dtScroller', ScrollerDirective)
-  .directive('dtSeletion', SelectionDirective)
+  .directive('dtSelection', SelectionDirective)
   .directive('dtRow', RowDirective)
   .directive('dtGroupRow', GroupRowDirective)
   .directive('dtCell', CellDirective)
   .directive('dtFooter', FooterDirective)
-  .directive('dtPager', PagerDirective);
+  .directive('dtPager', PagerDirective)
+  .directive('focusOn', FocusOnDirective);
 
 export { popover as dtPopover, menu as dtMenu };export default dataTable;
