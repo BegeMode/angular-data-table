@@ -72,7 +72,7 @@ export default class BodyController {
   
     let self = this;
     this.$scope.$watchCollection('body.rows', (newVal, oldVal) => { //this.rowsUpdated.bind(this));
-      if (self.treeColumn && !self._dueFiltering_ && newVal && oldVal && newVal.length != oldVal.length) {
+      if (newVal && self.treeColumn && !self._dueFiltering_) {
         self.filteredRows = self.doFilter();
       }
       self._dueFiltering_ = false;

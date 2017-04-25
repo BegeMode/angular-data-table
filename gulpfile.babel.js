@@ -163,7 +163,7 @@ function startKarma(callback, singleRun) {
       callback();
     } else {
       callback(new gutils.PluginError('karma', {
-        message: 'Unit test(s) failed.',
+        message: 'Unit test(s) failed, errors: ' + errors,
       }));
     }
   }).start();

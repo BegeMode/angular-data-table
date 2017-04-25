@@ -1,6 +1,7 @@
 /* global inject */
 
 import SpecHelper from './BodyController.spechelper.json';
+import TreeHelper from './BodyController.tree.spechelper.json';
 import { TableDefaults } from '../../defaults';
 
 describe('BodyController', () => {
@@ -13,6 +14,17 @@ describe('BodyController', () => {
     },
   };
   const olympicRows = angular.copy(SpecHelper.Olympics.Rows);
+
+  const treeOptions = {
+    columns: angular.copy(TreeHelper.tree.columns),
+    paging: {
+      size: 0,
+      count: 0,
+      offset: 0,
+    },
+  };
+  const treeRows = angular.copy(TreeHelper.tree.rows);
+  const lazyTreeRows = angular.copy(TreeHelper.tree.lazyRows);
 
   let scope = null;
   let ctrl = null;
@@ -176,4 +188,25 @@ describe('BodyController', () => {
       expect(ctrl.watchListeners.length).toBe(3);
     });
   });
+
+  describe('when setting tree columns', () => {
+    beforeEach(() => {
+      setController({
+        options: treeOptions,
+        rows: treeRows,
+      });
+
+      ctrl.$onInit();
+    });
+
+    it('should set the tree column accurately', () => {
+      expect(ctrl.treeColumn).toEqual(treeOptions.columns[0]);
+    });
+
+    it('should not set group column', () => {
+      expect(ctrl.groupColumn).toBeUndefined();
+    });
+  });
+
+
 });
