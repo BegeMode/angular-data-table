@@ -71,12 +71,17 @@ describe('DataTableController', () => {
           mode: null,
           size: 10,
         },
-        reorderable: true,
+        reorderable: false,
         rowHeight: 30,
         scrollbarV: true,
         selectable: false,
         sortable: true,
         sortType: 'multiple',
+        rowDraggable: false,
+        editFilter: null,
+        readOnly: false,
+        filterPlaceholder: 'Filter',
+        treeToggleDblClick: false
       };
 
       let options = ctrl.options;

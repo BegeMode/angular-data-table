@@ -23,10 +23,10 @@ const karmaBaseConfig = {
   basePath: './',
 
   files: [
-    {
-      pattern: '../src/**/*!(.spec).js',
-      included: false,
-    },
+    //{
+    //  pattern: '../src/**/*!(.spec).js',
+    //  included: false,
+    //},
     'dataTable.mock.js',
     {
       pattern: '../node_modules/sinon/pkg/sinon.js',
@@ -40,7 +40,7 @@ const karmaBaseConfig = {
       pattern: '../node_modules/angular-mocks/angular-mocks.js',
       watched: false,
     },
-    './karma.helper.js',
+    'karma.helper.js',
     '../src/**/*.spec.js',
   ],
 
@@ -68,6 +68,7 @@ const karmaBaseConfig = {
   },
 
   browsers: ['PhantomJS'],
+  failOnEmptyTestSuite: false,
   phantomjsLauncher: {
     exitOnResourceError: true,
   },

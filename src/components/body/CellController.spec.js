@@ -43,6 +43,7 @@ describe('CellController', () => {
           'dt-tree-toggle': true,
           'icon-right': false,
           'icon-down': true,
+          'icon-loading': undefined
         });
     });
   });
