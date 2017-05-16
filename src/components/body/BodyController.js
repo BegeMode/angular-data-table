@@ -444,8 +444,15 @@ export default class BodyController {
     let self = this;
     this.onMoveRow({ rowFrom: from, rowTo: parent }).then(() => {
       if (self.treeColumn) {
-        //change parent
-        from[self.treeColumn.relationProp] = parent[self.treeColumn.parentRelationProp];
+        if (parent._lazyChildren && !parent._loaded_) {
+          //for node with lazy loading - children is not yet have been loaded
+          let i = self.rows.indexOf(from);
+          //remove this row
+          self.rows.splice(i, 1);
+        }
+        else
+          //change parent
+          from[self.treeColumn.relationProp] = parent[self.treeColumn.parentRelationProp];
         self.buildRowsByGroup();
         self.refreshTree();
       } else {
