@@ -1,5 +1,5 @@
 /**
- * Sortable Directive
+ * Draggable row Directive
  * http://jsfiddle.net/RubaXa/zLq5J/3/
  * https://jsfiddle.net/hrohxze0/6/
  * @param {function}
@@ -17,6 +17,8 @@ export default function DraggableRowDirective() {
       let toEl;
 
       function findParentDraggable(elem) {
+        if (!elem)
+          return null;  
         var el = elem;
         do {
           if (el.hasAttribute && el.hasAttribute('draggable')) {
@@ -27,33 +29,44 @@ export default function DraggableRowDirective() {
         return null;
       }
 
-      function isbefore(a, b) {
-        if (a.parentNode === b.parentNode) {
-          for (let cur = a; cur; cur = cur.previousSibling) {
-            if (cur === b) {
-              return true;
-            }
+      function isDescendant(parent, child) {
+        var node = child.parentNode;
+        while (node != null) {
+          if (node == parent) {
+            return true;
           }
+          node = node.parentNode;
         }
         return false;
       }
 
       function onDragEnter(e) {
-        console.log(dragEl.style.cursor);
         toEl = e.target;
+      }
+
+      function onDragOver(e) {
+        if (e.preventDefault) {
+          e.preventDefault(); // Necessary. Allows us to drop.
+        }
+        if (e.dataTransfer)
+          e.dataTransfer.dropEffect = 'move'; 
+        return false;
       }
 
       function onDragEnd(evt) {
         evt.preventDefault();
-
         dragEl.classList.remove('dt-clone');
 
         $element.off('dragend', onDragEnd);
+        $element.off('dragover', onDragOver);
         $element.off('dragenter', onDragEnter);
 
+        var elem = document.elementFromPoint(evt.clientX, evt.clientY);
+        if (!isDescendant($element[0], elem))
+          toEl = null;  
         const target = findParentDraggable(toEl);
         const indexFrom = +dragEl.getAttribute('rowindex');
-        const indexTo = +target.getAttribute('rowindex');
+        const indexTo = target ? +target.getAttribute('rowindex') : -1;
         //console.log('onDragEnd', dragEl, target);
         if (target !== dragEl) {
           $scope.onDrop({
@@ -77,14 +90,15 @@ export default function DraggableRowDirective() {
         evt.dataTransfer.setData('Text', dragEl.textContent);
         
         $element.on('dragenter', onDragEnter);
+        $element.on('dragover', onDragOver);
         $element.on('dragend', onDragEnd);
       }
-
+      
       $element.on('dragstart', onDragStart);
 
       $scope.$on('$destroy', () => {
         $element.off('dragstart', onDragStart);
       });
-    },
+    }
   };
 }

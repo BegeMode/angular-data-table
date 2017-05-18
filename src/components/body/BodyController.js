@@ -444,15 +444,21 @@ export default class BodyController {
     let self = this;
     this.onMoveRow({ rowFrom: from, rowTo: parent }).then(() => {
       if (self.treeColumn) {
-        if (parent._lazyChildren && !parent._loaded_) {
-          //for node with lazy loading - children is not yet have been loaded
-          let i = self.rows.indexOf(from);
-          //remove this row
-          self.rows.splice(i, 1);
+        if (parent) {
+          if (parent._lazyChildren && !parent._loaded_) {
+            //for node with lazy loading - children is not yet have been loaded
+            //remove this row and her children
+            self.removeTreeRows(from[self.treeColumn.parentRelationProp]);
+          }
+          else {
+            //remove this child from old parent
+            self.removeChild(from[self.treeColumn.relationProp], from[self.treeColumn.parentRelationProp]);
+            //set new parent
+            from[self.treeColumn.relationProp] = parent[self.treeColumn.parentRelationProp];
+          }
         }
         else
-          //change parent
-          from[self.treeColumn.relationProp] = parent[self.treeColumn.parentRelationProp];
+          from[self.treeColumn.relationProp] = null;  
         self.buildRowsByGroup();
         self.refreshTree();
       } else {
@@ -465,6 +471,51 @@ export default class BodyController {
           self.getRows(true);
       }
     }).catch((err) => console.error(err));;  
+  }
+  /**
+   * Remove child from parent
+   * @param {string} parentId 
+   * @param {string} childId 
+   */
+  removeChild(parentId, childId) {
+    let key = this.treeColumn.parentRelationProp;
+    let parent = this.rows.find((value) => { 
+      return value[key] == parentId;
+    });
+    if (!parent)
+      return;  
+    if (parent.$$children) {
+      let i = parent.$$children.findIndex((child) => {
+        return child == childId;
+      });
+      if (i != -1) {
+        parent.$$children.splice(i, 1);
+      }
+    }
+  }
+  /**
+   * Remove row and her children from this.rows
+   * @param {string} id - row key
+   */
+  removeTreeRows(id) {
+    let key = this.treeColumn.parentRelationProp;
+    let row = null;
+    let index = this.rows.findIndex((value) => { 
+      return value[key] == id;
+    });
+    if (index != -1) {
+      row = this.rows[index];
+    }
+    if (row) {
+      this.rows.splice(index, 1);
+      if (this.expanded[id])
+        delete this.expanded[id];
+      if (row.$$children) {
+        row.$$children.forEach((child) => {
+          this.removeTreeRows(child);
+        });
+      }  
+    }  
   }
 
   /**
