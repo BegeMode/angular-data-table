@@ -9,7 +9,7 @@ describe('CellController', () => {
 
   describe('styles', () => {
     beforeEach(() => {
-      ctrl.column = {width: 10};
+      ctrl.column = { width: 10 };
     });
 
     it('returns the width and min-width', () => {
@@ -22,13 +22,13 @@ describe('CellController', () => {
 
   describe('cellClass', () => {
     beforeEach(() => {
-        ctrl.column = {isTreeColumn: true, className: 'colClassName',};
+      ctrl.column = { isTreeColumn: true, className: 'colClassName' };
     });
 
     it('returns the cell class obejct', () => {
         expect(ctrl.cellClass()).toEqual({
           'dt-tree-col': true,
-          'colClassName': true,
+        colClassName: true,
       });
     });
   });
@@ -57,7 +57,7 @@ describe('CellController', () => {
       ctrl.expanded = true;
 
       mockEvent = {
-        stopPropagation: jasmine.createSpy('stopPropagation')
+        stopPropagation: jasmine.createSpy('stopPropagation'),
       };
 
       ctrl.onTreeToggle = jasmine.createSpy('onTreeToggle');
@@ -73,7 +73,7 @@ describe('CellController', () => {
           value: 'val',
           column: 'colName',
           expanded: false,
-        }
+        },
       });
     });
   });
@@ -83,7 +83,7 @@ describe('CellController', () => {
 
     beforeEach(() => {
       mockEvent = {
-        stopPropagation: jasmine.createSpy('stopPropagation')
+        stopPropagation: jasmine.createSpy('stopPropagation'),
       };
 
       ctrl.onCheckboxChange = jasmine.createSpy('onCheckboxChange');
@@ -94,7 +94,7 @@ describe('CellController', () => {
     it('passes the event to the handler', () => {
       expect(mockEvent.stopPropagation).toHaveBeenCalled();
       expect(ctrl.onCheckboxChange).toHaveBeenCalledWith({
-        $event: mockEvent
+        $event: mockEvent,
       });
     });
   });
@@ -107,11 +107,11 @@ describe('CellController', () => {
     describe('when there is a getter defined', () => {
       beforeEach(() => {
         ctrl.column = {
-            cellDataGetter: jasmine.createSpy('cellDataGetter').and.returnValue('getterVal')
+          cellDataGetter: jasmine.createSpy('cellDataGetter').and.returnValue('getterVal'),
         };
       });
 
-      it('returns the width and min-width', () => {
+      it('returns the sample data', () => {
         expect(ctrl.getValue()).toBe('getterVal');
       });
     });
@@ -119,7 +119,7 @@ describe('CellController', () => {
     describe('when no getter is defined', () => {
       beforeEach(() => {
         ctrl.column = {
-          cellDataGetter: undefined
+          cellDataGetter: undefined,
         };
       });
 

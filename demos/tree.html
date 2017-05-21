@@ -1,5 +1,6 @@
 <!doctype html>
-<html lang="en">
+<html ng-app="app" lang="en">
+
   <head>
     <meta charset=" utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -10,13 +11,15 @@
     <title>Datagrid - Tree</title>
     <base href="/">
     <style>
-      *, *:after, *:before {
+      *,
+      *:after,
+      *:before {
         -webkit-box-sizing: border-box;
         -moz-box-sizing: border-box;
         box-sizing: border-box;
       }
 
-      /*body {
+      body {
         font-family: 'RobotoDraft', 'Roboto', 'Helvetica Neue, Helvetica, Arial', sans-serif;
         font-style: normal;
         font-weight: 300;
@@ -28,50 +31,48 @@
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
         text-rendering: optimizeLegibility;
-      }*/
-      .dt {
-        width:75%;
-        margin:50px auto;
-        height:400px;
-      }
-/*
-      .dt-depth-0 > div > .dt-cell {
-        font-weight:500;
       }
 
-      .dt-depth-1 > div > .dt-tree-col {
+      .dt {
+        width: 75%;
+        margin: 50px auto;
+        height: 400px;
+      }
+
+      .dt-depth-0>div>.dt-cell {
+        font-weight: 500;
+      }
+
+      .dt-depth-1>div>.dt-tree-col {
         text-indent: 25px;
       }
 
-      .dt-depth-2 > div > .dt-tree-col {
+      .dt-depth-2>div>.dt-tree-col {
         text-indent: 55px;
       }
 
-      .dt-depth-3 > div > .dt-tree-col {
+      .dt-depth-3>div>.dt-tree-col {
         text-indent: 85px;
       }
 
-      .dt-depth-4 > div > .dt-tree-col {
+      .dt-depth-4>div>.dt-tree-col {
         text-indent: 115px;
       }
       /* here add more if the tree depth is bigger */
-/*
+
       .dt-tree-col {
-        padding-left:35px !important;
+        padding-left: 35px !important;
       }
 
       .dt-tree-toggle {
-        position:absolute;
-        left:5px;
+        position: absolute;
+        left: 5px;
         line-height: 40px;
       }
-*/
     </style>
-    <link href="../dist/dataTable.css" media="all" rel="stylesheet" />
-    <link href="../dist/themes/material.css" media="all" rel="stylesheet" />
-    <link href="../dist/themes/icons.css" rel="stylesheet">
   </head>
-  <body ng-app="app" ng-controller="HomeController">
+
+  <body ng-controller="HomeController">
 
 
     <dtable options="options" 
@@ -83,141 +84,138 @@
         on-row-dbl-click="dblClick(row)">
     </dtable>
 
-    <script src="../jspm_packages/system.js"></script>
-    <script src="../config.js"></script>
+    <script src="/assets/dataTable.js"></script>
 
     <script>
+      var module = angular.module('app', ['data-table']);
 
-      System.import('dataTable').then(function (dt) {
-        var module = angular.module('app', [ dt.default.name ]);
-
-        module.controller('HomeController', function ($scope, $http, $q) {
-          $scope.options = {
-            rowHeight: 50,
-            footerHeight: false,
-            scrollbarV: true,
-            headerHeight: 80,
-            columnMode: 'flex',
-            rowDraggable: true,
-            treeToggleDblClick: true,
-            columns: [
-              { 
-                name: "Company", 
-                prop: "company", 
-                flexGrow: 2,
-                isTreeColumn: true,
-                relationProp: 'parentCompany',
-                parentRelationProp: 'company',
-                filter:'text'
-              },
-              { 
-                name: "Revenue", 
-                flexGrow: 1,
-                prop: "revenue", 
-                filter:'text'
-              },
-              { 
-                name: "Sales", 
-                flexGrow: 1,
-                prop: "sales",
-                filter:'text'
-              }
-            ]
-          };
-
-          $scope.expanded = {
-            'Acme': true
-          };
-
-          $scope.treeToggled = function (row, cell) {
-            console.log('toggled!')
-          };
-
-          $scope.moveRow = function(rowFrom, rowTo){
-            console.log('moveRow!')
-            return $q.resolve();
-          }
-
-          $scope.dblClick = function(row) { 
-            console.log('onRowDblClick', row); 
-          }
-
-          $scope.treeLoader = function(cell, row){
-            console.log('treeLoader!');
-            var data = [{
-              'company': 'Bubble',
-              'revenue': '$1,440,443,111',
-              'sales': '$999,509,433,777,564',
-              parentCompany: 'Apple XYZ South2'
-            }, {
-              'company': 'Hubble',
-              'revenue': '$1,440,443,111',
-              'sales': '$999,509,433,777,564',
-              parentCompany: 'Apple XYZ South2'
-            }];
-            //return Promise.resolve(data);
-            return new $q(function(resolve, reject){
-              setTimeout(() => {
-                resolve(data);
-              }, 2000);
-            });
-          };
-
-          $scope.data = [{
-              'company': 'Apple',
-              'revenue': '$1,440,443,111',
-              'sales': '$999,509,433,777,564'
-            }, {
-              'company': 'Apple IBS',
-              'revenue': '$1,440,443,111',
-              'sales': '$999,509,433,777,564',
-              parentCompany: 'Apple'
-            },{
-              'company': 'Apple XYZ',
-              'revenue': '$1,440,443,111',
-              'sales': '$999,509,433,777,564',
-              parentCompany: 'Apple'
-            },
-              {
-              'company': 'Apple IBS South1',
-              'revenue': '$1,440,443,111',
-              'sales': '$999,509,433,777,564',
-              parentCompany: 'Apple IBS'
-            },
-              {
-              'company': 'Apple IBS South1 ABC',
-              'revenue': '$1,440,443,111',
-              'sales': '$999,509,433,777,564',
-              parentCompany: 'Apple IBS South1'
-            },
-              {
-              'company': 'Apple IBS South1 CDE',
-              'revenue': '$1,440,443,111',
-              'sales': '$999,509,433,777,564',
-              parentCompany: 'Apple IBS South1'
-            },
-              {
-              'company': 'Apple IBS South2',
-              'revenue': '$1,440,443,111',
-              'sales': '$999,509,433,777,564',
-              parentCompany: 'Apple IBS'
+      module.controller('HomeController', function ($scope, $http, $q) {
+        $scope.options = {
+          rowHeight: 50,
+          footerHeight: false,
+          scrollbarV: true,
+          headerHeight: 80,
+          columnMode: 'flex',
+          rowDraggable: true,
+          treeToggleDblClick: true,
+          columns: [
+            {
+              name: "Company",
+              prop: "company",
+              flexGrow: 2,
+              isTreeColumn: true,
+              relationProp: 'parentCompany',
+              parentRelationProp: 'company',
+              filter: 'text'
             },
             {
-              'company': 'Apple XYZ South1',
-              'revenue': '$1,440,443,111',
-              'sales': '$999,509,433,777,564',
-              parentCompany: 'Apple XYZ'
+              name: "Revenue",
+              flexGrow: 1,
+              prop: "revenue",
+              filter: 'text'
             },
-              {
-              'company': 'Apple XYZ South2',
-              'revenue': '$1,440,443,111',
-              'sales': '$999,509,433,777,564',
-              parentCompany: 'Apple XYZ',
-              _lazyChildren: true
-            }];
-        });
+            {
+              name: "Sales",
+              flexGrow: 1,
+              prop: "sales",
+              filter: 'text'
+            }
+          ]
+        };
+
+        $scope.expanded = {
+          'Acme': true
+        };
+
+        $scope.treeToggled = function (row, cell) {
+          console.log('toggled!')
+        };
+        $scope.moveRow = function (rowFrom, rowTo) {
+          console.log('moveRow!')
+          return $q.resolve();
+        }
+
+        $scope.dblClick = function (row) {
+          console.log('onRowDblClick', row);
+        }
+
+        $scope.treeLoader = function (cell, row) {
+          console.log('treeLoader!');
+          var data = [{
+            'company': 'Bubble',
+            'revenue': '$1,440,443,111',
+            'sales': '$999,509,433,777,564',
+            parentCompany: 'Apple XYZ South2'
+          }, {
+            'company': 'Hubble',
+            'revenue': '$1,440,443,111',
+            'sales': '$999,509,433,777,564',
+            parentCompany: 'Apple XYZ South2'
+          }];
+          //return Promise.resolve(data);
+          return new $q(function (resolve, reject) {
+            setTimeout(() => {
+              resolve(data);
+            }, 2000);
+          });
+        }
+
+
+        $scope.data = [{
+          'company': 'Apple',
+          'revenue': '$1,440,443,111',
+          'sales': '$999,509,433,777,564'
+        }, {
+          'company': 'Apple IBS',
+          'revenue': '$1,440,443,111',
+          'sales': '$999,509,433,777,564',
+          parentCompany: 'Apple'
+        }, {
+          'company': 'Apple XYZ',
+          'revenue': '$1,440,443,111',
+          'sales': '$999,509,433,777,564',
+          parentCompany: 'Apple'
+        },
+        {
+          'company': 'Apple IBS South1',
+          'revenue': '$1,440,443,111',
+          'sales': '$999,509,433,777,564',
+          parentCompany: 'Apple IBS'
+        },
+        {
+          'company': 'Apple IBS South1 ABC',
+          'revenue': '$1,440,443,111',
+          'sales': '$999,509,433,777,564',
+          parentCompany: 'Apple IBS South1'
+        },
+        {
+          'company': 'Apple IBS South1 CDE',
+          'revenue': '$1,440,443,111',
+          'sales': '$999,509,433,777,564',
+          parentCompany: 'Apple IBS South1'
+        },
+        {
+          'company': 'Apple IBS South2',
+          'revenue': '$1,440,443,111',
+          'sales': '$999,509,433,777,564',
+          parentCompany: 'Apple IBS'
+        },
+        {
+          'company': 'Apple XYZ South1',
+          'revenue': '$1,440,443,111',
+          'sales': '$999,509,433,777,564',
+          parentCompany: 'Apple XYZ'
+        },
+        {
+          'company': 'Apple XYZ South2',
+          'revenue': '$1,440,443,111',
+          'sales': '$999,509,433,777,564',
+          parentCompany: 'Apple XYZ',
+          _lazyChildren: true
+        }];
       });
     </script>
 
   </body>
+
 </html>

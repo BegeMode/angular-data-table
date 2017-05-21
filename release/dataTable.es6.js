@@ -1,5 +1,3 @@
-import 'angular';
-
 /* eslint-disable no-extend-native, no-bitwise */
 
 (function extendArray() {
@@ -246,7 +244,7 @@ function SortableDirective() {
 }
 
 /**
- * Sortable Directive
+ * Draggable row Directive
  * http://jsfiddle.net/RubaXa/zLq5J/3/
  * https://jsfiddle.net/hrohxze0/6/
  * @param {function}
@@ -264,6 +262,8 @@ function DraggableRowDirective() {
       let toEl;
 
       function findParentDraggable(elem) {
+        if (!elem)
+          return null;  
         var el = elem;
         do {
           if (el.hasAttribute && el.hasAttribute('draggable')) {
@@ -274,22 +274,44 @@ function DraggableRowDirective() {
         return null;
       }
 
+      function isDescendant(parent, child) {
+        var node = child.parentNode;
+        while (node != null) {
+          if (node == parent) {
+            return true;
+          }
+          node = node.parentNode;
+        }
+        return false;
+      }
+
       function onDragEnter(e) {
-        console.log(dragEl.style.cursor);
         toEl = e.target;
+      }
+
+      function onDragOver(e) {
+        if (e.preventDefault) {
+          e.preventDefault(); // Necessary. Allows us to drop.
+        }
+        if (e.dataTransfer)
+          e.dataTransfer.dropEffect = 'move'; 
+        return false;
       }
 
       function onDragEnd(evt) {
         evt.preventDefault();
-
         dragEl.classList.remove('dt-clone');
 
         $element.off('dragend', onDragEnd);
+        $element.off('dragover', onDragOver);
         $element.off('dragenter', onDragEnter);
 
+        var elem = document.elementFromPoint(evt.clientX, evt.clientY);
+        if (!isDescendant($element[0], elem))
+          toEl = null;  
         const target = findParentDraggable(toEl);
         const indexFrom = +dragEl.getAttribute('rowindex');
-        const indexTo = +target.getAttribute('rowindex');
+        const indexTo = target ? +target.getAttribute('rowindex') : -1;
         //console.log('onDragEnd', dragEl, target);
         if (target !== dragEl) {
           $scope.onDrop({
@@ -313,15 +335,16 @@ function DraggableRowDirective() {
         evt.dataTransfer.setData('Text', dragEl.textContent);
         
         $element.on('dragenter', onDragEnter);
+        $element.on('dragover', onDragOver);
         $element.on('dragend', onDragEnd);
       }
-
+      
       $element.on('dragstart', onDragStart);
 
       $scope.$on('$destroy', () => {
         $element.off('dragstart', onDragStart);
       });
-    },
+    }
   };
 }
 
@@ -980,14 +1003,13 @@ class DataTableController {
       this.calculateColumns();
     }, true);
 
-    // default sort
-    const watch = this.$scope.$watch('dt.rows', (newVal) => {
-      if (newVal) {
-        watch();
+    this.$scope.$watchCollection('dt.rows', (newVal, oldVal) => {
+      if (newVal && oldVal && newVal.length > oldVal.length) {
+
 
         this.onSorted();
       }
-    });//, true);
+    });
   }
 
   /**
@@ -2144,7 +2166,7 @@ class BodyController {
   
     let self = this;
     this.$scope.$watchCollection('body.rows', (newVal, oldVal) => { //this.rowsUpdated.bind(this));
-      if (self.treeColumn && !self._dueFiltering_ && newVal && oldVal && newVal.length != oldVal.length) {
+      if (newVal && self.treeColumn && !self._dueFiltering_) {
         self.filteredRows = self.doFilter();
       }
       self._dueFiltering_ = false;
@@ -2424,7 +2446,7 @@ class BodyController {
         const prop = this.treeColumn.parentRelationProp;
         this.index[row[prop]] = row;
 
-        if (!row[parentProp]) {
+        if (angular.isUndefined(row[parentProp])) {
           row.$$depth = 0;
         } else {
           let parent = this.index[row[parentProp]];
@@ -2516,8 +2538,21 @@ class BodyController {
     let self = this;
     this.onMoveRow({ rowFrom: from, rowTo: parent }).then(() => {
       if (self.treeColumn) {
-        //change parent
-        from[self.treeColumn.relationProp] = parent[self.treeColumn.parentRelationProp];
+        if (parent) {
+          if (parent._lazyChildren && !parent._loaded_) {
+            //for node with lazy loading - children is not yet have been loaded
+            //remove this row and her children
+            self.removeTreeRows(from[self.treeColumn.parentRelationProp]);
+          }
+          else {
+            //remove this child from old parent
+            self.removeChild(from[self.treeColumn.relationProp], from[self.treeColumn.parentRelationProp]);
+            //set new parent
+            from[self.treeColumn.relationProp] = parent[self.treeColumn.parentRelationProp];
+          }
+        }
+        else
+          from[self.treeColumn.relationProp] = null;  
         self.buildRowsByGroup();
         self.refreshTree();
       } else {
@@ -2530,6 +2565,51 @@ class BodyController {
           self.getRows(true);
       }
     }).catch((err) => console.error(err));  
+  }
+  /**
+   * Remove child from parent
+   * @param {string} parentId 
+   * @param {string} childId 
+   */
+  removeChild(parentId, childId) {
+    let key = this.treeColumn.parentRelationProp;
+    let parent = this.rows.find((value) => { 
+      return value[key] == parentId;
+    });
+    if (!parent)
+      return;  
+    if (parent.$$children) {
+      let i = parent.$$children.findIndex((child) => {
+        return child == childId;
+      });
+      if (i != -1) {
+        parent.$$children.splice(i, 1);
+      }
+    }
+  }
+  /**
+   * Remove row and her children from this.rows
+   * @param {string} id - row key
+   */
+  removeTreeRows(id) {
+    let key = this.treeColumn.parentRelationProp;
+    let row = null;
+    let index = this.rows.findIndex((value) => { 
+      return value[key] == id;
+    });
+    if (index != -1) {
+      row = this.rows[index];
+    }
+    if (row) {
+      this.rows.splice(index, 1);
+      if (this.expanded[id])
+        delete this.expanded[id];
+      if (row.$$children) {
+        row.$$children.forEach((child) => {
+          this.removeTreeRows(child);
+        });
+      }  
+    }  
   }
 
   /**
