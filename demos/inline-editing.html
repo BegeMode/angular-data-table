@@ -1,95 +1,79 @@
 <!doctype html>
-<html lang="en">
-  <head>
-    <meta charset=" utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-    <meta name="viewport" content="width = device-width, minimal-ui, initial-scale = 1, user-scalable = no" />
-    <meta name="apple-mobile-web-app-title" content="Datagrid">
-    <title>Datagrid - Templates</title>
-    <base href="/">
-    <style>
-      *, *:after, *:before {
-        -webkit-box-sizing: border-box;
-        -moz-box-sizing: border-box;
-        box-sizing: border-box;
-      }
+<html ng-app="app" lang="en">
 
-      body{
-        font-family: 'RobotoDraft', 'Roboto', 'Helvetica Neue, Helvetica, Arial', sans-serif;
-        font-style: normal;
-        font-weight: 300;
-        font-size: 1.4rem;
-        line-height: 2rem;
-        letter-spacing: 0.01rem;
-        color: #212121;
-        background-color: #f5f5f5;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-        text-rendering: optimizeLegibility;
-      }
+<head>
+  <meta charset=" utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="viewport" content="width = device-width, minimal-ui, initial-scale = 1, user-scalable = no" />
+  <meta name="apple-mobile-web-app-title" content="Datagrid">
+  <title>Datagrid - Templates</title>
+  <base href="/">
+  <style>
+    *,
+    *:after,
+    *:before {
+      -webkit-box-sizing: border-box;
+      -moz-box-sizing: border-box;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'RobotoDraft', 'Roboto', 'Helvetica Neue, Helvetica, Arial', sans-serif;
+      font-style: normal;
+      font-weight: 300;
+      font-size: 1.4rem;
+      line-height: 2rem;
+      letter-spacing: 0.01rem;
+      color: #212121;
+      background-color: #f5f5f5;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+    }
+    
+    path {
+      stroke: steelblue;
+      stroke-width: 1;
+      fill: none;
+    }
+    
+    .dt {
+      width: 75%;
+      margin: 50px auto;
+    }
+  </style>
+  <script src="http://d3js.org/d3.v3.min.js"></script>
+</head>
 
-      path{
-        stroke: steelblue;
-        stroke-width:1;
-        fill:none;
-      }
+<body ng-controller="HomeController">
 
-      .dt{
-        width:75%;
-        margin:50px auto;
-      }
+  <p>Double click a name to edit</p>
+  <dtable options="options" rows="data" class="material" style="height: 800px;"></dtable>
 
-      .dt-row-even{
-        background:#f6f7f8;
-      }
+  <script src="/assets/dataTable.js"></script>
 
-      .dt-row{
-        border: 1px solid red;
-      }
+  <code ng-bind="code"></code>
 
-      a{
-        cursor: pointer;
-        color: #0000FF;
-      }
+  <script>
+    var module = angular.module('app', ['data-table']);
 
-    </style>
-    <link href="../dist/dataTable.css" media="all" rel="stylesheet" />
-    <link href="../dist/themes/material.css" media="all" rel="stylesheet" />
-    <link href="../dist/themes/icons.css" rel="stylesheet">
-    <script src="http://d3js.org/d3.v3.min.js"></script>
-  </head>
-  <body ng-app="app" ng-controller="HomeController">
-
-    <p>Double click a name to edit</p>
-    <dtable options="options" rows="data" class="material" style="height: 800px;"></dtable>
-
-    <script src="../jspm_packages/system.js"></script>
-    <script src="../config.js"></script>
-
-    <code ng-bind="code"></code>
-
-    <script>
-
-      System.import('dataTable').then(function(dt){
-        var module = angular.module('app', [ dt.default.name ]);
-
-        module.controller('HomeController', function($scope, $http){
-          $scope.options = {
-            rowHeight: 52,
-            headerHeight: 100,
-            footerHeight: false,
-            scrollbarV: true,
-            rowDraggable: true,
-            editFilter: (row) => { return row.name != 'Ethel Price'; },
-            actionFilter: (row) => { return row.name != 'Ethel Price'; },
-            reorderable: true,
-            columns: [
-              {
-                name: "Name",
-                prop: "name",
-                width: 300,
+    module.controller('HomeController', function ($scope, $http) {
+      $scope.options = {
+        rowHeight: 52,
+        headerHeight: 100,
+        footerHeight: false,
+        scrollbarV: true,
+        rowDraggable: true,
+        editFilter: (row) => { return row.name != 'Ethel Price'; },
+        actionFilter: (row) => { return row.name != 'Ethel Price'; },
+        reorderable: true,
+        columns: [
+          {
+            name: "Name",
+            prop: "name",
+            width: 300,
                 editor: 'text',
                 filter: 'text',
                 /*cellRenderer: function($scope){
@@ -97,35 +81,35 @@
                   //return '<div ng-dblclick="editing = true" ng-show="!editing"><strong>{{$cell}}</strong></div><div><input ng-show="editing" type="text" ng-model="$cell" ng-change="changed($cell, $row, $column)" ng-blur="editing = false" /></div>';
                   return '<strong>{{$cell}}</strong>';
                 }*/
-              },
-              {
-                name: "Gender",
-                prop: "gender",
-                editor: 'text',
-                filter: 'text',
-              },
-              {
-                name: "Company",
-                prop: "company",
-                editor: 'textarea',
-                filter: 'text',
-              },
-              {
-                name: 'Actions',
-                width: 200,
-                template: '<div ng-if="actionFilter($row)"><a ng-click="destroyApp($row)">DELETE</a> | <a ng-click="display($row, $rowCtrl);">LOG</a></div>' 
-              }
-            ]
-          };
+          },
+          {
+            name: "Gender",
+            prop: "gender",
+            editor: 'text',
+            filter: 'text',
+          },
+          {
+            name: "Company",
+            prop: "company",
+            editor: 'textarea',
+            filter: 'text',
+          },
+          {
+            name: 'Actions',
+            width: 200,
+            template: '<div ng-if="actionFilter($row)"><a ng-click="destroyApp($row)">DELETE</a> | <a ng-click="display($row, $rowCtrl);">LOG</a></div>' 
+          }
+        ]
+      };
 
-          $http.get('/demos/data/100.json').then(function(data) {
-            $scope.data = data.data.splice(0, 20);
-            $scope.data[1]._noEdit = true;
-          });
+      $http.get('/data/100.json').then(function (data) {
+        $scope.data = data.data.splice(0, 20);
+        $scope.data[1]._noEdit = true;
+      });
 
-          $scope.$watch('data', function(){
-            $scope.code = JSON.stringify($scope.data, null, 2)
-          }, true)
+      $scope.$watch('data', function () {
+        $scope.code = JSON.stringify($scope.data, null, 2)
+      }, true)
 
           /*$scope.changed = function(cellVal, row, col){
             //var idx = $scope.data.indexOf(row);
@@ -143,13 +127,10 @@
             var ch = rowCtrl.rowChanges();
             console.log('rowChanges', ch);
           }
-          $scope.actionFilter = function(row) { 
-            return row.name != 'Ethel Price'; 
-          }
 
-        });
-      });
-    </script>
+    });
+  </script>
 
-  </body>
+</body>
+
 </html>

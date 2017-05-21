@@ -8,7 +8,7 @@ describe('DataTableController', () => {
   let scope = null;
   let setController = null;
 
-  beforeEach(inject(($rootScope, $filter) => {
+  beforeEach(inject(($rootScope, $filter) => { // eslint-disable-line no-undef
     scope = $rootScope.$new();
 
     setController = (bindings) => {
@@ -23,13 +23,13 @@ describe('DataTableController', () => {
 
   describe('assigning defaults', () => {
     beforeEach(() => {
-      let options = {
+      const options = {
         columns: [
           { prop: 'name', sort: 'asc' },
           { prop: 'age' }
         ]
       };
-      let rows = [
+      const rows = [
         { name: 'Walter', age: 49 },
         { name: 'Dude', age: 45 },
         { name: 'Donnie', age: 46 },
@@ -37,15 +37,15 @@ describe('DataTableController', () => {
       ];
 
       setController({
-        options: options,
-        rows: rows
+        options,
+        rows,
       });
 
       ctrl.$onInit();
     });
 
     it('should use default options', () => {
-      let expectedOptions = {
+      const expectedOptions = {
         checkboxSelection: false,
         columnMode: 'standard',
         columns: [
@@ -84,7 +84,7 @@ describe('DataTableController', () => {
         treeToggleDblClick: false
       };
 
-      let options = ctrl.options;
+      const options = ctrl.options;
       delete options.$outer;
 
       expect(ctrl.options).toEqual(expectedOptions);
@@ -93,13 +93,13 @@ describe('DataTableController', () => {
 
   describe('sorting', () => {
     beforeEach(() => {
-      let options = {
+      const options = {
         columns: [
           { prop: 'name', sort: 'asc' },
           { prop: 'age' }
         ]
       };
-      let rows = [
+      const rows = [
         { name: 'Walter', age: 49 },
         { name: 'Dude', age: 45 },
         { name: 'Donnie', age: 46 },
@@ -107,8 +107,8 @@ describe('DataTableController', () => {
       ];
 
       setController({
-        options: options,
-        rows: rows
+        options,
+        rows,
       });
 
       ctrl.$onInit();
@@ -117,7 +117,7 @@ describe('DataTableController', () => {
     it('should be sorted', () => {
       ctrl.onSorted();
 
-      let sortOrder = ctrl.rows[0].name < ctrl.rows[1].name;
+      const sortOrder = ctrl.rows[0].name < ctrl.rows[1].name;
 
       expect(sortOrder).toBe(true);
     });
@@ -140,7 +140,7 @@ describe('DataTableController', () => {
 
   describe('initializations', () => {
     beforeEach(() => {
-      let options = {
+      const options = {
         columns: [
           { prop: 'name', sort: 'asc' },
           { prop: 'age' }
@@ -150,7 +150,7 @@ describe('DataTableController', () => {
           scrollBarWidth: 10
         }
       };
-      let rows = [
+      const rows = [
         { name: 'Walter', age: 49 },
         { name: 'Dude', age: 45 },
         { name: 'Donnie', age: 46 },
@@ -158,8 +158,8 @@ describe('DataTableController', () => {
       ];
 
       setController({
-        options: options,
-        rows: rows
+        options,
+        rows,
       });
     });
 
@@ -169,7 +169,7 @@ describe('DataTableController', () => {
       });
 
       it('should set the column defaults', () => {
-        var col = ctrl.options.columns[0];
+        let col = ctrl.options.columns[0];
         delete col.$id;
         expect(col).toEqual({
           prop: 'name',
@@ -286,7 +286,7 @@ describe('DataTableController', () => {
 
   describe('table level sorting', () => {
     beforeEach(() => {
-      let options = {
+      const options = {
         sortable: false,
         columns: [
           { prop: 'name', sort: 'asc', sortable: true },
@@ -296,7 +296,7 @@ describe('DataTableController', () => {
       };
 
       setController({
-        options: options,
+        options,
         rows: []
       });
     });

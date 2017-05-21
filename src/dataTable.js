@@ -1,4 +1,4 @@
-import 'angular';
+
 
 import './utils/polyfill';
 

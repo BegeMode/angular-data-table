@@ -352,7 +352,7 @@ export default class BodyController {
         const prop = this.treeColumn.parentRelationProp;
         this.index[row[prop]] = row;
 
-        if (!row[parentProp]) {
+        if (angular.isUndefined(row[parentProp])) {
           row.$$depth = 0;
         } else {
           let parent = this.index[row[parentProp]];
