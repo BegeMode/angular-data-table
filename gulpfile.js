@@ -127,26 +127,31 @@ const RELEASE = {
   },
 };
 
-function releaser(RELEASE_TYPE) {
-  return gulp.src('release/dataTable.es6.js')
+function releaser(RELEASE_TYPE, withUglify) {
+  let stream = gulp.src('release/dataTable.es6.js')
     .pipe(babel({
       plugins: RELEASE_TYPE.PLUGINS,
       moduleId: 'DataTable',
     }))
     .pipe(ngAnnotate({
       gulpWarnings: false,
-    }))
-    .pipe(uglify())
+    }));
+  if (withUglify)
+    stream
+      .pipe(uglify());  
+  stream
     .pipe(header(banner, { pkg }))
     .pipe(rename(`dataTable${RELEASE_TYPE.EXTENSION}.js`))
     .pipe(gulp.dest('release/'));
+  return stream;
 }
 
-gulp.task('release-umd', () => releaser(RELEASE.UMD));
+gulp.task('release-umd', () => releaser(RELEASE.UMD, false));
 
-gulp.task('release-common', () => releaser(RELEASE.COMMON));
+gulp.task('release-common', () => releaser(RELEASE.COMMON, true));
 
-gulp.task('release-es6-min', () => releaser(RELEASE.MIN));
+gulp.task('release-es6-min', () => releaser(RELEASE.MIN, true));
+
 
 //
 // Test Tasks
