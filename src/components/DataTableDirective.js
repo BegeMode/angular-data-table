@@ -136,8 +136,8 @@ export default function DataTableDirective($window, $timeout, $parse) {
           };
 
           const checkSize = () => {
-            let el1 = document.getElementsByClassName('dt-body');
-            if ($elm[0].offsetHeight - el1[0].offsetHeight > 100) 
+            let dtBody = $elm.find('.dt-body');
+            if ($elm[0].offsetHeight - dtBody[0].offsetHeight > 100) 
               resize();
           };
 
