@@ -38,14 +38,14 @@ export default class BodyController {
 
     this.$scope.$watch('body.options.columns', (newVal) => {
       if (newVal) {
-        let filter = this.filterChanged();
+        const filter = this.filterChanged();
         if (filter) {
           if (this.treeColumn || this.groupColumn) {
             this._applyFilter = filter;
             this.rowsUpdated();
-          }
-          else
+          } else {
             this.rows = this.doFilter(filter);
+          }
           return;
         }
         const origTreeColumn = angular.copy(this.treeColumn);
@@ -69,9 +69,9 @@ export default class BodyController {
         this.createFilters();
       }
     }, true);
-  
-    let self = this;
-    this.$scope.$watchCollection('body.rows', (newVal, oldVal) => { //this.rowsUpdated.bind(this));
+
+    const self = this;
+    this.$scope.$watchCollection('body.rows', (newVal, oldVal) => { // this.rowsUpdated.bind(this));
       if (newVal && self.treeColumn && !self._dueFiltering_) {
         self.filteredRows = self.doFilter();
       }
@@ -88,7 +88,7 @@ export default class BodyController {
         this.groupColumn = this.options.columns.find(c => c.group);
       } else {
         this.groupColumn = undefined;
-        if(!this.treeColumn.parentRelationProp)
+        if (!this.treeColumn.parentRelationProp)
           this.treeColumn.parentRelationProp = this.treeColumn.prop;
       }
     }
@@ -138,7 +138,7 @@ export default class BodyController {
         this.updatePage();
       }));
 
-      this.watchListeners.push(this.$scope.$watch('body.options.paging.offset', (newVal) => {
+       this.watchListeners.push(this.$scope.$watch('body.options.paging.offset', (newVal) => {
         if (this.options.paging.size) {
           if (this.options.paging.mode === 'internal') {
             this.buildInternalPage();
@@ -151,7 +151,7 @@ export default class BodyController {
             });
           }
         }
-      }));
+       }));
     }
   }
 
@@ -174,7 +174,7 @@ export default class BodyController {
       }
 
       if (this.options.scrollbarV) {
-        const refresh = newVal && oldVal && newVal.length != oldVal.length; 
+        const refresh = newVal && oldVal && newVal.length != oldVal.length;
         /*const refresh = newVal && oldVal && (newVal.length === oldVal.length
           || newVal.length < oldVal.length);*/
         this.getRows(refresh);
@@ -324,7 +324,7 @@ export default class BodyController {
       this.treeColumn.relationProp :
       this.groupColumn.prop;
     let treeProp = '';
-    if(this.treeColumn)
+    if (this.treeColumn)
       treeProp = this.treeColumn.parentRelationProp; //bgmd
 
     for (let i = 0, len = this.rows.length; i < len; i += 1) {
@@ -372,7 +372,7 @@ export default class BodyController {
           row.$$depth = parent.$$depth + 1;
 
           if (parent.$$children) {
-            if(!parent.$$children.includes(row[prop]))
+            if (!parent.$$children.includes(row[prop]))
               parent.$$children.push(row[prop]);
           } else {
             parent.$$children = [row[prop]];
@@ -428,17 +428,17 @@ export default class BodyController {
    * @param  {row}
    * @return {Boolean}
    */
-  isDraggable(row){
+  isDraggable(row) {
     return this.options.rowDraggable;
   }
-  
+
   /**
    * handles `dragend` event
    * @param {object} event 
    * @param {object} row 
    * @param {object} rowTo 
-   */ 
-  onDropRow(event, indexFrom, indexTo){
+   */
+  onDropRow(event, indexFrom, indexTo) {
     const from = this.rows.find((value) => value.$$index == indexFrom);
     const parent = this.rows.find((value) => value.$$index == indexTo);
     let self = this;
@@ -456,39 +456,36 @@ export default class BodyController {
             //set new parent
             from[self.treeColumn.relationProp] = parent[self.treeColumn.parentRelationProp];
           }
+        } else {
+          from[self.treeColumn.relationProp] = null;
         }
-        else
-          from[self.treeColumn.relationProp] = null;  
         self.buildRowsByGroup();
         self.refreshTree();
       } else {
-        //merely replace
+        // merely replace
         self.rows.move(indexFrom, indexTo);
         if (self.groupColumn) {
           self.refreshGroups();
-        }
-        else
+        } else {
           self.getRows(true);
+        }
       }
-    }).catch((err) => console.error(err));;  
+    }).catch(err => console.error(err));
   }
   /**
    * Remove child from parent
-   * @param {string} parentId 
-   * @param {string} childId 
+   * @param {string} parentId
+   * @param {string} childId
    */
   removeChild(parentId, childId) {
-    let key = this.treeColumn.parentRelationProp;
-    let parent = this.rows.find((value) => { 
-      return value[key] == parentId;
-    });
-    if (!parent)
-      return;  
+    const key = this.treeColumn.parentRelationProp;
+    const parent = this.rows.find(value => value[key] === parentId);
+    if (!parent) {
+      return;
+    }
     if (parent.$$children) {
-      let i = parent.$$children.findIndex((child) => {
-        return child == childId;
-      });
-      if (i != -1) {
+      const i = parent.$$children.findIndex(child => child === childId);
+      if (i !== -1) {
         parent.$$children.splice(i, 1);
       }
     }
@@ -498,9 +495,9 @@ export default class BodyController {
    * @param {string} id - row key
    */
   removeTreeRows(id) {
-    let key = this.treeColumn.parentRelationProp;
+    const key = this.treeColumn.parentRelationProp;
     let row = null;
-    let index = this.rows.findIndex((value) => { 
+    const index = this.rows.findIndex((value) => {
       return value[key] == id;
     });
     if (index != -1) {
@@ -514,8 +511,8 @@ export default class BodyController {
         row.$$children.forEach((child) => {
           this.removeTreeRows(child);
         });
-      }  
-    }  
+      }
+    }
   }
 
   /**
@@ -527,7 +524,7 @@ export default class BodyController {
     const self = this;
 
     if (!this.filteredRows)
-      this.filteredRows = this.rows;    
+      this.filteredRows = this.rows;
     //rows filtering
     let flt = false;
     if (this._applyFilter) {
@@ -535,14 +532,14 @@ export default class BodyController {
       this._applyFilter = null;
       flt = true;
     }
-    
+
     function addChildren(fromArray, toArray, level) {
       fromArray.forEach((row) => {
         const relVal = row[self.treeColumn.relationProp];
         const key = row[self.treeColumn.parentRelationProp];
         const groupRows = self.rowsByGroup[key];
         if (flt && groupRows && groupRows.length > 0)
-          self.expanded[key] = true;  
+          self.expanded[key] = true;
         const expanded = self.expanded[key];
 
         if (level > 0 || !relVal) {
@@ -712,7 +709,7 @@ export default class BodyController {
    */
   getRowExpanded(row) {
     if (this.treeColumn) {
-      return row && this.treeColumn.parentRelationProp? this.expanded[row[this.treeColumn.parentRelationProp]] : false;
+      return row && this.treeColumn.parentRelationProp ? this.expanded[row[this.treeColumn.parentRelationProp]] : false;
     } else if (this.groupColumn) {
       return this.expanded[row.name];
     }
@@ -720,11 +717,11 @@ export default class BodyController {
     return undefined;
   }
 
-   /**  bgmd
-   * Calculates if a row is loading data now  for tree grids.
-   * @param  {row}
-   * @return {boolean}
-   */
+  /**  bgmd
+  * Calculates if a row is loading data now  for tree grids.
+  * @param  {row}
+  * @return {boolean}
+  */
   getRowLoading(row) {
     if (this.treeColumn) {
       return this.loading[row[this.treeColumn.parentRelationProp]];
@@ -840,10 +837,10 @@ export default class BodyController {
       let column = this.options.columns[i];
       if (!column.filter)
         continue;
-     let filter = this.filters[column.name];
-     if (filter && filter.phrase != column.filterKeywords) {
-       filter.phrase = column.filterKeywords;
-       return filter;//{ col: column, filterKeywords: column.filterKeywords };
+      let filter = this.filters[column.name];
+      if (filter && filter.phrase != column.filterKeywords) {
+        filter.phrase = column.filterKeywords;
+        return filter;//{ col: column, filterKeywords: column.filterKeywords };
       }
     }
     return false;
@@ -862,7 +859,7 @@ export default class BodyController {
     const self = this;
     this.options.columns.forEach((col, index) => {
       if (!col.filter)
-        return;  
+        return;
       let filter = {
         name: col.name,
         prop: col.prop,
@@ -883,14 +880,14 @@ export default class BodyController {
   headerReordered() {
     //console.info('onHeaderReorder');
     if (!this.filters || !this.filters.list.length)
-      return;  
+      return;
     const initRows = this.filters.list[0].rowsBefore;
     //const list = this.filters.list;
     this.filters.list = [];
     const self = this;
     this.options.columns.forEach((col, index) => {
       if (!col.filter)
-        return;  
+        return;
       let filter = self.filters[col.name];
       filter.rowsBefore = null;
       filter.rowsAfter = null;
@@ -904,7 +901,7 @@ export default class BodyController {
     //filter rows again starting with first column
     this.rows = this.doFilter(this.filters.list[0]);
   }
-  
+
   /** bgmd
    * Filter pipeline
    * @param {object} filter 
@@ -925,7 +922,7 @@ export default class BodyController {
       result = f.rowsAfter = f.rowsBefore.filter(function (row) {
         return (row[f.prop] && row[f.prop].toLowerCase().indexOf(f.phrase) !== -1) || !f.phrase;
       });
-    }  
+    }
     return result;
   }
 
@@ -959,8 +956,8 @@ export default class BodyController {
     else {
       filter = this.filters.list[0];
       filter.rowsBefore = this.rows;
-    }  
-    let rows = this.filterPipe(filter); 
+    }
+    let rows = this.filterPipe(filter);
     return rows;
   }
 

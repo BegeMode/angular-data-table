@@ -58,9 +58,11 @@ export default class DataTableController {
   defaults() {
     this.expanded = this.expanded || {};
 
-    this.options = Object.assign({}, TableDefaults, this.options);
+    const tableDefaults = angular.copy(TableDefaults);
+    this.options = Object.assign({}, tableDefaults, this.options);
 
-    angular.forEach(TableDefaults.paging, (v, k) => {
+    
+    angular.forEach(tableDefaults.paging, (v, k) => {
       if (!this.options.paging[k]) {
         this.options.paging[k] = v;
       }
@@ -113,13 +115,13 @@ export default class DataTableController {
     });
   }
 
-  /*setFilterTemplate() {
+  /* setFilterTemplate() {
     angular.forEach(this.options.columns, (column) => {
       if (column.filter) {
         column.headerFilterTemplate = `<input type="text" ng-model-options="{ debounce: 100 }" placeholder="Filter names" ng-click="prev($event)" ng-model="$parent.filterKeywords" style="width:100%;"/>`;
       }
     });
-  }*/
+  } */
 
   /**
    * Calculate column groups and widths

@@ -55,7 +55,6 @@
   <dtable options="options10" rows="data" class="material"></dtable>
 
   <script src="/assets/dataTable.js"></script>
-  <script src="../config.js"></script>
 
   <script>
     var module = angular.module('app', ['data-table']);
@@ -74,6 +73,7 @@
 
       $scope.options1 = angular.copy(options);
       $scope.options2 = angular.copy(options);
+      //$scope.options2.rowHeight = 60;
       $scope.options3 = angular.copy(options);
       $scope.options4 = angular.copy(options);
       $scope.options5 = angular.copy(options);
@@ -83,8 +83,8 @@
       $scope.options9 = angular.copy(options);
       $scope.options10 = angular.copy(options);
 
-      $http.get('/data/complex-100000.json').success(function (data) {
-        $scope.data = data;
+      $http.get('/data/complex-100000.json').then(function (data) {
+        $scope.data = data.data;
       });
 
     });
