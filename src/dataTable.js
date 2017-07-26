@@ -10,6 +10,7 @@ import HeaderDirective from './components/header/HeaderDirective';
 import HeaderCellDirective from './components/header/HeaderCellDirective';
 import BodyDirective from './components/body/BodyDirective';
 import ScrollerDirective from './components/body/ScrollerDirective';
+import SuspendableDirective from './components/body/SuspendableDirective';
 import SelectionDirective from './components/body/SelectionDirective';
 import RowDirective from './components/body/RowDirective';
 import GroupRowDirective from './components/body/GroupRowDirective';
@@ -33,6 +34,7 @@ export default angular
   .directive('dtHeaderCell', HeaderCellDirective)
   .directive('dtBody', BodyDirective)
   .directive('dtScroller', ScrollerDirective)
+  .directive('dtSuspendable', SuspendableDirective)
   .directive('dtSelection', SelectionDirective)
   .directive('dtRow', RowDirective)
   .directive('dtGroupRow', GroupRowDirective)

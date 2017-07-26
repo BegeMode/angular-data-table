@@ -1,5 +1,6 @@
 import { requestAnimFrame } from '../../utils/utils';
 import StyleTranslator from './StyleTranslator';
+//import { debounce } from '../../utils/throttle';
 
 export default function ScrollerDirective() {
   return {
@@ -22,6 +23,11 @@ export default function ScrollerDirective() {
         parent[0].scrollTop = offsetY;
       };
 
+      /*const digest = debounce(() => {
+        console.log('digest');
+        ctrl.options.$outer.$digest();
+      }, 10, false);*/
+
       function update() {
         ctrl.options.internal.offsetY = lastScrollY;
         ctrl.options.internal.offsetX = lastScrollX;
@@ -32,6 +38,7 @@ export default function ScrollerDirective() {
         }
 
         ctrl.options.$outer.$digest();
+        //digest();
 
         ticking = false;
       }
@@ -43,12 +50,24 @@ export default function ScrollerDirective() {
         }
       }
 
-      parent.on('scroll', function onScroll() {
-        lastScrollY = this.scrollTop;
-        lastScrollX = this.scrollLeft;
-
+      const onScroll = (e) => { 
+        //console.log('scroll');
+        const self = e.target;
+        if (ctrl._hackToAvoidUnwantedScroll_) {
+          self.scrollTop = lastScrollY;
+          self.scrollLeft = lastScrollX;
+          ctrl._hackToAvoidUnwantedScroll_ = void 0;
+          return;
+        }
+        lastScrollY = self.scrollTop;
+        lastScrollX = self.scrollLeft;
+        $scope.$broadcast('suspend');
         requestTick();
-      });
+        $scope.$broadcast('resume');
+      };
+        
+
+      parent.on('scroll', onScroll);
 
       $scope.$on('$destroy', () => {
         parent.off('scroll');
@@ -57,7 +76,7 @@ export default function ScrollerDirective() {
       $scope.scrollerStyles = () => {
         if (ctrl.options.scrollbarV) {
           return {
-            height: `${ctrl.count * ctrl.options.rowHeight}px`,
+            height: `${ctrl.tempRows.length * ctrl.options.rowHeight}px`,
           };
         }
 

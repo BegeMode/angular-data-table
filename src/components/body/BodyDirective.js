@@ -22,7 +22,7 @@ export default function BodyDirective() {
     },
     scope: true,
     template: `
-      <div
+      <div dt-suspendable
         class="progress-linear"
         role="progressbar"
         ng-show="body.options.loadingIndicator">
@@ -30,10 +30,10 @@ export default function BodyDirective() {
           <div class="bar"></div>
         </div>
       </div>
-      <div class="dt-body" ng-style="body.styles()" dt-selection 
+      <div class="dt-body" ng-style="body.styles()" dt-selection dt-suspendable 
                draggable-row="body.options.rowDraggable"
                on-drop="body.onDropRow(event, indexFrom, indexTo)">
-        <dt-scroller class="dt-body-scroller">
+        <dt-scroller class="dt-body-scroller" dt-suspendable>
           <dt-group-row ng-repeat-start="r in body.tempRows track by $index"
                         ng-if="r.group"
                         ng-style="body.groupRowStyles(r)"
@@ -44,7 +44,7 @@ export default function BodyDirective() {
                         tabindex="{{$index}}"
                         row="r">
           </dt-group-row>
-          <dt-row ng-repeat-end
+          <dt-row ng-repeat-end dt-suspendable
                   ng-if="!r.group"
                   row="body.getRowValue($index)"
                   tabindex="{{$index}}"
@@ -67,11 +67,11 @@ export default function BodyDirective() {
                   is-draggable="body.isDraggable(r)">
           </dt-row>
         </dt-scroller>
-        <div ng-if="body.rows && !body.rows.length"
+        <div ng-if="body.rows && !body.rows.length" dt-suspendable
              class="empty-row"
              ng-bind="::body.options.emptyMessage">
        </div>
-       <div ng-if="body.rows === undefined"
+       <div ng-if="body.rows === undefined" dt-suspendable
              class="loading-row"
              ng-bind="::body.options.loadingMessage">
         </div>
