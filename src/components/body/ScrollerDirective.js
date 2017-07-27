@@ -44,6 +44,12 @@ export default function ScrollerDirective() {
       }
 
       parent.on('scroll', function onScroll() {
+        if (ctrl._hackToAvoidUnwantedScroll_) {
+          this.scrollTop = lastScrollY;
+          this.scrollLeft = lastScrollX;
+          ctrl._hackToAvoidUnwantedScroll_ = void 0;
+          return;
+        }
         lastScrollY = this.scrollTop;
         lastScrollX = this.scrollLeft;
 
