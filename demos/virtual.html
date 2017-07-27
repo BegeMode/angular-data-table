@@ -66,8 +66,8 @@
         ]
       };
 
-      $http.get('/data/complex-100000.json').success(function (data) {
-        $scope.data = data;
+      $http.get('/data/complex-100000.json').then(function (data) {
+        $scope.data = data.data;
       });
 
     });
