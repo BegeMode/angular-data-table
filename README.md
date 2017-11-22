@@ -42,9 +42,9 @@ See live demos [here]( http://begemode.github.io/angular-data-table/).
 
 #### Download This Fork
 
-- NPM `npm install begemode/angular-data-table`
+/*- NPM `npm install begemode/angular-data-table`*/
 
-or Github download or clone of course!
+Github download or clone of course!
 
 
 
