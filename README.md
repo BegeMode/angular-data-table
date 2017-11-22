@@ -26,7 +26,7 @@ See live demos [here]( http://begemode.github.io/angular-data-table/).
 - Intelligent Column Width Algorithms ( Force fill / Flex-grow )
 - Horizontal/Vertical Scrolling
 - Virtual Paging WITH linked traditional pager
-- Tree Grids #with lazy load
+- Tree Grids **with lazy load**
 - Row Grouping
 - Checkbox and Row Selection ( multi / single / keyboard / touch )
 - Light codebase / No external dependencies
