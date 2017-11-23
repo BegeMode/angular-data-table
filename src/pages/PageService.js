@@ -90,7 +90,7 @@
         content: 'column-pinning',
         group: PAGE_GROUP.GROUPING
       },{
-        name: 'Tree with lazy load',
+        name: 'Tree with lazy loading',
         codepen: 'LOmaby',
         content: 'tree',
         group: PAGE_GROUP.GROUPING
