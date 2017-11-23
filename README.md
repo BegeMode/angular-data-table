@@ -1,12 +1,12 @@
 # angular-data-table
 
 [![Join the chat at https://gitter.im/Swimlane/angular-data-table](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/swimlane/angular-data-table?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Build Status](https://travis-ci.org/begemode/angular-data-table.svg?branch=master)](https://travis-ci.org/begemode/angular-data-table)
+<!--- [![Build Status](https://travis-ci.org/begemode/angular-data-table.svg?branch=master)](https://travis-ci.org/begemode/angular-data-table) --->
 [![GitHub version](https://badge.fury.io/gh/begemode%2Fangular-data-table.svg)](https://badge.fury.io/gh/begemode%2Fangular-data-table)
-[![dependencies Status](https://img.shields.io/david/begemode/angular-data-table.svg)](https://david-dm.org/begemode/angular-data-table)
-[![devDependencies Status](https://img.shields.io/david/dev/begemode/angular-data-table.svg)](https://david-dm.org/begemode/angular-data-table?type=dev)
-[![Code Climate](https://codeclimate.com/github/begemode/angular-data-table/badges/gpa.svg)](https://codeclimate.com/github/begemode/angular-data-table)
-[![Codecov](https://img.shields.io/codecov/c/github/begemode/angular-data-table.svg)](https://codecov.io/gh/begemode/angular-data-table)
+<!--- [![dependencies Status](https://img.shields.io/david/begemode/angular-data-table.svg)](https://david-dm.org/begemode/angular-data-table) --->
+<!--- [![devDependencies Status](https://img.shields.io/david/dev/begemode/angular-data-table.svg)](https://david-dm.org/begemode/angular-data-table?type=dev) --->
+<!--- [![Code Climate](https://codeclimate.com/github/begemode/angular-data-table/badges/gpa.svg)](https://codeclimate.com/github/begemode/angular-data-table) --->
+<!--- [![Codecov](https://img.shields.io/codecov/c/github/begemode/angular-data-table.svg)](https://codecov.io/gh/begemode/angular-data-table) --->
 
 `angular-data-table` is a AngularJS directive for presenting large and complex data.  It has all the features you would expect from any other table but in a light package with _no external depedencies_. The table was designed to be extremely flexible and light; it doesn't make any assumptions about your data or how you: filter, sort or page it.
 
@@ -26,7 +26,7 @@ See live demos [here]( http://begemode.github.io/angular-data-table/).
 - Intelligent Column Width Algorithms ( Force fill / Flex-grow )
 - Horizontal/Vertical Scrolling
 - Virtual Paging WITH linked traditional pager
-- Tree Grids **with lazy load**
+- Tree Grids **with lazy loading**
 - Row Grouping
 - Checkbox and Row Selection ( multi / single / keyboard / touch )
 - Light codebase / No external dependencies

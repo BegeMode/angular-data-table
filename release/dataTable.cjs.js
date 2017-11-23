@@ -1,6 +1,6 @@
 /**
  * angular-data-table - A feature-rich but lightweight ES6 AngularJS Data Table crafted for large data sets!
- * @version v0.8.0
+ * @version v0.9.0
  * @link http://jonshaffer.github.io/angular-data-table/
  * @license MIT
  */
