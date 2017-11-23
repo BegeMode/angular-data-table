@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jonshaffer/angular-data-table.git"
+    "url": "git+https://github.com/begemode/angular-data-table.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/jonshaffer/angular-data-table/issues"
+    "url": "https://github.com/begemode/angular-data-table/issues"
   },
-  "homepage": "https://github.com/jonshaffer/angular-data-table#readme",
+  "homepage": "https://github.com/begemode/angular-data-table#readme",
   "dependencies": {
     "node-static": "^0.7.9"
   }
