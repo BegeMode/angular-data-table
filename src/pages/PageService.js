@@ -16,7 +16,7 @@
     var pages = [
       {
         name: 'Basic',
-        codepen: 'QKoRpk',
+        codepen: 'pdVGGG',
         content: 'basic',
         group: PAGE_GROUP.BASIC
       },{
@@ -90,8 +90,8 @@
         content: 'column-pinning',
         group: PAGE_GROUP.GROUPING
       },{
-        name: 'Tree',
-        codepen: 'bwkyAj',
+        name: 'Tree with lazy load',
+        codepen: 'LOmaby',
         content: 'tree',
         group: PAGE_GROUP.GROUPING
       },{
