@@ -107,8 +107,8 @@
             ]
           };
 
-          $http.get('/data/olympics.json').success(function(data) {
-            $scope.data = data;
+          $http.get('/data/olympics.json').then(function(data) {
+            $scope.data = data.data;
           });
 
         });

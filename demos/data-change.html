@@ -65,8 +65,8 @@
             ]
           };
 
-          $http.get('/data/100.json').success(function(data) {
-            $scope.dataPool = data;
+          $http.get('/data/100.json').then(function(data) {
+            $scope.dataPool = data.data;
 
             $scope.data = $scope.dataPool.slice(0, 4);
             $scope.currentIndex = 5;

@@ -99,8 +99,8 @@
         ]
       };
 
-      $http.get('/data/100.json').success(function (data) {
-        $scope.data = data.splice(0, 15);
+      $http.get('/data/100.json').then(function (data) {
+        $scope.data = data.data.splice(0, 15);
         $scope.data.forEach(person => person.companyLink = { text: person.company, link: 'http://lmgtfy.com/?q=' + person.company })
       });
 

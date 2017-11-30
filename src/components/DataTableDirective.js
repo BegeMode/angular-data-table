@@ -34,7 +34,7 @@ export default function DataTableDirective($window, $timeout, $parse) {
 
       DataTableService.saveColumns(id, columns);
 
-      return `<div class="dt" ng-class="dt.tableCss()" data-column-id="${id}">
+      return `<div class="dt" ng-class="dt.tableCss()" ng-style="dt.tableStyles()" data-column-id="${id}">
           <dt-header options="dt.options"
                      columns="dt.columnsByPin"
                      column-widths="dt.columnWidths"

@@ -165,6 +165,11 @@ export const TableDefaults = {
    * @type {boolean}
    */
   treeToggleDblClick: false,
+  /**
+   * The font size, it is better to use "rem" units
+   * @type {boolean}
+   */
+  fontSize: null,
 };
 
 /**

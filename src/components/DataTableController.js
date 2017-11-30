@@ -15,7 +15,7 @@ export default class DataTableController {
       $scope,
       $filter,
       $q,
-      $attrs
+      $attrs,
     });
 
     if (isOldAngular()) {
@@ -45,8 +45,6 @@ export default class DataTableController {
 
     this.$scope.$watchCollection('dt.rows', (newVal, oldVal) => {
       if (newVal && oldVal && newVal.length > oldVal.length) {
-
-
         this.onSorted();
       }
     });
@@ -142,6 +140,19 @@ export default class DataTableController {
       selectable: this.options.selectable,
       checkboxable: this.options.checkboxSelection,
     };
+  }
+
+  /**
+   * Returns the css styles for the data table.
+   * @return {style object}
+   */
+  tableStyles() {
+    const styles = {
+    };
+    if (this.options.fontSize) {
+      styles['font-size'] = this.options.fontSize;
+    }
+    return styles;
   }
 
   /**

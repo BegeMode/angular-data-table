@@ -90,8 +90,8 @@
       $scope.loadData = function () {
         $scope.data = undefined;
 
-        $http.get('/data/olympics.json').success(function (data) {
-          $scope.data = data;
+        $http.get('/data/olympics.json').then(function (data) {
+          $scope.data = data.data;
 
           if ($scope.hasPaging) {
             angular.extend($scope.options, {
