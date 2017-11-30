@@ -79,7 +79,7 @@
         }]
       };
 
-      $http.get('/data/100.json').success(function (data) {
+      $http.get('/data/100.json').then(function (data) {
         var subData = data.splice(0, 5);
 
         for (var i = 0; i < subData.length; i++) {

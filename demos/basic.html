@@ -54,6 +54,7 @@
         footerHeight: false,
         scrollbarV: false,
         selectable: false,
+        fontSize: '1.2rem',
         columns: [
           { name: "Name", width: 300 },
           { name: "Gender" },
@@ -65,8 +66,8 @@
         console.log('Row Double Clicked', row);
       }
 
-      $http.get('/data/100.json').success(function (data) {
-        $scope.data = data;
+      $http.get('/data/100.json').then(function (data) {
+        $scope.data = data.data;
       });
     });
   </script>

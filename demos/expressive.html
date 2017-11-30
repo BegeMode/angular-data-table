@@ -90,8 +90,8 @@
 
           $scope.monkey = "iz"
 
-          $http.get('/data/100.json').success(function(data) {
-            $scope.data = data.splice(0, 5);
+          $http.get('/data/100.json').then(function(data) {
+            $scope.data = data.data.splice(0, 5);
           });
 
         });

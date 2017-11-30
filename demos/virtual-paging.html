@@ -70,8 +70,8 @@
         columnMode: 'force'
       };
 
-      $http.get('/data/100.json').success(function (d) {
-        $scope.data = d;
+      $http.get('/data/100.json').then(function (d) {
+        $scope.data = d.data;
       });
     });
   </script>

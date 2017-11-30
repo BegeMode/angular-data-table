@@ -74,8 +74,8 @@
       $scope.data = undefined;
 
       $timeout(function () {
-        $http.get('/data/100.json').success(function (data) {
-          $scope.data = data;
+        $http.get('/data/100.json').then(function (data) {
+          $scope.data = data.data;
         });
       }, 5000);
 

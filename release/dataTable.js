@@ -604,7 +604,12 @@
      * If yes then tree will be toggled by double click
      * @type {boolean}
      */
-    treeToggleDblClick: false
+    treeToggleDblClick: false,
+    /**
+     * The font size, it is better to use "rem" units
+     * @type {boolean}
+     */
+    fontSize: null
   };
 
   /**
@@ -1108,7 +1113,6 @@
 
         this.$scope.$watchCollection('dt.rows', function (newVal, oldVal) {
           if (newVal && oldVal && newVal.length > oldVal.length) {
-
             _this.onSorted();
           }
         });
@@ -1191,6 +1195,15 @@
           selectable: this.options.selectable,
           checkboxable: this.options.checkboxSelection
         };
+      }
+    }, {
+      key: 'tableStyles',
+      value: function tableStyles() {
+        var styles = {};
+        if (this.options.fontSize) {
+          styles['font-size'] = this.options.fontSize;
+        }
+        return styles;
       }
     }, {
       key: 'adjustColumns',
@@ -1547,7 +1560,7 @@
 
         DataTableService.saveColumns(id, columns);
 
-        return '<div class="dt" ng-class="dt.tableCss()" data-column-id="' + id + '">\n          <dt-header options="dt.options"\n                     columns="dt.columnsByPin"\n                     column-widths="dt.columnWidths"\n                     ng-if="dt.options.headerHeight"\n                     on-resize="dt.onResized(column, width)"\n                     selected-rows="dt.selected"\n                     all-rows="dt.rows"\n                     on-sort="dt.onSorted()">\n          </dt-header>\n          <dt-body rows="dt.rows"\n                   selected="dt.selected"\n                   expanded="dt.expanded"\n                   columns="dt.columnsByPin"\n                   on-select="dt.onSelected(rows)"\n                   on-row-click="dt.onRowClicked(row)"\n                   on-row-dbl-click="dt.onRowDblClicked(row)"\n                   column-widths="dt.columnWidths"\n                   options="dt.options"\n                   on-page="dt.onBodyPage(offset, size)"\n                   on-tree-toggle="dt.onTreeToggled(row, cell)"\n                   on-tree-loader="dt.onTreeLoad(row, cell)"   \n                   on-move-row="dt.moveRow(rowFrom, rowTo)">   \n           </dt-body>\n          <dt-footer ng-if="dt.options.footerHeight || dt.options.paging.mode"\n                     ng-style="{ height: dt.options.footerHeight + \'px\' }"\n                     on-page="dt.onFooterPage(offset, size)"\n                     paging="dt.options.paging">\n           </dt-footer>\n        </div>';
+        return '<div class="dt" ng-class="dt.tableCss()" ng-style="dt.tableStyles()" data-column-id="' + id + '">\n          <dt-header options="dt.options"\n                     columns="dt.columnsByPin"\n                     column-widths="dt.columnWidths"\n                     ng-if="dt.options.headerHeight"\n                     on-resize="dt.onResized(column, width)"\n                     selected-rows="dt.selected"\n                     all-rows="dt.rows"\n                     on-sort="dt.onSorted()">\n          </dt-header>\n          <dt-body rows="dt.rows"\n                   selected="dt.selected"\n                   expanded="dt.expanded"\n                   columns="dt.columnsByPin"\n                   on-select="dt.onSelected(rows)"\n                   on-row-click="dt.onRowClicked(row)"\n                   on-row-dbl-click="dt.onRowDblClicked(row)"\n                   column-widths="dt.columnWidths"\n                   options="dt.options"\n                   on-page="dt.onBodyPage(offset, size)"\n                   on-tree-toggle="dt.onTreeToggled(row, cell)"\n                   on-tree-loader="dt.onTreeLoad(row, cell)"   \n                   on-move-row="dt.moveRow(rowFrom, rowTo)">   \n           </dt-body>\n          <dt-footer ng-if="dt.options.footerHeight || dt.options.paging.mode"\n                     ng-style="{ height: dt.options.footerHeight + \'px\' }"\n                     on-page="dt.onFooterPage(offset, size)"\n                     paging="dt.options.paging">\n           </dt-footer>\n        </div>';
       },
       compile: function compile() {
         return {

@@ -519,6 +519,11 @@ const TableDefaults = {
    * @type {boolean}
    */
   treeToggleDblClick: false,
+  /**
+   * The font size, it is better to use "rem" units
+   * @type {boolean}
+   */
+  fontSize: null,
 };
 
 /**
@@ -979,7 +984,7 @@ class DataTableController {
       $scope,
       $filter,
       $q,
-      $attrs
+      $attrs,
     });
 
     if (isOldAngular()) {
@@ -1009,8 +1014,6 @@ class DataTableController {
 
     this.$scope.$watchCollection('dt.rows', (newVal, oldVal) => {
       if (newVal && oldVal && newVal.length > oldVal.length) {
-
-
         this.onSorted();
       }
     });
@@ -1106,6 +1109,19 @@ class DataTableController {
       selectable: this.options.selectable,
       checkboxable: this.options.checkboxSelection,
     };
+  }
+
+  /**
+   * Returns the css styles for the data table.
+   * @return {style object}
+   */
+  tableStyles() {
+    const styles = {
+    };
+    if (this.options.fontSize) {
+      styles['font-size'] = this.options.fontSize;
+    }
+    return styles;
   }
 
   /**
@@ -1493,7 +1509,7 @@ function DataTableDirective($window, $timeout, $parse) {
 
       DataTableService.saveColumns(id, columns);
 
-      return `<div class="dt" ng-class="dt.tableCss()" data-column-id="${id}">
+      return `<div class="dt" ng-class="dt.tableCss()" ng-style="dt.tableStyles()" data-column-id="${id}">
           <dt-header options="dt.options"
                      columns="dt.columnsByPin"
                      column-widths="dt.columnWidths"
