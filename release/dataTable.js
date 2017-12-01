@@ -2079,7 +2079,7 @@
         this.setTreeAndGroupColumns();
         this.setConditionalWatches();
 
-        this.$scope.$watch('body.options.columns', function (newVal) {
+        this.$scope.$watch('body.options.columns', function (newVal, oldVal) {
           if (newVal) {
             var filter = _this8.filterChanged();
             if (filter) {
@@ -2090,7 +2090,10 @@
                 _this8.rows = _this8.doFilter(filter);
               }
               return;
+            } else {
+              _this8.rows = _this8.doFilter();
             }
+
             var origTreeColumn = angular.copy(_this8.treeColumn);
             var origGroupColumn = angular.copy(_this8.groupColumn);
 
@@ -2107,7 +2110,13 @@
                 _this8.refreshGroups();
               }
             }
-            _this8.createFilters();
+            if (BodyController.isColumnsReordered(newVal, oldVal)) {
+              _this8.headerReordered();
+            } else if (BodyController.isAddOrRemoveColumns(newVal, oldVal)) {
+              _this8.createFilters(true);
+            } else {
+              _this8.createFilters();
+            }
           }
         }, true);
 
@@ -2848,9 +2857,9 @@
       }
     }, {
       key: 'createFilters',
-      value: function createFilters() {
-        if (this.filters) {
-          return this.headerReordered();
+      value: function createFilters(force) {
+        if (!force && this.filters) {
+          return;
         }
         this.filters = {
           list: []
@@ -2958,6 +2967,33 @@
         }
         var rows = this.filterPipe(filter);
         return rows;
+      }
+    }], [{
+      key: 'isColumnsReordered',
+      value: function isColumnsReordered(newCols, oldCols) {
+        if (!newCols || !oldCols) {
+          return false;
+        }
+        if (newCols.length !== oldCols.length) {
+          return false;
+        }
+        for (var i = 0; i < newCols.length; i++) {
+          if (newCols[i].id !== oldCols[i].id) {
+            return true;
+          }
+        }
+        return false;
+      }
+    }, {
+      key: 'isAddOrRemoveColumns',
+      value: function isAddOrRemoveColumns(newCols, oldCols) {
+        if (!newCols || !oldCols) {
+          return false;
+        }
+        if (newCols.length !== oldCols.length) {
+          return true;
+        }
+        return false;
       }
     }]);
 

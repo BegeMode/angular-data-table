@@ -2153,7 +2153,7 @@ class BodyController {
     this.setTreeAndGroupColumns();
     this.setConditionalWatches();
 
-    this.$scope.$watch('body.options.columns', (newVal) => {
+    this.$scope.$watch('body.options.columns', (newVal, oldVal) => {
       if (newVal) {
         const filter = this.filterChanged();
         if (filter) {
@@ -2164,7 +2164,10 @@ class BodyController {
             this.rows = this.doFilter(filter);
           }
           return;
+        } else {
+          this.rows = this.doFilter();
         }
+        
         const origTreeColumn = angular.copy(this.treeColumn);
         const origGroupColumn = angular.copy(this.groupColumn);
 
@@ -2183,7 +2186,13 @@ class BodyController {
             this.refreshGroups();
           }
         }
-        this.createFilters();
+        if (BodyController.isColumnsReordered(newVal, oldVal)) {
+          this.headerReordered();
+        } else if (BodyController.isAddOrRemoveColumns(newVal, oldVal)) {
+          this.createFilters(true);
+        } else {
+          this.createFilters();
+        }
       }
     }, true);
 
@@ -2198,6 +2207,31 @@ class BodyController {
       self._dueFiltering_ = false;
       self.rowsUpdated(newVal, oldVal);
     });
+  }
+
+  static isColumnsReordered(newCols, oldCols) {
+    if (!newCols || !oldCols) {
+      return false;
+    }
+    if (newCols.length !== oldCols.length) {
+      return false;
+    }
+    for (let i = 0; i < newCols.length; i++) {
+      if (newCols[i].id !== oldCols[i].id) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  static isAddOrRemoveColumns(newCols, oldCols) {
+    if (!newCols || !oldCols) {
+      return false;
+    }
+    if (newCols.length !== oldCols.length) {
+      return true;
+    }
+    return false;
   }
 
   setTreeAndGroupColumns() {
@@ -2961,10 +2995,14 @@ class BodyController {
    * @returns {object} filter object
    */
   filterChanged() {
-    if (!this.filters)      { return false; }
+    if (!this.filters) {
+      return false;
+    }
     for (let i = 0; i < this.options.columns.length; i++) {
       const column = this.options.columns[i];
-      if (!column.filter)        { continue; }
+      if (!column.filter) {
+        continue;
+      }
       const filter = this.filters[column.name];
       if (filter && filter.phrase != column.filterKeywords) {
         filter.phrase = column.filterKeywords;
@@ -2977,16 +3015,18 @@ class BodyController {
   /** bgmd
   * create filter's helper object
   */
-  createFilters() {
-    if (this.filters) {
-      return this.headerReordered();
+  createFilters(force) {
+    if (!force && this.filters) {
+      return;
     }
     this.filters = {
       list: [],
     };
     const self = this;
     this.options.columns.forEach((col, index) => {
-      if (!col.filter)        { return; }
+      if (!col.filter) {
+        return;
+      }
       const filter = {
         name: col.name,
         prop: col.prop,
@@ -3006,13 +3046,17 @@ class BodyController {
    */
   headerReordered() {
     // console.info('onHeaderReorder');
-    if (!this.filters || !this.filters.list.length)      { return; }
+    if (!this.filters || !this.filters.list.length) {
+      return;
+    }
     const initRows = this.filters.list[0].rowsBefore;
     // const list = this.filters.list;
     this.filters.list = [];
     const self = this;
     this.options.columns.forEach((col, index) => {
-      if (!col.filter)        { return; }
+      if (!col.filter) {
+        return;
+      }
       const filter = self.filters[col.name];
       filter.rowsBefore = null;
       filter.rowsAfter = null;
