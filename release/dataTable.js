@@ -2978,7 +2978,7 @@
           return false;
         }
         for (var i = 0; i < newCols.length; i++) {
-          if (newCols[i].id !== oldCols[i].id) {
+          if (newCols[i].$id !== oldCols[i].$id) {
             return true;
           }
         }
