@@ -20,7 +20,7 @@ export default class SelectionController {
   }
 
   init() {
-    this.checkedRows = new Map();
+    this.checkedRows = this.body.checkedRows;
     if (this.options && this.options.columns) {
       this.hasTreeColumn = this.options.columns.find(c => c.isTreeColumn) != null;
     }
@@ -96,44 +96,16 @@ export default class SelectionController {
     // this.selectRow(event, index, row);
     this.checkRow(row);
     // if tree check subtrees
-    if (this.hasTreeColumn) {
-      this.checkSubNodes(row);
+    if (this.hasTreeColumn && this.options.autoCheckSubNodes) {
+      const state = this.getCheckState(row);
+      this.checkSubNodes(row, state);
     }
   }
 
-  checkRow(row) {
-    if (!row) {
-      return;
+  getCheckState(row) {
+    if (!row || !this.checkedRows) {
+      return false;
     }
-    let checked = this.checkedRows.get(row);
-    if (!checked) {
-      checked = false;
-    }
-    this.checkedRows.set(row, !checked);
-  }
-
-  checkSubNodes(row) {
-    if (!row) {
-      return;
-    }
-    if (row) {
-      if (row.$$children) {
-        row.$$children.forEach((child) => {
-          const key = this.body.treeColumn.parentRelationProp;
-          let r = null;
-          const index = this.body.rows.findIndex(value => value[key] === child);
-          if (index !== -1) {
-            r = this.body.rows[index];
-          }
-          this.checkRow(r);
-          this.checkSubNodes(r);
-        });
-      }
-    }
-  }
-
-
-  isChecked(row) {
     let checked = this.checkedRows.get(row);
     if (!checked) {
       checked = false;
@@ -141,6 +113,39 @@ export default class SelectionController {
     return checked;
   }
 
+  checkRow(row, check) {
+    if (!row) {
+      return;
+    }
+    const checked = angular.isDefined(check) ? check : !this.getCheckState(row);
+    this.checkedRows.set(row, checked);
+    row._checked = checked;
+    /* if (angular.isDefined(check)) {
+      this.checkedRows.set(row, check);
+    } else {
+      const checked = this.getCheckState(row);
+      this.checkedRows.set(row, !checked);
+    }*/
+  }
+
+  checkSubNodes(row, checkState) {
+    if (!row) {
+      return;
+    }
+    if (row) {
+      if (row.$$children) {
+        row.$$children.forEach((child) => {
+          const { row: r } = this.body.getRowInTree(child);
+          this.checkRow(r, checkState);
+          this.checkSubNodes(r, checkState);
+        });
+      }
+    }
+  }
+
+  isChecked(row) {
+    return this.getCheckState(row);
+  }
 
   /**
    * Selects a row and places in the selection collection

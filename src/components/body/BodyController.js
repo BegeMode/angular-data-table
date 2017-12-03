@@ -31,6 +31,9 @@ export default class BodyController {
     this.tempRows = [];
     this.watchListeners = [];
     // bgmd
+    if (this.options.checkboxSelection) {
+      this.checkedRows = new Map();
+    }
     this.loading = {};
     this.setTreeAndGroupColumns();
     this.setConditionalWatches();
@@ -46,9 +49,8 @@ export default class BodyController {
             this.rows = this.doFilter(filter);
           }
           return;
-        } else {
-          this.rows = this.doFilter();
         }
+        this.rows = this.doFilter();
         
         const origTreeColumn = angular.copy(this.treeColumn);
         const origGroupColumn = angular.copy(this.groupColumn);
@@ -241,6 +243,16 @@ export default class BodyController {
         }
       }
     }
+    if (this.options.checkboxSelection) {
+      this.checkedRows.clear();
+      if (newVal) {
+        newVal.forEach((row) => {
+          if (angular.isDefined(row._checked)) {
+            this.checkedRows.set(row, row._checked);
+          }
+        });
+      }
+    }  
   }
 
   /**
@@ -547,14 +559,17 @@ export default class BodyController {
    * @param {string} id - row key
    */
   removeTreeRows(id) {
-    const key = this.treeColumn.parentRelationProp;
-    let row = null;
-    const index = this.rows.findIndex(value => value[key] == id);
+    // const key = this.treeColumn.parentRelationProp;
+    const { index, row } = this.getRowInTree(id);
+    /* const index = this.rows.findIndex(value => value[key] == id);
     if (index != -1) {
       row = this.rows[index];
-    }
+    }*/
     if (row) {
       this.rows.splice(index, 1);
+      if (this.checkedRows) {
+        this.checkedRows.delete(row);
+      }
       if (this.expanded[id]) {
         delete this.expanded[id];
       }
@@ -564,6 +579,24 @@ export default class BodyController {
         });
       }
     }
+  }
+
+  /**
+   * Find row in rows array by id
+   * @param {string} id - row key
+   * @returns {onject} index in array and row
+   */
+  getRowInTree(id) {
+    const key = this.treeColumn.parentRelationProp;
+    let row = null;
+    const index = this.rows.findIndex(value => value[key] === id);
+    if (index !== -1) {
+      row = this.rows[index];
+    }
+    return {
+      index,
+      row,
+    };
   }
 
   /**

@@ -9,7 +9,11 @@ export const TableDefaults = {
    * @type {boolean}
    */
   checkboxSelection: false,
-
+  /**
+   * For tree table: auto check/uncheck sub nodes (or sub trees) if parent node was checked/unchecked
+   * @type {boolean}
+   */
+  autoCheckSubNodes: true,
   /**
    * Options: 'flex', 'force', 'standard'
    * @type {string}
