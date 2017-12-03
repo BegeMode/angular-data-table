@@ -31,8 +31,10 @@ export default class BodyController {
     this.tempRows = [];
     this.watchListeners = [];
     // bgmd
-    this.loading = [];
-
+    if (this.options.checkboxSelection) {
+      this.checkedRows = new Map();
+    }
+    this.loading = {};
     this.setTreeAndGroupColumns();
     this.setConditionalWatches();
 
@@ -47,9 +49,8 @@ export default class BodyController {
             this.rows = this.doFilter(filter);
           }
           return;
-        } else {
-          this.rows = this.doFilter();
         }
+        this.rows = this.doFilter();
         
         const origTreeColumn = angular.copy(this.treeColumn);
         const origGroupColumn = angular.copy(this.groupColumn);
@@ -242,6 +243,16 @@ export default class BodyController {
         }
       }
     }
+    if (this.options.checkboxSelection) {
+      this.checkedRows.clear();
+      if (newVal) {
+        newVal.forEach((row) => {
+          if (angular.isDefined(row._checked)) {
+            this.checkedRows.set(row, row._checked);
+          }
+        });
+      }
+    }  
   }
 
   /**
@@ -542,26 +553,50 @@ export default class BodyController {
       }
     }
   }
+  
   /**
    * Remove row and her children from this.rows
    * @param {string} id - row key
    */
   removeTreeRows(id) {
-    const key = this.treeColumn.parentRelationProp;
-    let row = null;
-    const index = this.rows.findIndex(value => value[key] == id);
+    // const key = this.treeColumn.parentRelationProp;
+    const { index, row } = this.getRowInTree(id);
+    /* const index = this.rows.findIndex(value => value[key] == id);
     if (index != -1) {
       row = this.rows[index];
-    }
+    }*/
     if (row) {
       this.rows.splice(index, 1);
-      if (this.expanded[id])        { delete this.expanded[id]; }
+      if (this.checkedRows) {
+        this.checkedRows.delete(row);
+      }
+      if (this.expanded[id]) {
+        delete this.expanded[id];
+      }
       if (row.$$children) {
         row.$$children.forEach((child) => {
           this.removeTreeRows(child);
         });
       }
     }
+  }
+
+  /**
+   * Find row in rows array by id
+   * @param {string} id - row key
+   * @returns {onject} index in array and row
+   */
+  getRowInTree(id) {
+    const key = this.treeColumn.parentRelationProp;
+    let row = null;
+    const index = this.rows.findIndex(value => value[key] === id);
+    if (index !== -1) {
+      row = this.rows[index];
+    }
+    return {
+      index,
+      row,
+    };
   }
 
   /**
@@ -586,11 +621,15 @@ export default class BodyController {
         const relVal = row[self.treeColumn.relationProp];
         const key = row[self.treeColumn.parentRelationProp];
         const groupRows = self.rowsByGroup[key];
-        if (flt && groupRows && groupRows.length > 0)          { self.expanded[key] = true; }
+        if (flt && groupRows && groupRows.length > 0) {
+          self.expanded[key] = true;
+        }
         const expanded = self.expanded[key];
 
         if (level > 0 || !relVal) {
-          if (self.filteredRows.includes(row))            { toArray.push(row); }
+          if (self.filteredRows.includes(row)) {
+            toArray.push(row);
+          }
           if (groupRows && groupRows.length > 0 && expanded) {
             addChildren(groupRows, toArray, level + 1);
           }

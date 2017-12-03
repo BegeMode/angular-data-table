@@ -265,8 +265,8 @@ export default class DataTableController {
    */
   onTreeLoad(row, cell) {
     return this.onTreeLoader({
-      row: row,
-      cell: cell
+      row,
+      cell,
     });
   }
   

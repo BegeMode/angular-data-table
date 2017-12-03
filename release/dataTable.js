@@ -449,7 +449,11 @@
      * @type {boolean}
      */
     checkboxSelection: false,
-
+    /**
+     * For tree table: auto check/uncheck sub nodes (or sub trees) if parent node was checked/unchecked
+     * @type {boolean}
+     */
+    autoCheckSubNodes: true,
     /**
      * Options: 'flex', 'force', 'standard'
      * @type {string}
@@ -2074,8 +2078,10 @@
         this.tempRows = [];
         this.watchListeners = [];
         // bgmd
-        this.loading = [];
-
+        if (this.options.checkboxSelection) {
+          this.checkedRows = new Map();
+        }
+        this.loading = {};
         this.setTreeAndGroupColumns();
         this.setConditionalWatches();
 
@@ -2090,9 +2096,8 @@
                 _this8.rows = _this8.doFilter(filter);
               }
               return;
-            } else {
-              _this8.rows = _this8.doFilter();
             }
+            _this8.rows = _this8.doFilter();
 
             var origTreeColumn = angular.copy(_this8.treeColumn);
             var origGroupColumn = angular.copy(_this8.groupColumn);
@@ -2214,6 +2219,8 @@
     }, {
       key: 'rowsUpdated',
       value: function rowsUpdated(newVal, oldVal) {
+        var _this10 = this;
+
         if (this.noNeedRowsUpdated) {
           this.noNeedRowsUpdated = false;
           return;
@@ -2264,6 +2271,16 @@
               this.tempRows.splice(0, this.tempRows.length);
               (_tempRows = this.tempRows).push.apply(_tempRows, _toConsumableArray(rows));
             }
+          }
+        }
+        if (this.options.checkboxSelection) {
+          this.checkedRows.clear();
+          if (newVal) {
+            newVal.forEach(function (row) {
+              if (angular.isDefined(row._checked)) {
+                _this10.checkedRows.set(row, row._checked);
+              }
+            });
           }
         }
       }
@@ -2441,7 +2458,7 @@
     }, {
       key: 'buildGroups',
       value: function buildGroups() {
-        var _this10 = this;
+        var _this11 = this;
 
         var temp = [];
 
@@ -2451,7 +2468,7 @@
             group: true
           });
 
-          if (_this10.expanded[k]) {
+          if (_this11.expanded[k]) {
             temp.push.apply(temp, _toConsumableArray(v));
           }
         });
@@ -2541,27 +2558,46 @@
     }, {
       key: 'removeTreeRows',
       value: function removeTreeRows(id) {
-        var _this11 = this;
+        var _this12 = this;
 
-        var key = this.treeColumn.parentRelationProp;
-        var row = null;
-        var index = this.rows.findIndex(function (value) {
-          return value[key] == id;
-        });
+        var _getRowInTree = this.getRowInTree(id),
+            index = _getRowInTree.index,
+            row = _getRowInTree.row;
+
+        /* const index = this.rows.findIndex(value => value[key] == id);
         if (index != -1) {
           row = this.rows[index];
-        }
+        }*/
         if (row) {
           this.rows.splice(index, 1);
+          if (this.checkedRows) {
+            this.checkedRows.delete(row);
+          }
           if (this.expanded[id]) {
             delete this.expanded[id];
           }
           if (row.$$children) {
             row.$$children.forEach(function (child) {
-              _this11.removeTreeRows(child);
+              _this12.removeTreeRows(child);
             });
           }
         }
+      }
+    }, {
+      key: 'getRowInTree',
+      value: function getRowInTree(id) {
+        var key = this.treeColumn.parentRelationProp;
+        var row = null;
+        var index = this.rows.findIndex(function (value) {
+          return value[key] === id;
+        });
+        if (index !== -1) {
+          row = this.rows[index];
+        }
+        return {
+          index: index,
+          row: row
+        };
       }
     }, {
       key: 'buildTree',
@@ -2912,12 +2948,12 @@
     }, {
       key: 'filterPipe',
       value: function filterPipe(filter) {
-        var _this12 = this;
+        var _this13 = this;
 
         var result = this.rows;
 
         var _loop3 = function _loop3(i) {
-          var f = _this12.filters.list[i];
+          var f = _this13.filters.list[i];
           if (i > filter.order) {
             if (!f.phrase) {
               f.rowsBefore = null;
@@ -3011,6 +3047,7 @@
         rows: '=',
         options: '=',
         selected: '=?',
+        checked: '=?',
         expanded: '=?',
         onPage: '&',
         onTreeToggle: '&',
@@ -3021,7 +3058,7 @@
         onMoveRow: '&'
       },
       scope: true,
-      template: '\n      <div\n        class="progress-linear"\n        role="progressbar"\n        ng-show="body.options.loadingIndicator">\n        <div class="container">\n          <div class="bar"></div>\n        </div>\n      </div>\n      <div class="dt-body" ng-style="body.styles()" dt-selection \n               draggable-row="body.options.rowDraggable"\n               on-drop="body.onDropRow(event, indexFrom, indexTo)">\n        <dt-scroller class="dt-body-scroller">\n          <dt-group-row ng-repeat-start="r in body.tempRows track by $index"\n                        ng-if="r.group"\n                        ng-style="body.groupRowStyles(r)"\n                        options="body.options"\n                        on-group-toggle="body.onGroupToggle(group)"\n                        expanded="body.getRowExpanded(r)"\n                        loading="body.getRowLoading(r)"\n                        tabindex="{{$index}}"\n                        row="r">\n          </dt-group-row>\n          <dt-row ng-repeat-end\n                  ng-if="!r.group"\n                  row="body.getRowValue($index)"\n                  tabindex="{{$index}}"\n                  rowindex="{{r.$$index}}"\n                  columns="body.columns"\n                  column-widths="body.columnWidths"\n                  ng-keydown="selCtrl.keyDown($event, $index, r)"\n                  ng-click="selCtrl.rowClicked($event, r.$$index, r)"\n                  ng-dblclick="selCtrl.rowDblClicked($event, r.$$index, r)"\n                  on-tree-toggle="body.onTreeToggled(row, cell)"\n                  ng-class="body.rowClasses(r)"\n                  options="body.options"\n                  selected="body.isSelected(r)"\n                  on-checkbox-change="selCtrl.onCheckboxChange($event, $index, row)"\n                  columns="body.columnsByPin"\n                  has-children="body.getRowHasChildren(r)"\n                  expanded="body.getRowExpanded(r)"\n                  loading="body.getRowLoading(r)"\n                  ng-style="body.rowStyles(r)"\n                  is-draggable="body.isDraggable(r)">\n          </dt-row>\n        </dt-scroller>\n        <div ng-if="body.rows && !body.rows.length"\n             class="empty-row"\n             ng-bind="::body.options.emptyMessage">\n       </div>\n       <div ng-if="body.rows === undefined"\n             class="loading-row"\n             ng-bind="::body.options.loadingMessage">\n        </div>\n      </div>'
+      template: '\n      <div\n        class="progress-linear"\n        role="progressbar"\n        ng-show="body.options.loadingIndicator">\n        <div class="container">\n          <div class="bar"></div>\n        </div>\n      </div>\n      <div class="dt-body" ng-style="body.styles()" dt-selection \n               draggable-row="body.options.rowDraggable"\n               on-drop="body.onDropRow(event, indexFrom, indexTo)">\n        <dt-scroller class="dt-body-scroller">\n          <dt-group-row ng-repeat-start="r in body.tempRows track by $index"\n                        ng-if="r.group"\n                        ng-style="body.groupRowStyles(r)"\n                        options="body.options"\n                        on-group-toggle="body.onGroupToggle(group)"\n                        expanded="body.getRowExpanded(r)"\n                        loading="body.getRowLoading(r)"\n                        tabindex="{{$index}}"\n                        row="r">\n          </dt-group-row>\n          <dt-row ng-repeat-end\n                  ng-if="!r.group"\n                  row="body.getRowValue($index)"\n                  tabindex="{{$index}}"\n                  rowindex="{{r.$$index}}"\n                  columns="body.columns"\n                  column-widths="body.columnWidths"\n                  ng-keydown="selCtrl.keyDown($event, $index, r)"\n                  ng-click="selCtrl.rowClicked($event, r.$$index, r)"\n                  ng-dblclick="selCtrl.rowDblClicked($event, r.$$index, r)"\n                  on-tree-toggle="body.onTreeToggled(row, cell)"\n                  ng-class="body.rowClasses(r)"\n                  options="body.options"\n                  selected="body.isSelected(r)"\n                  checked="selCtrl.isChecked(r)"\n                  on-checkbox-change="selCtrl.onCheckboxChange($event, $index, row)"\n                  columns="body.columnsByPin"\n                  has-children="body.getRowHasChildren(r)"\n                  expanded="body.getRowExpanded(r)"\n                  loading="body.getRowLoading(r)"\n                  ng-style="body.rowStyles(r)"\n                  is-draggable="body.isDraggable(r)">\n          </dt-row>\n        </dt-scroller>\n        <div ng-if="body.rows && !body.rows.length"\n             class="empty-row"\n             ng-bind="::body.options.emptyMessage">\n       </div>\n       <div ng-if="body.rows === undefined"\n             class="loading-row"\n             ng-bind="::body.options.loadingMessage">\n        </div>\n      </div>'
     };
   }
 
@@ -3194,6 +3231,7 @@
     }, {
       key: 'init',
       value: function init() {
+        this.checkedRows = this.body.checkedRows;
         if (this.options && this.options.columns) {
           this.hasTreeColumn = this.options.columns.find(function (c) {
             return c.isTreeColumn;
@@ -3249,7 +3287,66 @@
     }, {
       key: 'onCheckboxChange',
       value: function onCheckboxChange(event, index, row) {
-        this.selectRow(event, index, row);
+        // this.selectRow(event, index, row);
+        this.checkRow(row);
+        // if tree check subtrees
+        if (this.hasTreeColumn && this.options.autoCheckSubNodes) {
+          var state = this.getCheckState(row);
+          this.checkSubNodes(row, state);
+        }
+      }
+    }, {
+      key: 'getCheckState',
+      value: function getCheckState(row) {
+        if (!row || !this.checkedRows) {
+          return false;
+        }
+        var checked = this.checkedRows.get(row);
+        if (!checked) {
+          checked = false;
+        }
+        return checked;
+      }
+    }, {
+      key: 'checkRow',
+      value: function checkRow(row, check) {
+        if (!row) {
+          return;
+        }
+        var checked = angular.isDefined(check) ? check : !this.getCheckState(row);
+        this.checkedRows.set(row, checked);
+        row._checked = checked;
+        /* if (angular.isDefined(check)) {
+          this.checkedRows.set(row, check);
+        } else {
+          const checked = this.getCheckState(row);
+          this.checkedRows.set(row, !checked);
+        }*/
+      }
+    }, {
+      key: 'checkSubNodes',
+      value: function checkSubNodes(row, checkState) {
+        var _this14 = this;
+
+        if (!row) {
+          return;
+        }
+        if (row) {
+          if (row.$$children) {
+            row.$$children.forEach(function (child) {
+              var _body$getRowInTree = _this14.body.getRowInTree(child),
+                  r = _body$getRowInTree.row;
+
+              _this14.checkRow(r, checkState);
+              _this14.checkSubNodes(r, checkState);
+            });
+          }
+        }
+      }
+    }, {
+      key: 'isChecked',
+      value: function isChecked(row) {
+        return this.getCheckState(row);
       }
     }, {
       key: 'selectRow',
@@ -3420,6 +3517,7 @@
         loading: '=',
         expanded: '=',
         selected: '=',
+        checked: '=',
         isDraggable: '=',
         hasChildren: '=',
         options: '=',
@@ -3436,7 +3534,7 @@
         ctrl.options.internal.styleTranslator.register($scope.$index, $elm);
       },
 
-      template: '\n      <div class="dt-row" draggable={{rowCtrl.isDraggable}}>\n        <div class="dt-row-left dt-row-block"\n             ng-if="rowCtrl.columns[\'left\'].length"\n             ng-style="rowCtrl.stylesByGroup(\'left\')">\n          <dt-cell ng-repeat="column in rowCtrl.columns[\'left\'] track by column.$id"\n                   on-tree-toggle="rowCtrl.onTreeToggled(cell)"\n                   column="column"\n                   options="rowCtrl.options"\n                   has-children="rowCtrl.hasChildren"\n                   on-checkbox-change="rowCtrl.onCheckboxChanged($event)"\n                   selected="rowCtrl.selected"\n                   loading="rowCtrl.loading"\n                   row-ctrl="rowCtrl",\n                   expanded="rowCtrl.expanded"\n                   row="rowCtrl.row"\n                   value="rowCtrl.getValue(column)">\n          </dt-cell>\n        </div>\n        <div class="dt-row-center dt-row-block"\n             ng-style="rowCtrl.stylesByGroup(\'center\')">\n          <dt-cell ng-repeat="column in rowCtrl.columns[\'center\'] track by column.$id"\n                   on-tree-toggle="rowCtrl.onTreeToggled(cell)"\n                   column="column"\n                   options="rowCtrl.options"\n                   has-children="rowCtrl.hasChildren"\n                   loading="rowCtrl.loading"\n                   row-ctrl="rowCtrl",\n                   expanded="rowCtrl.expanded"\n                   selected="rowCtrl.selected"\n                   row="rowCtrl.row"\n                   on-checkbox-change="rowCtrl.onCheckboxChanged($event)"\n                   value="rowCtrl.getValue(column)">\n          </dt-cell>\n        </div>\n        <div class="dt-row-right dt-row-block"\n             ng-if="rowCtrl.columns[\'right\'].length"\n             ng-style="rowCtrl.stylesByGroup(\'right\')">\n          <dt-cell ng-repeat="column in rowCtrl.columns[\'right\'] track by column.$id"\n                   on-tree-toggle="rowCtrl.onTreeToggled(cell)"\n                   column="column"\n                   options="rowCtrl.options"\n                   has-children="rowCtrl.hasChildren"\n                   selected="rowCtrl.selected"\n                   on-checkbox-change="rowCtrl.onCheckboxChanged($event)"\n                   row="rowCtrl.row"\n                   loading="rowCtrl.loading"\n                   row-ctrl="rowCtrl",\n                   expanded="rowCtrl.expanded"\n                   value="rowCtrl.getValue(column)">\n          </dt-cell>\n        </div>\n      </div>',
+      template: '\n      <div class="dt-row" draggable={{rowCtrl.isDraggable}}>\n        <div class="dt-row-left dt-row-block"\n             ng-if="rowCtrl.columns[\'left\'].length"\n             ng-style="rowCtrl.stylesByGroup(\'left\')">\n          <dt-cell ng-repeat="column in rowCtrl.columns[\'left\'] track by column.$id"\n                   on-tree-toggle="rowCtrl.onTreeToggled(cell)"\n                   column="column"\n                   options="rowCtrl.options"\n                   has-children="rowCtrl.hasChildren"\n                   on-checkbox-change="rowCtrl.onCheckboxChanged($event)"\n                   selected="rowCtrl.selected"\n                   checked="rowCtrl.checked"\n                   loading="rowCtrl.loading"\n                   row-ctrl="rowCtrl",\n                   expanded="rowCtrl.expanded"\n                   row="rowCtrl.row"\n                   value="rowCtrl.getValue(column)">\n          </dt-cell>\n        </div>\n        <div class="dt-row-center dt-row-block"\n             ng-style="rowCtrl.stylesByGroup(\'center\')">\n          <dt-cell ng-repeat="column in rowCtrl.columns[\'center\'] track by column.$id"\n                   on-tree-toggle="rowCtrl.onTreeToggled(cell)"\n                   column="column"\n                   options="rowCtrl.options"\n                   has-children="rowCtrl.hasChildren"\n                   loading="rowCtrl.loading"\n                   row-ctrl="rowCtrl",\n                   expanded="rowCtrl.expanded"\n                   selected="rowCtrl.selected"\n                   checked="rowCtrl.checked"\n                   row="rowCtrl.row"\n                   on-checkbox-change="rowCtrl.onCheckboxChanged($event)"\n                   value="rowCtrl.getValue(column)">\n          </dt-cell>\n        </div>\n        <div class="dt-row-right dt-row-block"\n             ng-if="rowCtrl.columns[\'right\'].length"\n             ng-style="rowCtrl.stylesByGroup(\'right\')">\n          <dt-cell ng-repeat="column in rowCtrl.columns[\'right\'] track by column.$id"\n                   on-tree-toggle="rowCtrl.onTreeToggled(cell)"\n                   column="column"\n                   options="rowCtrl.options"\n                   has-children="rowCtrl.hasChildren"\n                   selected="rowCtrl.selected"\n                   checked="rowCtrl.checked"\n                   on-checkbox-change="rowCtrl.onCheckboxChanged($event)"\n                   row="rowCtrl.row"\n                   loading="rowCtrl.loading"\n                   row-ctrl="rowCtrl",\n                   expanded="rowCtrl.expanded"\n                   value="rowCtrl.getValue(column)">\n          </dt-cell>\n        </div>\n      </div>',
       replace: true
     };
   }
@@ -3605,7 +3703,7 @@
       bindToController: {
         options: '=',
         value: '=',
-        selected: '=',
+        // selected: '=',
         column: '=',
         row: '=',
         expanded: '=',
@@ -3613,9 +3711,10 @@
         rowCtrl: '<',
         hasChildren: '=',
         onTreeToggle: '&',
-        onCheckboxChange: '&'
+        onCheckboxChange: '&',
+        checked: '='
       },
-      template: '<div class="dt-cell"\n            data-title="{{::cell.column.name}}"\n            ng-style="cell.styles()"\n            ng-class="cell.cellClass()">\n        <label ng-if="cell.column.isCheckboxColumn" class="dt-checkbox">\n          <input type="checkbox"\n                 ng-checked="cell.selected"\n                 ng-click="cell.onCheckboxChanged($event)" />\n        </label>\n        <span ng-if="cell.column.isTreeColumn && cell.hasChildren"\n              ng-class="cell.treeClass()"\n              ng-click="cell.onTreeToggled($event)"></span>\n        <span class="dt-cell-content"></span>\n      </div>',
+      template: '<div class="dt-cell"\n            data-title="{{::cell.column.name}}"\n            ng-style="cell.styles()"\n            ng-class="cell.cellClass()">\n        <label ng-if="cell.column.isCheckboxColumn" class="dt-checkbox">\n          <input type="checkbox"\n                 ng-checked="cell.checked"\n                 ng-click="cell.onCheckboxChanged($event)" />\n        </label>\n        <span ng-if="cell.column.isTreeColumn && cell.hasChildren"\n              ng-class="cell.treeClass()"\n              ng-click="cell.onTreeToggled($event)"></span>\n        <span class="dt-cell-content"></span>\n      </div>',
       replace: true,
       compile: function compile() {
         return {
@@ -3760,12 +3859,12 @@
     }, {
       key: 'init',
       value: function init() {
-        var _this13 = this;
+        var _this15 = this;
 
         this.page = this.paging.offset + 1;
 
         this.$scope.$watch('footer.paging.offset', function (newVal) {
-          _this13.offsetChanged(newVal);
+          _this15.offsetChanged(newVal);
         });
       }
     }, {
@@ -3830,19 +3929,19 @@
     }, {
       key: 'init',
       value: function init() {
-        var _this14 = this;
+        var _this16 = this;
 
         this.$scope.$watch('pager.count', function () {
-          _this14.findAndSetPages();
+          _this16.findAndSetPages();
         });
 
         this.$scope.$watch('pager.size', function () {
-          _this14.findAndSetPages();
+          _this16.findAndSetPages();
         });
 
         this.$scope.$watch('pager.page', function (newVal) {
-          if (newVal !== 0 && newVal <= _this14.totalPages) {
-            _this14.getPages(newVal);
+          if (newVal !== 0 && newVal <= _this16.totalPages) {
+            _this16.getPages(newVal);
           }
         });
 

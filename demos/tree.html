@@ -98,6 +98,8 @@
           columnMode: 'flex',
           rowDraggable: true,
           treeToggleDblClick: true,
+          checkboxSelection: true,
+          selectable: true,
           columns: [
             {
               name: "Company",
@@ -106,7 +108,8 @@
               isTreeColumn: true,
               relationProp: 'parentCompany',
               parentRelationProp: 'company',
-              filter: 'text'
+              filter: 'text',
+              isCheckboxColumn: true
             },
             {
               name: "Revenue",
@@ -174,13 +177,15 @@
           'company': 'Apple XYZ',
           'revenue': '$1,440,443,111',
           'sales': '$999,509,433,777,564',
-          parentCompany: 'Apple'
+          parentCompany: 'Apple',
+          _checked: true
         },
         {
           'company': 'Apple IBS South1',
           'revenue': '$1,440,443,111',
           'sales': '$999,509,433,777,564',
-          parentCompany: 'Apple IBS'
+          parentCompany: 'Apple IBS',
+          _checked: true
         },
         {
           'company': 'Apple IBS South1 ABC',

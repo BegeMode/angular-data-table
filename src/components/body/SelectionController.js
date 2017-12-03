@@ -20,6 +20,7 @@ export default class SelectionController {
   }
 
   init() {
+    this.checkedRows = this.body.checkedRows;
     if (this.options && this.options.columns) {
       this.hasTreeColumn = this.options.columns.find(c => c.isTreeColumn) != null;
     }
@@ -79,8 +80,8 @@ export default class SelectionController {
     }
     if (this.options.treeToggleDblClick && this.hasTreeColumn) {
       this.$scope.$broadcast('rowDblClick', {
-        row: row,
-        index: index
+        row,
+        index,
       });
     }
     this.body.onRowDblClick({ row });
@@ -92,7 +93,58 @@ export default class SelectionController {
    * @param  {row}
    */
   onCheckboxChange(event, index, row) {
-    this.selectRow(event, index, row);
+    // this.selectRow(event, index, row);
+    this.checkRow(row);
+    // if tree check subtrees
+    if (this.hasTreeColumn && this.options.autoCheckSubNodes) {
+      const state = this.getCheckState(row);
+      this.checkSubNodes(row, state);
+    }
+  }
+
+  getCheckState(row) {
+    if (!row || !this.checkedRows) {
+      return false;
+    }
+    let checked = this.checkedRows.get(row);
+    if (!checked) {
+      checked = false;
+    }
+    return checked;
+  }
+
+  checkRow(row, check) {
+    if (!row) {
+      return;
+    }
+    const checked = angular.isDefined(check) ? check : !this.getCheckState(row);
+    this.checkedRows.set(row, checked);
+    row._checked = checked;
+    /* if (angular.isDefined(check)) {
+      this.checkedRows.set(row, check);
+    } else {
+      const checked = this.getCheckState(row);
+      this.checkedRows.set(row, !checked);
+    }*/
+  }
+
+  checkSubNodes(row, checkState) {
+    if (!row) {
+      return;
+    }
+    if (row) {
+      if (row.$$children) {
+        row.$$children.forEach((child) => {
+          const { row: r } = this.body.getRowInTree(child);
+          this.checkRow(r, checkState);
+          this.checkSubNodes(r, checkState);
+        });
+      }
+    }
+  }
+
+  isChecked(row) {
+    return this.getCheckState(row);
   }
 
   /**
