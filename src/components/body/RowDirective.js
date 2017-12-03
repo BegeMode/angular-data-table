@@ -14,6 +14,7 @@ export default function RowDirective() {
       loading: '=',
       expanded: '=',
       selected: '=',
+      checked: '=',
       isDraggable: '=',
       hasChildren: '=',
       options: '=',
@@ -41,6 +42,7 @@ export default function RowDirective() {
                    has-children="rowCtrl.hasChildren"
                    on-checkbox-change="rowCtrl.onCheckboxChanged($event)"
                    selected="rowCtrl.selected"
+                   checked="rowCtrl.checked"
                    loading="rowCtrl.loading"
                    row-ctrl="rowCtrl",
                    expanded="rowCtrl.expanded"
@@ -59,6 +61,7 @@ export default function RowDirective() {
                    row-ctrl="rowCtrl",
                    expanded="rowCtrl.expanded"
                    selected="rowCtrl.selected"
+                   checked="rowCtrl.checked"
                    row="rowCtrl.row"
                    on-checkbox-change="rowCtrl.onCheckboxChanged($event)"
                    value="rowCtrl.getValue(column)">
@@ -73,6 +76,7 @@ export default function RowDirective() {
                    options="rowCtrl.options"
                    has-children="rowCtrl.hasChildren"
                    selected="rowCtrl.selected"
+                   checked="rowCtrl.checked"
                    on-checkbox-change="rowCtrl.onCheckboxChanged($event)"
                    row="rowCtrl.row"
                    loading="rowCtrl.loading"

@@ -20,6 +20,7 @@ export default class SelectionController {
   }
 
   init() {
+    this.checkedRows = new Map();
     if (this.options && this.options.columns) {
       this.hasTreeColumn = this.options.columns.find(c => c.isTreeColumn) != null;
     }
@@ -79,8 +80,8 @@ export default class SelectionController {
     }
     if (this.options.treeToggleDblClick && this.hasTreeColumn) {
       this.$scope.$broadcast('rowDblClick', {
-        row: row,
-        index: index
+        row,
+        index,
       });
     }
     this.body.onRowDblClick({ row });
@@ -92,8 +93,54 @@ export default class SelectionController {
    * @param  {row}
    */
   onCheckboxChange(event, index, row) {
-    this.selectRow(event, index, row);
+    // this.selectRow(event, index, row);
+    this.checkRow(row);
+    // if tree check subtrees
+    if (this.hasTreeColumn) {
+      this.checkSubNodes(row);
+    }
   }
+
+  checkRow(row) {
+    if (!row) {
+      return;
+    }
+    let checked = this.checkedRows.get(row);
+    if (!checked) {
+      checked = false;
+    }
+    this.checkedRows.set(row, !checked);
+  }
+
+  checkSubNodes(row) {
+    if (!row) {
+      return;
+    }
+    if (row) {
+      if (row.$$children) {
+        row.$$children.forEach((child) => {
+          const key = this.body.treeColumn.parentRelationProp;
+          let r = null;
+          const index = this.body.rows.findIndex(value => value[key] === child);
+          if (index !== -1) {
+            r = this.body.rows[index];
+          }
+          this.checkRow(r);
+          this.checkSubNodes(r);
+        });
+      }
+    }
+  }
+
+
+  isChecked(row) {
+    let checked = this.checkedRows.get(row);
+    if (!checked) {
+      checked = false;
+    }
+    return checked;
+  }
+
 
   /**
    * Selects a row and places in the selection collection

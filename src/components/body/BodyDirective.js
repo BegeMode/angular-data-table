@@ -11,6 +11,7 @@ export default function BodyDirective() {
       rows: '=',
       options: '=',
       selected: '=?',
+      checked: '=?',
       expanded: '=?',
       onPage: '&',
       onTreeToggle: '&',
@@ -18,7 +19,7 @@ export default function BodyDirective() {
       onSelect: '&',
       onRowClick: '&',
       onRowDblClick: '&',
-      onMoveRow: '&'
+      onMoveRow: '&',
     },
     scope: true,
     template: `
@@ -58,6 +59,7 @@ export default function BodyDirective() {
                   ng-class="body.rowClasses(r)"
                   options="body.options"
                   selected="body.isSelected(r)"
+                  checked="selCtrl.isChecked(r)"
                   on-checkbox-change="selCtrl.onCheckboxChange($event, $index, row)"
                   columns="body.columnsByPin"
                   has-children="body.getRowHasChildren(r)"

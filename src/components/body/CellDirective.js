@@ -9,7 +9,7 @@ export default function CellDirective($rootScope, $compile) {
     bindToController: {
       options: '=',
       value: '=',
-      selected: '=',
+      // selected: '=',
       column: '=',
       row: '=',
       expanded: '=',
@@ -18,6 +18,7 @@ export default function CellDirective($rootScope, $compile) {
       hasChildren: '=',
       onTreeToggle: '&',
       onCheckboxChange: '&',
+      checked: '=',
     },
     template:
     `<div class="dt-cell"
@@ -26,7 +27,7 @@ export default function CellDirective($rootScope, $compile) {
             ng-class="cell.cellClass()">
         <label ng-if="cell.column.isCheckboxColumn" class="dt-checkbox">
           <input type="checkbox"
-                 ng-checked="cell.selected"
+                 ng-checked="cell.checked"
                  ng-click="cell.onCheckboxChanged($event)" />
         </label>
         <span ng-if="cell.column.isTreeColumn && cell.hasChildren"

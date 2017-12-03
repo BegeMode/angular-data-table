@@ -31,8 +31,7 @@ export default class BodyController {
     this.tempRows = [];
     this.watchListeners = [];
     // bgmd
-    this.loading = [];
-
+    this.loading = {};
     this.setTreeAndGroupColumns();
     this.setConditionalWatches();
 
@@ -542,6 +541,7 @@ export default class BodyController {
       }
     }
   }
+  
   /**
    * Remove row and her children from this.rows
    * @param {string} id - row key
@@ -555,7 +555,9 @@ export default class BodyController {
     }
     if (row) {
       this.rows.splice(index, 1);
-      if (this.expanded[id])        { delete this.expanded[id]; }
+      if (this.expanded[id]) {
+        delete this.expanded[id];
+      }
       if (row.$$children) {
         row.$$children.forEach((child) => {
           this.removeTreeRows(child);
@@ -586,11 +588,15 @@ export default class BodyController {
         const relVal = row[self.treeColumn.relationProp];
         const key = row[self.treeColumn.parentRelationProp];
         const groupRows = self.rowsByGroup[key];
-        if (flt && groupRows && groupRows.length > 0)          { self.expanded[key] = true; }
+        if (flt && groupRows && groupRows.length > 0) {
+          self.expanded[key] = true;
+        }
         const expanded = self.expanded[key];
 
         if (level > 0 || !relVal) {
-          if (self.filteredRows.includes(row))            { toArray.push(row); }
+          if (self.filteredRows.includes(row)) {
+            toArray.push(row);
+          }
           if (groupRows && groupRows.length > 0 && expanded) {
             addChildren(groupRows, toArray, level + 1);
           }

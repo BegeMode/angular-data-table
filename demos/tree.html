@@ -98,6 +98,8 @@
           columnMode: 'flex',
           rowDraggable: true,
           treeToggleDblClick: true,
+          checkboxSelection: true,
+          selectable: true,
           columns: [
             {
               name: "Company",
@@ -106,7 +108,8 @@
               isTreeColumn: true,
               relationProp: 'parentCompany',
               parentRelationProp: 'company',
-              filter: 'text'
+              filter: 'text',
+              isCheckboxColumn: true
             },
             {
               name: "Revenue",
