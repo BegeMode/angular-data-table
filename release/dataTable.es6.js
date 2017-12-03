@@ -363,7 +363,11 @@ const TableDefaults = {
    * @type {boolean}
    */
   checkboxSelection: false,
-
+  /**
+   * For tree table: auto check/uncheck sub nodes (or sub trees) if parent node was checked/unchecked
+   * @type {boolean}
+   */
+  autoCheckSubNodes: true,
   /**
    * Options: 'flex', 'force', 'standard'
    * @type {string}
@@ -1234,8 +1238,8 @@ class DataTableController {
    */
   onTreeLoad(row, cell) {
     return this.onTreeLoader({
-      row: row,
-      cell: cell
+      row,
+      cell,
     });
   }
   
@@ -2148,8 +2152,10 @@ class BodyController {
     this.tempRows = [];
     this.watchListeners = [];
     // bgmd
-    this.loading = [];
-
+    if (this.options.checkboxSelection) {
+      this.checkedRows = new Map();
+    }
+    this.loading = {};
     this.setTreeAndGroupColumns();
     this.setConditionalWatches();
 
@@ -2164,9 +2170,8 @@ class BodyController {
             this.rows = this.doFilter(filter);
           }
           return;
-        } else {
-          this.rows = this.doFilter();
         }
+        this.rows = this.doFilter();
         
         const origTreeColumn = angular.copy(this.treeColumn);
         const origGroupColumn = angular.copy(this.groupColumn);
@@ -2359,6 +2364,16 @@ class BodyController {
         }
       }
     }
+    if (this.options.checkboxSelection) {
+      this.checkedRows.clear();
+      if (newVal) {
+        newVal.forEach((row) => {
+          if (angular.isDefined(row._checked)) {
+            this.checkedRows.set(row, row._checked);
+          }
+        });
+      }
+    }  
   }
 
   /**
@@ -2659,26 +2674,50 @@ class BodyController {
       }
     }
   }
+  
   /**
    * Remove row and her children from this.rows
    * @param {string} id - row key
    */
   removeTreeRows(id) {
-    const key = this.treeColumn.parentRelationProp;
-    let row = null;
-    const index = this.rows.findIndex(value => value[key] == id);
+    // const key = this.treeColumn.parentRelationProp;
+    const { index, row } = this.getRowInTree(id);
+    /* const index = this.rows.findIndex(value => value[key] == id);
     if (index != -1) {
       row = this.rows[index];
-    }
+    }*/
     if (row) {
       this.rows.splice(index, 1);
-      if (this.expanded[id])        { delete this.expanded[id]; }
+      if (this.checkedRows) {
+        this.checkedRows.delete(row);
+      }
+      if (this.expanded[id]) {
+        delete this.expanded[id];
+      }
       if (row.$$children) {
         row.$$children.forEach((child) => {
           this.removeTreeRows(child);
         });
       }
     }
+  }
+
+  /**
+   * Find row in rows array by id
+   * @param {string} id - row key
+   * @returns {onject} index in array and row
+   */
+  getRowInTree(id) {
+    const key = this.treeColumn.parentRelationProp;
+    let row = null;
+    const index = this.rows.findIndex(value => value[key] === id);
+    if (index !== -1) {
+      row = this.rows[index];
+    }
+    return {
+      index,
+      row,
+    };
   }
 
   /**
@@ -2703,11 +2742,15 @@ class BodyController {
         const relVal = row[self.treeColumn.relationProp];
         const key = row[self.treeColumn.parentRelationProp];
         const groupRows = self.rowsByGroup[key];
-        if (flt && groupRows && groupRows.length > 0)          { self.expanded[key] = true; }
+        if (flt && groupRows && groupRows.length > 0) {
+          self.expanded[key] = true;
+        }
         const expanded = self.expanded[key];
 
         if (level > 0 || !relVal) {
-          if (self.filteredRows.includes(row))            { toArray.push(row); }
+          if (self.filteredRows.includes(row)) {
+            toArray.push(row);
+          }
           if (groupRows && groupRows.length > 0 && expanded) {
             addChildren(groupRows, toArray, level + 1);
           }
@@ -3140,6 +3183,7 @@ function BodyDirective() {
       rows: '=',
       options: '=',
       selected: '=?',
+      checked: '=?',
       expanded: '=?',
       onPage: '&',
       onTreeToggle: '&',
@@ -3147,7 +3191,7 @@ function BodyDirective() {
       onSelect: '&',
       onRowClick: '&',
       onRowDblClick: '&',
-      onMoveRow: '&'
+      onMoveRow: '&',
     },
     scope: true,
     template: `
@@ -3187,6 +3231,7 @@ function BodyDirective() {
                   ng-class="body.rowClasses(r)"
                   options="body.options"
                   selected="body.isSelected(r)"
+                  checked="selCtrl.isChecked(r)"
                   on-checkbox-change="selCtrl.onCheckboxChange($event, $index, row)"
                   columns="body.columnsByPin"
                   has-children="body.getRowHasChildren(r)"
@@ -3368,6 +3413,7 @@ class SelectionController {
   }
 
   init() {
+    this.checkedRows = this.body.checkedRows;
     if (this.options && this.options.columns) {
       this.hasTreeColumn = this.options.columns.find(c => c.isTreeColumn) != null;
     }
@@ -3427,8 +3473,8 @@ class SelectionController {
     }
     if (this.options.treeToggleDblClick && this.hasTreeColumn) {
       this.$scope.$broadcast('rowDblClick', {
-        row: row,
-        index: index
+        row,
+        index,
       });
     }
     this.body.onRowDblClick({ row });
@@ -3440,7 +3486,58 @@ class SelectionController {
    * @param  {row}
    */
   onCheckboxChange(event, index, row) {
-    this.selectRow(event, index, row);
+    // this.selectRow(event, index, row);
+    this.checkRow(row);
+    // if tree check subtrees
+    if (this.hasTreeColumn && this.options.autoCheckSubNodes) {
+      const state = this.getCheckState(row);
+      this.checkSubNodes(row, state);
+    }
+  }
+
+  getCheckState(row) {
+    if (!row || !this.checkedRows) {
+      return false;
+    }
+    let checked = this.checkedRows.get(row);
+    if (!checked) {
+      checked = false;
+    }
+    return checked;
+  }
+
+  checkRow(row, check) {
+    if (!row) {
+      return;
+    }
+    const checked = angular.isDefined(check) ? check : !this.getCheckState(row);
+    this.checkedRows.set(row, checked);
+    row._checked = checked;
+    /* if (angular.isDefined(check)) {
+      this.checkedRows.set(row, check);
+    } else {
+      const checked = this.getCheckState(row);
+      this.checkedRows.set(row, !checked);
+    }*/
+  }
+
+  checkSubNodes(row, checkState) {
+    if (!row) {
+      return;
+    }
+    if (row) {
+      if (row.$$children) {
+        row.$$children.forEach((child) => {
+          const { row: r } = this.body.getRowInTree(child);
+          this.checkRow(r, checkState);
+          this.checkSubNodes(r, checkState);
+        });
+      }
+    }
+  }
+
+  isChecked(row) {
+    return this.getCheckState(row);
   }
 
   /**
@@ -3628,6 +3725,7 @@ function RowDirective() {
       loading: '=',
       expanded: '=',
       selected: '=',
+      checked: '=',
       isDraggable: '=',
       hasChildren: '=',
       options: '=',
@@ -3655,6 +3753,7 @@ function RowDirective() {
                    has-children="rowCtrl.hasChildren"
                    on-checkbox-change="rowCtrl.onCheckboxChanged($event)"
                    selected="rowCtrl.selected"
+                   checked="rowCtrl.checked"
                    loading="rowCtrl.loading"
                    row-ctrl="rowCtrl",
                    expanded="rowCtrl.expanded"
@@ -3673,6 +3772,7 @@ function RowDirective() {
                    row-ctrl="rowCtrl",
                    expanded="rowCtrl.expanded"
                    selected="rowCtrl.selected"
+                   checked="rowCtrl.checked"
                    row="rowCtrl.row"
                    on-checkbox-change="rowCtrl.onCheckboxChanged($event)"
                    value="rowCtrl.getValue(column)">
@@ -3687,6 +3787,7 @@ function RowDirective() {
                    options="rowCtrl.options"
                    has-children="rowCtrl.hasChildren"
                    selected="rowCtrl.selected"
+                   checked="rowCtrl.checked"
                    on-checkbox-change="rowCtrl.onCheckboxChanged($event)"
                    row="rowCtrl.row"
                    loading="rowCtrl.loading"
@@ -3873,7 +3974,7 @@ function CellDirective($rootScope, $compile) {
     bindToController: {
       options: '=',
       value: '=',
-      selected: '=',
+      // selected: '=',
       column: '=',
       row: '=',
       expanded: '=',
@@ -3882,6 +3983,7 @@ function CellDirective($rootScope, $compile) {
       hasChildren: '=',
       onTreeToggle: '&',
       onCheckboxChange: '&',
+      checked: '=',
     },
     template:
     `<div class="dt-cell"
@@ -3890,7 +3992,7 @@ function CellDirective($rootScope, $compile) {
             ng-class="cell.cellClass()">
         <label ng-if="cell.column.isCheckboxColumn" class="dt-checkbox">
           <input type="checkbox"
-                 ng-checked="cell.selected"
+                 ng-checked="cell.checked"
                  ng-click="cell.onCheckboxChanged($event)" />
         </label>
         <span ng-if="cell.column.isTreeColumn && cell.hasChildren"
