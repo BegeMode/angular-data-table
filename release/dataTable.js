@@ -1308,6 +1308,13 @@
         });
       }
     }, {
+      key: 'onRowsFiltered',
+      value: function onRowsFiltered(rows) {
+        this.onFiltered({
+          rows: rows
+        });
+      }
+    }, {
       key: 'onBodyPage',
       value: function onBodyPage(offset, size) {
         this.onPage({
@@ -1546,7 +1553,7 @@
         expanded: '=?',
         onSelect: '&',
         onSort: '&',
-        //onFilter: '&', //bgmd
+        onFiltered: '&',
         onTreeToggle: '&',
         onPage: '&',
         onRowClick: '&',
@@ -1564,7 +1571,7 @@
 
         DataTableService.saveColumns(id, columns);
 
-        return '<div class="dt" ng-class="dt.tableCss()" ng-style="dt.tableStyles()" data-column-id="' + id + '">\n          <dt-header options="dt.options"\n                     columns="dt.columnsByPin"\n                     column-widths="dt.columnWidths"\n                     ng-if="dt.options.headerHeight"\n                     on-resize="dt.onResized(column, width)"\n                     selected-rows="dt.selected"\n                     all-rows="dt.rows"\n                     on-sort="dt.onSorted()">\n          </dt-header>\n          <dt-body rows="dt.rows"\n                   selected="dt.selected"\n                   expanded="dt.expanded"\n                   columns="dt.columnsByPin"\n                   on-select="dt.onSelected(rows)"\n                   on-row-click="dt.onRowClicked(row)"\n                   on-row-dbl-click="dt.onRowDblClicked(row)"\n                   column-widths="dt.columnWidths"\n                   options="dt.options"\n                   on-page="dt.onBodyPage(offset, size)"\n                   on-tree-toggle="dt.onTreeToggled(row, cell)"\n                   on-tree-loader="dt.onTreeLoad(row, cell)"   \n                   on-move-row="dt.moveRow(rowFrom, rowTo)">   \n           </dt-body>\n          <dt-footer ng-if="dt.options.footerHeight || dt.options.paging.mode"\n                     ng-style="{ height: dt.options.footerHeight + \'px\' }"\n                     on-page="dt.onFooterPage(offset, size)"\n                     paging="dt.options.paging">\n           </dt-footer>\n        </div>';
+        return '<div class="dt" ng-class="dt.tableCss()" ng-style="dt.tableStyles()" data-column-id="' + id + '">\n          <dt-header options="dt.options"\n                     columns="dt.columnsByPin"\n                     column-widths="dt.columnWidths"\n                     ng-if="dt.options.headerHeight"\n                     on-resize="dt.onResized(column, width)"\n                     selected-rows="dt.selected"\n                     all-rows="dt.rows"\n                     on-sort="dt.onSorted()">\n          </dt-header>\n          <dt-body rows="dt.rows"\n                   selected="dt.selected"\n                   expanded="dt.expanded"\n                   columns="dt.columnsByPin"\n                   on-select="dt.onSelected(rows)"\n                   on-row-click="dt.onRowClicked(row)"\n                   on-row-dbl-click="dt.onRowDblClicked(row)"\n                   column-widths="dt.columnWidths"\n                   options="dt.options"\n                   on-page="dt.onBodyPage(offset, size)"\n                   on-tree-toggle="dt.onTreeToggled(row, cell)"\n                   on-tree-loader="dt.onTreeLoad(row, cell)"   \n                   on-rows-filtered="dt.onRowsFiltered(rows)"   \n                   on-move-row="dt.moveRow(rowFrom, rowTo)">   \n           </dt-body>\n          <dt-footer ng-if="dt.options.footerHeight || dt.options.paging.mode"\n                     ng-style="{ height: dt.options.footerHeight + \'px\' }"\n                     on-page="dt.onFooterPage(offset, size)"\n                     paging="dt.options.paging">\n           </dt-footer>\n        </div>';
       },
       compile: function compile() {
         return {
@@ -3004,6 +3011,9 @@
           filter.rowsBefore = this.rows;
         }
         var rows = this.filterPipe(filter);
+        this.onRowsFiltered({
+          rows: rows
+        });
         return rows;
       }
     }], [{
@@ -3053,7 +3063,8 @@
         expanded: '=?',
         onPage: '&',
         onTreeToggle: '&',
-        onTreeLoader: '&', //bgmd
+        onTreeLoader: '&',
+        onRowsFiltered: '&',
         onSelect: '&',
         onRowClick: '&',
         onRowDblClick: '&',
@@ -3769,8 +3780,6 @@
             }
 
             function renderCell() {
-              var _this15 = this;
-
               var editorWrapper = null;
               var el = null;
               if (ctrl.column.editor) {
@@ -3787,28 +3796,28 @@
                 ctrl.row._original[ctrl.column.prop] = ctrl.value;
 
                 cellScope._changeEditStatus = function (row, column) {
-                  _this15.editing = !_this15.editing;
+                  this.editing = !this.editing;
                   if (!row._editing) {
                     row._editing = {};
                   }
-                  row._editing[column.prop] = _this15.editing;
+                  row._editing[column.prop] = this.editing;
                 };
 
                 cellScope.edit = function (cellVal, row, column) {
                   // console.info('edit()', what, cellVal);
                   if (ctrl.row._noEdit || cellScope.editFilter && !cellScope.editFilter(row)) {
-                    return;
+                    return false;
                   }
                   cellScope._changeEditStatus(row, column);
                   // console.log('$id', this.$id, 'editing', this.editing);
-                  return _this15.editing;
+                  return this.editing;
                 };
 
                 cellScope.blur = function (row, column) {
-                  if (!_this15.editing) {
+                  if (!this.editing) {
                     return;
                   }
-                  _this15._changeEditStatus(row, column);
+                  this._changeEditStatus(row, column);
                 };
 
                 cellScope.changed = function (cellVal, row, col) {
@@ -3876,12 +3885,12 @@
     }, {
       key: 'init',
       value: function init() {
-        var _this16 = this;
+        var _this15 = this;
 
         this.page = this.paging.offset + 1;
 
         this.$scope.$watch('footer.paging.offset', function (newVal) {
-          _this16.offsetChanged(newVal);
+          _this15.offsetChanged(newVal);
         });
       }
     }, {
@@ -3946,19 +3955,19 @@
     }, {
       key: 'init',
       value: function init() {
-        var _this17 = this;
+        var _this16 = this;
 
         this.$scope.$watch('pager.count', function () {
-          _this17.findAndSetPages();
+          _this16.findAndSetPages();
         });
 
         this.$scope.$watch('pager.size', function () {
-          _this17.findAndSetPages();
+          _this16.findAndSetPages();
         });
 
         this.$scope.$watch('pager.page', function (newVal) {
-          if (newVal !== 0 && newVal <= _this17.totalPages) {
-            _this17.getPages(newVal);
+          if (newVal !== 0 && newVal <= _this16.totalPages) {
+            _this16.getPages(newVal);
           }
         });
 

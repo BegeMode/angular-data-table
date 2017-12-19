@@ -15,7 +15,8 @@ export default function BodyDirective() {
       expanded: '=?',
       onPage: '&',
       onTreeToggle: '&',
-      onTreeLoader: '&', //bgmd
+      onTreeLoader: '&',
+      onRowsFiltered: '&',
       onSelect: '&',
       onRowClick: '&',
       onRowDblClick: '&',

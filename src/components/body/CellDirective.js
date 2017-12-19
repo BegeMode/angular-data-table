@@ -107,7 +107,7 @@ export default function CellDirective($rootScope, $compile) {
               }
               ctrl.row._original[ctrl.column.prop] = ctrl.value;
 
-              cellScope._changeEditStatus = (row, column) => {
+              cellScope._changeEditStatus = function (row, column) {
                 this.editing = !this.editing;
                 if (!row._editing) {
                   row._editing = {};
@@ -115,24 +115,24 @@ export default function CellDirective($rootScope, $compile) {
                 row._editing[column.prop] = this.editing;
               };
 
-              cellScope.edit = (cellVal, row, column) => {
+              cellScope.edit = function (cellVal, row, column) {
                 // console.info('edit()', what, cellVal);
                 if (ctrl.row._noEdit || (cellScope.editFilter && !cellScope.editFilter(row))) {
-                  return;
+                  return false;
                 }
                 cellScope._changeEditStatus(row, column);
                 // console.log('$id', this.$id, 'editing', this.editing);
                 return this.editing;
               };
               
-              cellScope.blur = (row, column) => {
+              cellScope.blur = function (row, column) {
                 if (!this.editing) {
                   return;
                 }
                 this._changeEditStatus(row, column);
               };
               
-              cellScope.changed = (cellVal, row, col) => {
+              cellScope.changed = function (cellVal, row, col) {
                 row[col.prop] = cellVal;
               };
             }

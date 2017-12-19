@@ -1050,6 +1050,9 @@ export default class BodyController {
       filter.rowsBefore = this.rows;
     }
     const rows = this.filterPipe(filter);
+    this.onRowsFiltered({
+      rows,
+    });
     return rows;
   }
 

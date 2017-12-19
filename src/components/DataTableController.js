@@ -269,6 +269,12 @@ export default class DataTableController {
       cell,
     });
   }
+
+  onRowsFiltered(rows) {
+    this.onFiltered({
+      rows,
+    });
+  }
   
   /**
    * Invoked when the body triggers a page change.
