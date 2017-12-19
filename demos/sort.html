@@ -91,7 +91,7 @@
           prop: "companyLink",
           sort: 'asc',
           sortPriority: 3,
-          cellRenderer: function () {
+          template: function () {
             return '<a target="_blank" href="\{{$cell.link}}">\{{$cell.text}}</a>';
           },
           sortBy: 'company'

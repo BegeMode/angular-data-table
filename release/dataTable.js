@@ -3729,7 +3729,7 @@
             }
 
             $scope.$watch('cell.row', function () {
-              if (cellScope && cellScope.editing && ctrl.row._editing[ctrl.column.prop]) {
+              if (cellScope && cellScope.editing && ctrl.row._editing && ctrl.row._editing[ctrl.column.prop]) {
                 return;
               }
               if (cellScope) {
@@ -3749,10 +3749,16 @@
                 }
               }
               if (ctrl.column.template || ctrl.column.cellRenderer || ctrl.column.editor) {
-                if (ctrl._rendered) return;
-                renderCell();
-              } else content[0].innerHTML = ctrl.getValue();
+                if (!ctrl._rendered) {
+                  renderCell();
+                }
+              } else {
+                content[0].innerHTML = ctrl.getValue();
+              }
               ctrl._rendered = true;
+              if (ctrl.column.cellRenderer) {
+                ctrl.column.cellRenderer(cellScope, content[0]);
+              }
             }, !ctrl.options.readOnly);
 
             function createCellScope() {
@@ -3761,55 +3767,64 @@
             }
 
             function renderCell() {
+              var _this15 = this;
+
               var editorWrapper = null;
-              var el = '<span>{{$cell}}</span>';
+              var el = null;
               if (ctrl.column.editor) {
-                //for all rows
+                // for all rows
                 var tag = ctrl.column.editor == 'textarea' ? 'textarea' : 'input';
                 el = '{{$cell}}';
                 editorWrapper = {};
                 editorWrapper.begin = '<span ng-dblclick="edit($cell, $row, $column)" ng-show="!editing">';
                 editorWrapper.end = '</span>\n                                    <div>\n                                      <' + tag + ' ng-show="editing" type="' + ctrl.column.editor + '" ng-model="$cell" ng-change="changed($cell, $row, $column)" \n                                             ng-blur="blur($row, $column)" style="width:100%;" focus-on="editing"/>\n                                    </div>';
 
-                if (!ctrl.row._original) ctrl.row._original = {};
+                if (!ctrl.row._original) {
+                  ctrl.row._original = {};
+                }
                 ctrl.row._original[ctrl.column.prop] = ctrl.value;
 
                 cellScope._changeEditStatus = function (row, column) {
-                  this.editing = !this.editing;
-                  if (!row._editing) row._editing = {};
-                  row._editing[column.prop] = this.editing;
+                  _this15.editing = !_this15.editing;
+                  if (!row._editing) {
+                    row._editing = {};
+                  }
+                  row._editing[column.prop] = _this15.editing;
                 };
 
                 cellScope.edit = function (cellVal, row, column) {
-                  //console.info('edit()', what, cellVal);
-                  if (ctrl.row._noEdit || cellScope.editFilter && !cellScope.editFilter(row)) return;
+                  // console.info('edit()', what, cellVal);
+                  if (ctrl.row._noEdit || cellScope.editFilter && !cellScope.editFilter(row)) {
+                    return;
+                  }
                   cellScope._changeEditStatus(row, column);
-                  //console.log('$id', this.$id, 'editing', this.editing);
-                  return this.editing;
+                  // console.log('$id', this.$id, 'editing', this.editing);
+                  return _this15.editing;
                 };
 
                 cellScope.blur = function (row, column) {
-                  if (!this.editing) return;
-                  this._changeEditStatus(row, column);
+                  if (!_this15.editing) {
+                    return;
+                  }
+                  _this15._changeEditStatus(row, column);
                 };
 
                 cellScope.changed = function (cellVal, row, col) {
-                  //var idx = $scope.data.indexOf(row);
                   row[col.prop] = cellVal;
-                  //$scope.data[idx] = row;
                 };
-              } // bgmd
+              }
               if (ctrl.column.template) {
-                el = '' + ctrl.column.template.trim(); //bgmd
-              } else if (ctrl.column.cellRenderer) {
-                el = ctrl.column.cellRenderer(cellScope, content); //bgmd
+                var tmpl = ctrl.column.template(cellScope, content[0]);
+                el = tmpl ? '' + tmpl.trim() : '<span>{{$cell}}</span>';
               }
               if (editorWrapper) {
                 el = editorWrapper.begin + el + editorWrapper.end;
               }
-              var elm = angular.element(el);
-              content.empty();
-              content.append($compile(elm)(cellScope));
+              if (el) {
+                var elm = angular.element(el);
+                content.empty();
+                content.append($compile(elm)(cellScope));
+              }
             }
           }
         };
@@ -3859,12 +3874,12 @@
     }, {
       key: 'init',
       value: function init() {
-        var _this15 = this;
+        var _this16 = this;
 
         this.page = this.paging.offset + 1;
 
         this.$scope.$watch('footer.paging.offset', function (newVal) {
-          _this15.offsetChanged(newVal);
+          _this16.offsetChanged(newVal);
         });
       }
     }, {
@@ -3929,19 +3944,19 @@
     }, {
       key: 'init',
       value: function init() {
-        var _this16 = this;
+        var _this17 = this;
 
         this.$scope.$watch('pager.count', function () {
-          _this16.findAndSetPages();
+          _this17.findAndSetPages();
         });
 
         this.$scope.$watch('pager.size', function () {
-          _this16.findAndSetPages();
+          _this17.findAndSetPages();
         });
 
         this.$scope.$watch('pager.page', function (newVal) {
-          if (newVal !== 0 && newVal <= _this16.totalPages) {
-            _this16.getPages(newVal);
+          if (newVal !== 0 && newVal <= _this17.totalPages) {
+            _this17.getPages(newVal);
           }
         });
 
@@ -4162,7 +4177,7 @@
          * Displays the popover on the page
          */
         function display() {
-          if ($scope.$parent.$column && $scope.$parent.$column.width - 5 >= $element.width()) {
+          if ($element[0].width && $scope.$parent.$column && $scope.$parent.$column.width - 5 >= $element[0].width()) {
             //Text has not overflowed
             return;
           }

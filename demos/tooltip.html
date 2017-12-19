@@ -53,7 +53,7 @@
   <script>
     var module = angular.module('app', ['data-table', 'dt.popover']);
 
-    module.controller('HomeController', function ($scope, $http) {
+    module.controller('HomeController', function ($scope, $timeout) {
       $scope.options = {
         footerHeight: false,
         headerHeight: 50,
@@ -74,18 +74,19 @@
             flexGrow: 1,
             name: "Sales",
             prop: "sales",
-          }, {
+          }, 
+          {
             name: "Comments",
             prop: "comments",
             tooltips: true,
-            cellRenderer: function (scope, elm) {
+            template: function (scope, elm) {
               return '<span popover popover-id="{{$row.$$index}}" popover-plain="true" popover-placement="left" popover-text="{{$row.comments}}">{{$row.comments}}</span>';
             }
           }
         ]
       };
 
-      $scope.data = [
+      $timeout(() => $scope.data = [
         {
           company: 'Acme',
           revenue: '$3,452,342',
@@ -95,12 +96,12 @@
         {
           company: 'Acme Holdings',
           revenue: '$345,342',
-          sales: '$4,452,222,353'
+          sales: '$4,452,222,353',
         },
         {
           company: 'Acme Limited',
           revenue: '$344,442',
-          sales: '$10,452,444,353'
+          sales: '$10,452,444,353',
         },
         {
           company: 'Sterling',
@@ -111,7 +112,7 @@
         {
           company: 'Apple',
           revenue: '$1,440,443,111',
-          sales: '$999,509,433,777,564'
+          sales: '$999,509,433,777,564',
         },
         {
           company: 'Apple IBS',
@@ -122,9 +123,10 @@
         {
           company: 'Apple IBS South',
           revenue: '$1,440,443,111',
-          sales: '$999,509,433,777,564'
+          sales: '$999,509,433,777,564',
+          comments: ''
         }
-      ];
+      ]);
 
     });
   </script>
