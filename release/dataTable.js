@@ -2908,6 +2908,7 @@
           var filter = {
             name: col.name,
             prop: col.prop,
+            getter: col.cellDataGetter,
             rowsBefore: null,
             rowsAfter: null,
             phrase: null,
@@ -2963,7 +2964,8 @@
             f.rowsBefore = result;
           }
           result = f.rowsAfter = f.rowsBefore.filter(function (row) {
-            return row[f.prop] && row[f.prop].toLowerCase().indexOf(f.phrase) !== -1 || !f.phrase;
+            var value = f.getter ? f.getter(row[f.prop]) : row[f.prop];
+            return value && value.toString().toLowerCase().indexOf(f.phrase) !== -1 || !f.phrase;
           });
         };
 
