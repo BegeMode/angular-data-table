@@ -952,6 +952,7 @@ export default class BodyController {
       const filter = {
         name: col.name,
         prop: col.prop,
+        getter: col.cellDataGetter,
         rowsBefore: null,
         rowsAfter: null,
         phrase: null,
@@ -1010,7 +1011,10 @@ export default class BodyController {
         }
         f.rowsBefore = result;
       }
-      result = f.rowsAfter = f.rowsBefore.filter((row) => (row[f.prop] && row[f.prop].toLowerCase().indexOf(f.phrase) !== -1) || !f.phrase);
+      result = f.rowsAfter = f.rowsBefore.filter((row) => {
+        const value = f.getter ? f.getter(row[f.prop]) : row[f.prop];
+        return (value && value.toString().toLowerCase().indexOf(f.phrase) !== -1) || !f.phrase;
+      });
     }
     return result;
   }
