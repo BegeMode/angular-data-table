@@ -67,7 +67,7 @@
             name: "Name",
             prop: "name",
             width: 300,
-            cellRenderer: function ($scope) {
+            template: function ($scope) {
               return '<div><img width="30" height="30" src="http://thecatapi.com/api/images/get?format=src&type=gif"> <strong>{{$cell}}</strong></div>';
             }
           },
@@ -78,7 +78,7 @@
               return '<strong>moo</strong>';
             },
             cellRenderer: function (scope, elm) {
-              displayGraphExample(elm[0], 300, 30, "basis", true, 1000, 1000);
+              displayGraphExample(elm, 300, 30, "basis", true, 1000, 1000);
             }
           },
           {

@@ -61,13 +61,13 @@
           name: "Name",
           prop: "name",
           width: 300,
-          cellRenderer: function () {
+          template: function () {
             return '<div>{{$cell}}</div>';
           }
         }, {
           name: "Image",
           prop: "imgSrc",
-          cellRenderer: function () {
+          template: function () {
             return '<div><img width="30" height="30" ng-src="{{$cell}}"></div>';
           }
         }, {
@@ -80,7 +80,7 @@
       };
 
       $http.get('/data/100.json').then(function (data) {
-        var subData = data.splice(0, 5);
+        var subData = data.data.splice(0, 5);
 
         for (var i = 0; i < subData.length; i++) {
           subData[i].imgSrc = 'http://code-maven.com/img/angularjs.png';

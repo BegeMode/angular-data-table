@@ -108,9 +108,9 @@
             width: 80,
             frozenRight: true,
             sortable: false,
-            cellRenderer: function (scope, elm) {
+            template: function (scope, elm) {
               scope.clicker = $scope.clicker;
-              return '<a href="#" class="util-col delete-btn" ng-click="clicker(value)" style="font-size:10px;">Delete</a>';
+              return '<a href="#" class="util-col delete-btn" ng-click="clicker(scope.$row)" style="font-size:10px;">Delete</a>';
             },
             headerRenderer: function () {
               return '<span class="icon-filter util-col" title="Utilities"></span>'
