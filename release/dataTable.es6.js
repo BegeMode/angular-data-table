@@ -1242,6 +1242,12 @@ class DataTableController {
       cell,
     });
   }
+
+  onRowsFiltered(rows) {
+    this.onFiltered({
+      rows,
+    });
+  }
   
   /**
    * Invoked when the body triggers a page change.
@@ -1495,7 +1501,7 @@ function DataTableDirective($window, $timeout, $parse) {
       expanded: '=?',
       onSelect: '&',
       onSort: '&',
-      //onFilter: '&', //bgmd
+      onFiltered: '&',
       onTreeToggle: '&',
       onPage: '&',
       onRowClick: '&',
@@ -1535,6 +1541,7 @@ function DataTableDirective($window, $timeout, $parse) {
                    on-page="dt.onBodyPage(offset, size)"
                    on-tree-toggle="dt.onTreeToggled(row, cell)"
                    on-tree-loader="dt.onTreeLoad(row, cell)"   
+                   on-rows-filtered="dt.onRowsFiltered(rows)"   
                    on-move-row="dt.moveRow(rowFrom, rowTo)">   
            </dt-body>
           <dt-footer ng-if="dt.options.footerHeight || dt.options.paging.mode"
@@ -3171,6 +3178,9 @@ class BodyController {
       filter.rowsBefore = this.rows;
     }
     const rows = this.filterPipe(filter);
+    this.onRowsFiltered({
+      rows,
+    });
     return rows;
   }
 
@@ -3191,7 +3201,8 @@ function BodyDirective() {
       expanded: '=?',
       onPage: '&',
       onTreeToggle: '&',
-      onTreeLoader: '&', //bgmd
+      onTreeLoader: '&',
+      onRowsFiltered: '&',
       onSelect: '&',
       onRowClick: '&',
       onRowDblClick: '&',
@@ -4076,7 +4087,7 @@ function CellDirective($rootScope, $compile) {
               }
               ctrl.row._original[ctrl.column.prop] = ctrl.value;
 
-              cellScope._changeEditStatus = (row, column) => {
+              cellScope._changeEditStatus = function (row, column) {
                 this.editing = !this.editing;
                 if (!row._editing) {
                   row._editing = {};
@@ -4084,24 +4095,24 @@ function CellDirective($rootScope, $compile) {
                 row._editing[column.prop] = this.editing;
               };
 
-              cellScope.edit = (cellVal, row, column) => {
+              cellScope.edit = function (cellVal, row, column) {
                 // console.info('edit()', what, cellVal);
                 if (ctrl.row._noEdit || (cellScope.editFilter && !cellScope.editFilter(row))) {
-                  return;
+                  return false;
                 }
                 cellScope._changeEditStatus(row, column);
                 // console.log('$id', this.$id, 'editing', this.editing);
                 return this.editing;
               };
               
-              cellScope.blur = (row, column) => {
+              cellScope.blur = function (row, column) {
                 if (!this.editing) {
                   return;
                 }
                 this._changeEditStatus(row, column);
               };
               
-              cellScope.changed = (cellVal, row, col) => {
+              cellScope.changed = function (cellVal, row, col) {
                 row[col.prop] = cellVal;
               };
             }

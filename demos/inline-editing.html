@@ -50,7 +50,7 @@
 <body ng-controller="HomeController">
 
   <p>Double click a name to edit</p>
-  <dtable options="options" rows="data" class="material" style="height: 800px;"></dtable>
+  <dtable options="options" rows="data" class="material" style="height: 800px;" on-filtered="onFiltered(rows)"></dtable>
 
   <script src="/assets/dataTable.js"></script>
 
@@ -66,8 +66,9 @@
         footerHeight: false,
         scrollbarV: true,
         rowDraggable: true,
-        editFilter: (row) => { return row.name != 'Ethel Price'; },
-        actionFilter: (row) => { return row.name != 'Ethel Price'; },
+        editFilter: (row) => { 
+          return row.name != 'Ethel Price'; 
+        },
         reorderable: true,
         columns: [
           {
@@ -97,7 +98,9 @@
           {
             name: 'Actions',
             width: 200,
-            template: '<div ng-if="actionFilter($row)"><a ng-click="destroyApp($row)">DELETE</a> | <a ng-click="display($row, $rowCtrl);">LOG</a></div>' 
+            template: ($scope, elm) => { 
+              return '<div ng-if="actionFilter($row)"><a ng-click="destroyApp($row)">DELETE</a> | <a ng-click="display($row, $rowCtrl);">LOG</a></div>' 
+            }
           }
         ]
       };
@@ -106,6 +109,14 @@
         $scope.data = data.data.splice(0, 20);
         $scope.data[1]._noEdit = true;
       });
+
+      $scope.actionFilter = (row) => { 
+        return row.name != 'Ethel Price'; 
+      };
+
+      $scope.onFiltered = (rows) => {
+        console.info('filtered rows', rows);
+      };
 
       $scope.$watch('data', function () {
         $scope.code = JSON.stringify($scope.data, null, 2)

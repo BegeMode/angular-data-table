@@ -16,7 +16,7 @@ export default function DataTableDirective($window, $timeout, $parse) {
       expanded: '=?',
       onSelect: '&',
       onSort: '&',
-      //onFilter: '&', //bgmd
+      onFiltered: '&',
       onTreeToggle: '&',
       onPage: '&',
       onRowClick: '&',
@@ -56,6 +56,7 @@ export default function DataTableDirective($window, $timeout, $parse) {
                    on-page="dt.onBodyPage(offset, size)"
                    on-tree-toggle="dt.onTreeToggled(row, cell)"
                    on-tree-loader="dt.onTreeLoad(row, cell)"   
+                   on-rows-filtered="dt.onRowsFiltered(rows)"   
                    on-move-row="dt.moveRow(rowFrom, rowTo)">   
            </dt-body>
           <dt-footer ng-if="dt.options.footerHeight || dt.options.paging.mode"
