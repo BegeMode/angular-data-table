@@ -564,6 +564,11 @@
      * @type {boolean}
      */
     selectable: false,
+    /**
+     * If rows are selectable defines the background selection colour
+     * @type {string} colour
+     */
+    rowSelectionColor: '#304ffe',
 
     /**
      * If yes then the column can be sorted.
@@ -2498,6 +2503,20 @@
         return selected;
       }
     }, {
+      key: 'onSelected',
+      value: function onSelected(rows) {
+        if (rows && rows.length) {
+          if (this.options.selectable) {
+            if (!this.options.multiSelect) {
+              this.selected = rows[0];
+            }
+          }
+        }
+        this.onSelect({
+          rows: rows
+        });
+      }
+    }, {
       key: 'isDraggable',
       value: function isDraggable(row) {
         return this.options.rowDraggable;
@@ -2732,11 +2751,14 @@
       }
     }, {
       key: 'rowStyles',
-      value: function rowStyles() {
+      value: function rowStyles(row) {
         var styles = {};
 
         if (this.options.rowHeight === 'auto') {
           styles.height = this.options.rowHeight + 'px';
+        }
+        if (this.isSelected(row)) {
+          styles.backgroundColor = this.options.rowSelectionColor;
         }
 
         return styles;
@@ -3379,13 +3401,13 @@
                   this.selected.splice(0, 1);
                 }
                 this.selected.push(row);
-                this.body.onSelect({ rows: [row] });
+                this.body.onSelected([row]);
               }
             }
             this.prevIndex = index;
           } else {
             this.selected = row;
-            this.body.onSelect({ rows: [row] });
+            this.body.onSelected([row]);
           }
         }
       }
@@ -3428,7 +3450,7 @@
             }
           }
 
-          this.body.onSelect({ rows: selecteds });
+          this.body.onSelected(selecteds);
         }
       }
     }]);
@@ -3478,6 +3500,10 @@
           TranslateXY(styles, offset, 0);
         }
 
+        if (this.selected) {
+          styles.backgroundColor = this.options.rowSelectionColor;
+        }
+
         return styles;
       }
     }, {
@@ -3491,12 +3517,16 @@
     }, {
       key: 'getChanges',
       value: function getChanges() {
-        if (!this.row._original) return null;
+        if (!this.row._original) {
+          return null;
+        }
         var result = {};
         for (var prop in this.row._original) {
           if (this.row._original.hasOwnProperty(prop)) {
             var value = this.row._original[prop];
-            if (value !== this.row[prop]) result[prop] = this.row[prop];
+            if (value !== this.row[prop]) {
+              result[prop] = this.row[prop];
+            }
           }
         }
         return Object.keys(result).length == 0 ? null : result;
@@ -3504,8 +3534,9 @@
     }, {
       key: 'submitChanges',
       value: function submitChanges() {
-        if (!this.row._original) return;
-        var result = {};
+        if (!this.row._original) {
+          return;
+        }
         for (var prop in this.row._original) {
           if (this.row._original.hasOwnProperty(prop)) {
             this.row._original[prop] = this.row[prop];

@@ -42,6 +42,10 @@ export default class RowController {
       TranslateXY(styles, offset, 0);
     }
 
+    if (this.selected) {
+      styles.backgroundColor = this.options.rowSelectionColor;
+    }
+
     return styles;
   }
 
@@ -59,24 +63,26 @@ export default class RowController {
    *
    */
   getChanges() {
-    if (!this.row._original)
+    if (!this.row._original) {
       return null;
-    let result = {};
-    for (var prop in this.row._original) {
+    }
+    const result = {};
+    for (const prop in this.row._original) {
       if (this.row._original.hasOwnProperty(prop)) {
-        let value = this.row._original[prop];
-        if (value !== this.row[prop])
+        const value = this.row._original[prop];
+        if (value !== this.row[prop]) {
           result[prop] = this.row[prop];
+        }
       }
     }
     return Object.keys(result).length == 0? null : result;
   }
 
   submitChanges() {
-    if (!this.row._original)
+    if (!this.row._original) {
       return;
-    let result = {};
-    for (var prop in this.row._original) {
+    }
+    for (const prop in this.row._original) {
       if (this.row._original.hasOwnProperty(prop)) {
         this.row._original[prop] = this.row[prop];
       }
