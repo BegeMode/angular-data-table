@@ -124,6 +124,11 @@ export const TableDefaults = {
    * @type {boolean}
    */
   selectable: false,
+  /**
+   * If rows are selectable defines the background selection colour
+   * @type {string} colour
+   */
+  rowSelectionColor: '#304ffe',
 
   /**
    * If yes then the column can be sorted.

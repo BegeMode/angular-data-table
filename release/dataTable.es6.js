@@ -478,6 +478,11 @@ const TableDefaults = {
    * @type {boolean}
    */
   selectable: false,
+  /**
+   * If rows are selectable defines the background selection colour
+   * @type {string} colour
+   */
+  rowSelectionColor: '#304ffe',
 
   /**
    * If yes then the column can be sorted.
@@ -2616,6 +2621,24 @@ class BodyController {
   }
 
   /**
+   * Occurs when a row was selected
+   * @param  {object} rows
+   */
+  onSelected(rows) {
+    if (rows && rows.length) {
+      if (this.options.selectable) {
+        if (!this.options.multiSelect) {
+          this.selected = rows[0];
+        }
+      }
+    }
+    this.onSelect({
+      rows,
+    });
+  }
+
+
+  /**
    * Returns if the row is draggable
    * @param  {row}
    * @return {Boolean}
@@ -2861,11 +2884,14 @@ class BodyController {
    * @param  {row}
    * @return {styles object}
    */
-  rowStyles() {
+  rowStyles(row) {
     const styles = {};
 
     if (this.options.rowHeight === 'auto') {
       styles.height = `${this.options.rowHeight}px`;
+    }
+    if (this.isSelected(row)) {
+      styles.backgroundColor = this.options.rowSelectionColor;
     }
 
     return styles;
@@ -3576,13 +3602,13 @@ class SelectionController {
               this.selected.splice(0, 1);
             }
             this.selected.push(row);
-            this.body.onSelect({ rows: [row] });
+            this.body.onSelected([row]);
           }
         }
         this.prevIndex = index;
       } else {
         this.selected = row;
-        this.body.onSelect({ rows: [row] });
+        this.body.onSelected([row]);
       }
     }
   }
@@ -3630,7 +3656,7 @@ class SelectionController {
         }
       }
 
-      this.body.onSelect({ rows: selecteds });
+      this.body.onSelected(selecteds);
     }
   }
 }
@@ -3685,6 +3711,10 @@ class RowController {
       TranslateXY(styles, offset, 0);
     }
 
+    if (this.selected) {
+      styles.backgroundColor = this.options.rowSelectionColor;
+    }
+
     return styles;
   }
 
@@ -3702,24 +3732,26 @@ class RowController {
    *
    */
   getChanges() {
-    if (!this.row._original)
+    if (!this.row._original) {
       return null;
-    let result = {};
-    for (var prop in this.row._original) {
+    }
+    const result = {};
+    for (const prop in this.row._original) {
       if (this.row._original.hasOwnProperty(prop)) {
-        let value = this.row._original[prop];
-        if (value !== this.row[prop])
+        const value = this.row._original[prop];
+        if (value !== this.row[prop]) {
           result[prop] = this.row[prop];
+        }
       }
     }
     return Object.keys(result).length == 0? null : result;
   }
 
   submitChanges() {
-    if (!this.row._original)
+    if (!this.row._original) {
       return;
-    let result = {};
-    for (var prop in this.row._original) {
+    }
+    for (const prop in this.row._original) {
       if (this.row._original.hasOwnProperty(prop)) {
         this.row._original[prop] = this.row[prop];
       }

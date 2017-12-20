@@ -92,7 +92,7 @@
 
   <div class="wrapper">
     <h2>Multi-select only when SHIFT is held</h2>
-    <dtable options="options2" rows="data" on-row-click="onRowClick(row)" class="material" on-select="onSelect(row)" selected="selected2"></dtable>
+    <dtable options="options2" rows="data" on-row-click="onRowClick(row)" class="material" on-select="onSelect(rows)" selected="selected2"></dtable>
 
     <div class="selected-box">
       <h5>Selected list</h5>
@@ -103,7 +103,7 @@
 
   <div class="wrapper">
     <h2>Multi-select with virtual paging</h2>
-    <dtable options="options3" rows="data" on-row-click="onRowClick(row)" style="height:300px" class="material" on-select="onSelect(row)"
+    <dtable options="options3" rows="data" on-row-click="onRowClick(row)" style="height:300px" class="material" on-select="onSelect(rows)"
       selected="selected3"></dtable>
 
     <div class="selected-box">
@@ -141,6 +141,7 @@
         selectable: true,
         multiSelect: true,
         multiSelectOnShift: true,
+        rowSelectionColor: 'lightblue',
         columns: [
           { name: "Name", prop: "name", width: 300 },
           { name: "Gender", prop: "gender" },
@@ -176,8 +177,8 @@
         }
       }
 
-      $scope.onSelect = function (row) {
-        console.log('ROW SELECTED!', row);
+      $scope.onSelect = function (rows) {
+        console.log('ROW SELECTED!', rows);
       }
 
       $scope.onRowClick = function (row) {

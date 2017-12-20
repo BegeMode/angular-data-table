@@ -168,13 +168,13 @@ export default class SelectionController {
               this.selected.splice(0, 1);
             }
             this.selected.push(row);
-            this.body.onSelect({ rows: [row] });
+            this.body.onSelected([row]);
           }
         }
         this.prevIndex = index;
       } else {
         this.selected = row;
-        this.body.onSelect({ rows: [row] });
+        this.body.onSelected([row]);
       }
     }
   }
@@ -222,7 +222,7 @@ export default class SelectionController {
         }
       }
 
-      this.body.onSelect({ rows: selecteds });
+      this.body.onSelected(selecteds);
     }
   }
 }

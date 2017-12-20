@@ -488,6 +488,24 @@ export default class BodyController {
   }
 
   /**
+   * Occurs when a row was selected
+   * @param  {object} rows
+   */
+  onSelected(rows) {
+    if (rows && rows.length) {
+      if (this.options.selectable) {
+        if (!this.options.multiSelect) {
+          this.selected = rows[0];
+        }
+      }
+    }
+    this.onSelect({
+      rows,
+    });
+  }
+
+
+  /**
    * Returns if the row is draggable
    * @param  {row}
    * @return {Boolean}
@@ -733,11 +751,14 @@ export default class BodyController {
    * @param  {row}
    * @return {styles object}
    */
-  rowStyles() {
+  rowStyles(row) {
     const styles = {};
 
     if (this.options.rowHeight === 'auto') {
       styles.height = `${this.options.rowHeight}px`;
+    }
+    if (this.isSelected(row)) {
+      styles.backgroundColor = this.options.rowSelectionColor;
     }
 
     return styles;
