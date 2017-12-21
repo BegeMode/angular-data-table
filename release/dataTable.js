@@ -568,7 +568,7 @@
      * If rows are selectable defines the background selection colour
      * @type {string} colour
      */
-    rowSelectionColor: '#304ffe',
+    rowSelectionColor: 'lightblue',
 
     /**
      * If yes then the column can be sorted.
@@ -2759,6 +2759,7 @@
         }
         if (this.isSelected(row)) {
           styles.backgroundColor = this.options.rowSelectionColor;
+          styles.color = '#fff';
         }
 
         return styles;
@@ -3502,6 +3503,7 @@
 
         if (this.selected) {
           styles.backgroundColor = this.options.rowSelectionColor;
+          styles.color = '#fff';
         }
 
         return styles;

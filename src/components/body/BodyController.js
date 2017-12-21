@@ -759,6 +759,7 @@ export default class BodyController {
     }
     if (this.isSelected(row)) {
       styles.backgroundColor = this.options.rowSelectionColor;
+      styles.color = '#fff';
     }
 
     return styles;

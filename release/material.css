@@ -148,18 +148,24 @@
   -webkit-box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.12), 0 1px 2px 0 rgba(0, 0, 0, 0.24);
   -moz-box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.12), 0 1px 2px 0 rgba(0, 0, 0, 0.24);
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.12), 0 1px 2px 0 rgba(0, 0, 0, 0.24);
-}
-.dt.material.selectable:not(.checkboxable) .dt-body .dt-row:focus,
-.dt.material.selectable:not(.checkboxable) .dt-body .dt-row:focus .dt-row-block {
-  background-color: #eee;
-}
-.dt.material.selectable:not(.checkboxable) .dt-body .dt-row.selected,
-.dt.material.selectable:not(.checkboxable) .dt-body .dt-row.selected:hover,
-.dt.material.selectable:not(.checkboxable) .dt-body .dt-row.selected:focus,
-.dt.material.selectable:not(.checkboxable) .dt-body .dt-row.selected .dt-row-block,
-.dt.material.selectable:not(.checkboxable) .dt-body .dt-row.selected:hover .dt-row-block {
-  background-color: #304ffe;
-  color: #fff;
+  /*&.selectable:not(.checkboxable) {
+    .dt-body {
+      .dt-row {
+         &:focus, &:focus .dt-row-block {
+          background-color: #eee;
+        } 
+        
+        &.selected,
+        &.selected:hover,
+        &.selected:focus,
+        &.selected .dt-row-block,
+        &.selected:hover .dt-row-block {
+          background-color: #304ffe;
+          color: #fff;
+        }
+      }
+    }
+  }*/
 }
 .dt.material .dt-header {
   border-bottom: 1px solid rgba(0, 0, 0, 0.12);
