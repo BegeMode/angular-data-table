@@ -44,6 +44,7 @@ export default class RowController {
 
     if (this.selected) {
       styles.backgroundColor = this.options.rowSelectionColor;
+      styles.color = '#fff';
     }
 
     return styles;
