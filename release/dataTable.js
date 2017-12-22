@@ -3858,7 +3858,7 @@
                 };
               }
               if (ctrl.column.template) {
-                var tmpl = ctrl.column.template(cellScope, content[0]);
+                var tmpl = angular.isFunction(ctrl.column.template) ? ctrl.column.template(cellScope, content[0]) : ctrl.column.template;
                 el = tmpl ? '' + tmpl.trim() : '<span>{{$cell}}</span>';
               }
               if (editorWrapper) {

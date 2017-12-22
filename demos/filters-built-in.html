@@ -1,0 +1,93 @@
+<!doctype html>
+<html ng-app="app" lang="en">
+  <head>
+    <meta charset=" utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta name="viewport" content="width = device-width, minimal-ui, initial-scale = 1, user-scalable = no" />
+    <meta name="apple-mobile-web-app-title" content="Datagrid">
+    <title>Datagrid - Basic</title>
+    <base href="/">
+    <style>
+      *, *:after, *:before {
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+      }
+
+      html {
+        height: 100%;
+      }
+
+      body {
+        height: 100%;
+        font-family: 'RobotoDraft', 'Roboto', 'Helvetica Neue, Helvetica, Arial', sans-serif;
+        font-style: normal;
+        font-weight: 300;
+        font-size: 1.4rem;
+        line-height: 2rem;
+        letter-spacing: 0.01rem;
+        color: #212121;
+        background-color: #f5f5f5;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-rendering: optimizeLegibility;
+      }
+
+      .dt {
+        height: 100%;
+        width:75%;
+        margin: 0 auto;
+      }
+    </style>
+  </head>
+  <body ng-controller="HomeController">
+    <dtable options="options" rows="data" class="material" on-filtered="onFiltered(rows)"></dtable>
+    <script src="/assets/dataTable.js"></script>
+
+    <script>
+        var module = angular.module('app', [ 'data-table' ]);
+
+        module.controller('HomeController', function ($scope, $http) {
+          var data;
+
+          $scope.options = {
+            rowHeight: 50,
+            headerHeight: 100,
+            footerHeight: false,
+            scrollbarV: true,
+            selectable: true,
+            columns: [
+            {
+              name: "Name",
+              prop: "name",
+              width: 300,
+              editor: 'text',
+              filter: 'text',
+            },
+            {
+              name: "Gender",
+              prop: "gender",
+              editor: 'text',
+              filter: 'text',
+            },
+            {
+              name: "Company",
+              prop: "company",
+              editor: 'textarea',
+              filter: 'text',
+          }
+        ]};
+
+          $http.get('/data/100.json').then(function (d) {
+            $scope.data = data = d.data;
+          });
+          $scope.onFiltered = function(rows){
+            console.info('onFiltered', rows);
+          }
+        });
+    </script>
+
+  </body>
+</html>
