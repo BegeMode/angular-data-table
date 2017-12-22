@@ -4151,7 +4151,7 @@ function CellDirective($rootScope, $compile) {
               };
             }
             if (ctrl.column.template) {
-              const tmpl = ctrl.column.template(cellScope, content[0]);
+              const tmpl = angular.isFunction(ctrl.column.template) ? ctrl.column.template(cellScope, content[0]) : ctrl.column.template;
               el = tmpl ? `${tmpl.trim()}` : '<span>{{$cell}}</span>';
             }
             if (editorWrapper) {

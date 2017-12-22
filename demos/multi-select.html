@@ -103,7 +103,7 @@
 
   <div class="wrapper">
     <h2>Multi-select with virtual paging</h2>
-    <dtable options="options3" rows="data" on-row-click="onRowClick(row)" style="height:300px" class="material" on-select="onSelect(rows)"
+    <dtable options="options3" rows="data3" on-row-click="onRowClick(row)" style="height:800px" class="material" on-select="onSelect(rows)"
       selected="selected3"></dtable>
 
     <div class="selected-box">
@@ -187,6 +187,7 @@
 
       $http.get('/data/100.json').then(function (data) {
         $scope.data = data.data.splice(0, 10);
+        $scope.data3 = data.data;
       });
 
     });
