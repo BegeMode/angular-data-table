@@ -2855,7 +2855,6 @@
           this.loading[val] = true;
           this.onTreeLoad(row, cell).then(function (data) {
             row._loaded_ = true;
-            // self.rows = self.rows.concat(data);
             self.noNeedRowsUpdated = true;
             self.buildTreeNode(row, data);
             self.filteredRows = self.doFilter();
@@ -3187,8 +3186,7 @@
           if (ctrl._hackToAvoidUnwantedScroll_) {
             this.scrollTop = lastScrollY;
             this.scrollLeft = lastScrollX;
-            ctrl._hackToAvoidUnwantedScroll_ = void 0;
-            return;
+            ctrl._hackToAvoidUnwantedScroll_ = undefined;
           }
           lastScrollY = this.scrollTop;
           lastScrollX = this.scrollLeft;
