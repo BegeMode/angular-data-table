@@ -22,14 +22,14 @@ export default function RowDirective() {
       onTreeToggle: '&',
     },
     link($scope, $elm, $attrs, ctrl) {
-      if (ctrl.row) {
+      if (ctrl.row && ctrl.options.rowFixedHeight) {
         // inital render position
         TranslateXY($elm[0].style, 0, ctrl.row.$$index * ctrl.options.rowHeight);
       }
 
       // register w/ the style translator
       ctrl.options.internal.styleTranslator.register($scope.$index, $elm);
-    }, 
+    },
     template: `
       <div class="dt-row" draggable={{rowCtrl.isDraggable}}>
         <div class="dt-row-left dt-row-block"

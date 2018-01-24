@@ -36,10 +36,16 @@ export const TableDefaults = {
 
   /**
    * The minimum header height in pixels.
-   * pass falsey for no header
+   * pass false for no header
    * @type {number}
    */
   headerHeight: 30,
+
+  /**
+   * Is the position of header fixed (grid is vertical scrolled) or not.
+   * @type {boolean}
+   */
+  fixedHeader: true,
 
   /**
    * Internal options
@@ -112,6 +118,12 @@ export const TableDefaults = {
    * @type {number}
    */
   rowHeight: 30,
+  /**
+   * Is grid has rows with fixed height or not?
+   * By default, grid has rows with fixed rows
+   * @type {boolean}
+   */
+  rowFixedHeight: true,
 
   /**
    * Enable vertical scrollbars

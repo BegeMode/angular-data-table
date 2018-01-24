@@ -51,7 +51,7 @@ export default class BodyController {
           return;
         }
         this.rows = this.doFilter();
-        
+
         const origTreeColumn = angular.copy(this.treeColumn);
         const origGroupColumn = angular.copy(this.groupColumn);
 
@@ -126,7 +126,7 @@ export default class BodyController {
         this.groupColumn = this.options.columns.find(c => c.group);
       } else {
         this.groupColumn = undefined;
-        if (!this.treeColumn.parentRelationProp)          { this.treeColumn.parentRelationProp = this.treeColumn.prop; }
+        if (!this.treeColumn.parentRelationProp) { this.treeColumn.parentRelationProp = this.treeColumn.prop; }
       }
     }
   }
@@ -176,7 +176,7 @@ export default class BodyController {
       }));
 
       this.watchListeners.push(this.$scope.$watch('body.options.paging.offset', (newVal) => {
-          if (this.options.paging.size) {
+        if (this.options.paging.size) {
           if (this.options.paging.mode === 'internal') {
             this.buildInternalPage();
           }
@@ -188,7 +188,7 @@ export default class BodyController {
             });
           }
         }
-        }));
+      }));
     }
   }
 
@@ -252,7 +252,7 @@ export default class BodyController {
           }
         });
       }
-    }  
+    }
   }
 
   /**
@@ -261,18 +261,28 @@ export default class BodyController {
   getFirstLastIndexes() {
     let firstRowIndex;
     let endIndex;
+    let scrollPercent;
 
     if (this.options.scrollbarV) {
-      firstRowIndex = Math.max(Math.floor((
-        this.options.internal.offsetY || 0) / this.options.rowHeight, 0), 0);
+      if (!this.options.rowFixedHeight) {
+        scrollPercent = this.options.internal.percentScroll || 0; // (this.options.internal.offsetY * 100) / this.options.internal.bodyHeight;
+        scrollPercent = Math.floor(scrollPercent, 0);
+        firstRowIndex = Math.max(Math.floor((scrollPercent * this.options.paging.count) / 100), 0);
+      } else {
+        const offset = Math.floor((this.options.internal.offsetY || 0) / this.options.rowHeight, 0);
+        firstRowIndex = Math.max(offset, 0);
+      }
       endIndex = Math.min(firstRowIndex + this.options.paging.size, this.count);
     } else if (this.options.paging.mode === 'external') {
       firstRowIndex = Math.max(this.options.paging.offset * this.options.paging.size, 0);
       endIndex = Math.min(firstRowIndex + this.options.paging.size, this.count);
     } else {
+      firstRowIndex = 0;
       endIndex = this.count;
     }
-
+    console.log('scrollPercent', scrollPercent);
+    console.log('firstRowIndex', firstRowIndex);
+    console.log('endIndex', endIndex);
     return {
       first: firstRowIndex,
       last: endIndex,
@@ -571,7 +581,7 @@ export default class BodyController {
       }
     }
   }
-  
+
   /**
    * Remove row and her children from this.rows
    * @param {string} id - row key
@@ -625,7 +635,7 @@ export default class BodyController {
     const temp = [];
     const self = this;
 
-    if (!this.filteredRows)      { this.filteredRows = this.rows; }
+    if (!this.filteredRows) { this.filteredRows = this.rows; }
     // rows filtering
     let flt = false;
     if (this._applyFilter) {
@@ -671,7 +681,7 @@ export default class BodyController {
     }
 
     // clear $$index
-    this.tempRows.forEach(value => delete value.$$index);
+    this.tempRows.forEach(value => value && delete value.$$index);
 
     let temp;
 
@@ -694,9 +704,16 @@ export default class BodyController {
       }
     } else {
       temp = this.rows;
-      if (refresh === true) {
+      if (refresh === true && this.options.rowFixedHeight) {
         this.tempRows.splice(0, this.tempRows.length);
       }
+    }
+
+    if (!this.options.rowFixedHeight && this.tempRows.length) {
+      //if (this.rows)
+      //  this.tempRows.length = this.rows.length;
+      // for row with unfixed height
+      return this.getRowsForNonFixedRows();
     }
 
     let idx = 0;
@@ -718,8 +735,28 @@ export default class BodyController {
       rowIndex += 1;
     }
 
-    if (this.options.internal && this.options.internal.styleTranslator) {
+    if (this.options.internal && this.options.internal.styleTranslator
+      && this.options.rowFixedHeight) {
       this.options.internal.styleTranslator.update(this.tempRows);
+    }
+    return this.tempRows;
+  }
+
+  /**
+   * Creates the intermediate collection that is shown in the view.
+   */
+  getRowsForNonFixedRows() {
+    const temp = this.rows;
+    const indexes = this.getFirstLastIndexes();
+    let j = indexes.last - 1;
+    let row;
+    for (let i = this.tempRows.length - 1; i >= 0; i--) {
+      row = temp[j];
+      if (row) {
+        row.$$index = j;
+      }
+      this.tempRows[i] = row;
+      j -= 1;
     }
     return this.tempRows;
   }
@@ -743,6 +780,11 @@ export default class BodyController {
       styles.height = `${this.options.internal.bodyHeight}px`;
     }
 
+    if (this.options.fixedHeader) {
+      const h = this.options.headerHeight + this.options.footerHeight;
+      styles.height = `calc(calc(100% - ${h}px)`;
+      styles.overflowY = 'auto';
+    }
     return styles;
   }
 

@@ -136,7 +136,7 @@ export default class DataTableController {
    */
   tableCss() {
     return {
-      fixed: this.options.scrollbarV,
+      fixed: this.options.scrollbarV && this.options.rowFixedHeight,
       selectable: this.options.selectable,
       checkboxable: this.options.checkboxSelection,
     };
