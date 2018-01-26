@@ -51,7 +51,7 @@ export default class BodyController {
           return;
         }
         this.rows = this.doFilter();
-        
+
         const origTreeColumn = angular.copy(this.treeColumn);
         const origGroupColumn = angular.copy(this.groupColumn);
 
@@ -126,7 +126,7 @@ export default class BodyController {
         this.groupColumn = this.options.columns.find(c => c.group);
       } else {
         this.groupColumn = undefined;
-        if (!this.treeColumn.parentRelationProp)          { this.treeColumn.parentRelationProp = this.treeColumn.prop; }
+        if (!this.treeColumn.parentRelationProp) { this.treeColumn.parentRelationProp = this.treeColumn.prop; }
       }
     }
   }
@@ -176,19 +176,19 @@ export default class BodyController {
       }));
 
       this.watchListeners.push(this.$scope.$watch('body.options.paging.offset', (newVal) => {
-          if (this.options.paging.size) {
-          if (this.options.paging.mode === 'internal') {
+        if (this.options.paging.size) {
+            if (this.options.paging.mode === 'internal') {
             this.buildInternalPage();
           }
 
-          if (this.onPage) {
+            if (this.onPage) {
             this.onPage({
               offset: newVal,
               size: this.options.paging.size,
             });
           }
-        }
-        }));
+          }
+      }));
     }
   }
 
@@ -252,7 +252,7 @@ export default class BodyController {
           }
         });
       }
-    }  
+    }
   }
 
   /**
@@ -571,7 +571,7 @@ export default class BodyController {
       }
     }
   }
-  
+
   /**
    * Remove row and her children from this.rows
    * @param {string} id - row key
@@ -625,7 +625,7 @@ export default class BodyController {
     const temp = [];
     const self = this;
 
-    if (!this.filteredRows)      { this.filteredRows = this.rows; }
+    if (!this.filteredRows) { this.filteredRows = this.rows; }
     // rows filtering
     let flt = false;
     if (this._applyFilter) {
@@ -741,6 +741,14 @@ export default class BodyController {
 
     if (this.options.scrollbarV) {
       styles.height = `${this.options.internal.bodyHeight}px`;
+    }
+
+    if (this.options.fixedHeader) {
+      if (!this.options.scrollbarV) {
+        const h = this.options.headerHeight + this.options.footerHeight;
+        styles.height = `calc(calc(100% - ${h}px)`;
+      }
+      styles.overflowY = 'auto';
     }
 
     return styles;
