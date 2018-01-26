@@ -18,8 +18,13 @@
       -moz-box-sizing: border-box;
       box-sizing: border-box;
     }
-    
+    html {
+      height: 100%;
+    }
     body {
+      height: 100%;
+      padding: 50px 100px;
+      margin: 0;
       font-family: 'RobotoDraft', 'Roboto', 'Helvetica Neue, Helvetica, Arial', sans-serif;
       font-style: normal;
       font-weight: 300;
@@ -35,7 +40,7 @@
     
     .dt {
       width: 75%;
-      margin: 50px auto;
+      height: 100%;
     }
     
     .dt.row-wrap .dt-cell,
@@ -55,29 +60,40 @@
   <script>
     var module = angular.module('app', ['data-table']);
 
-    module.controller('HomeController', function ($scope, $http) {
+    module.controller('HomeController', function ($scope, $timeout) {
 
       $scope.options = {
         rowHeight: 'auto',
         headerHeight: 50,
+        rowHeight: 80,
+        //paging: { mode: 'internal' },
         footerHeight: false,
         scrollbarV: false,
+        fixedHeader: true,
         columns: [
           { name: "Company", width: 300 },
           { name: "Revenue" },
-          { name: "Comments", width: 200 }
+          { name: "Comments", width: 500 }
         ]
       };
 
-      $scope.data = [
-        { 'company': 'Acme', 'revenue': '$3,452,342', 'sales': '$3,452,342,353', comments: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut non orci libero. Suspendisse aliquam eu magna ac tristique. Suspendisse potenti. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Curabitur sem erat, suscipit nec faucibus sed, interdum quis enim. Cras id laoreet dolor. Quisque ex odio, consectetur et neque nec, sagittis tempus erat. Donec at maximus purus. Nulla molestie arcu eros, ac pulvinar ligula mattis in. Nulla ut dolor eu metus dignissim auctor. Phasellus auctor quam quis ullamcorper tincidunt.' },
-        { 'company': 'Acme Holdings', 'revenue': '$345,342', 'sales': '$4,452,222,353' },
-        { 'company': 'Acme Limited', 'revenue': '$344,442', 'sales': '$10,452,444,353' },
-        { 'company': 'Sterling', 'revenue': '$40,443,111', 'sales': '$50,433,777,564', comments: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut non orci libero. Suspendisse aliquam eu magna ac tristique. Suspendisse potenti. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Curabitur sem erat, suscipit nec faucibus sed, interdum quis enim. Cras id laoreet dolor. Quisque ex odio, consectetur et neque nec, sagittis tempus erat. Donec at maximus purus. Nulla molestie arcu eros, ac pulvinar ligula mattis in. Nulla ut dolor eu metus dignissim auctor. Phasellus auctor quam quis ullamcorper tincidunt.' },
-        { 'company': 'Apple', 'revenue': '$1,440,443,111', 'sales': '$999,509,433,777,564' },
-        { 'company': 'Apple IBS', 'revenue': '$1,440,443,111', 'sales': '$999,509,433,777,564', comments: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut non orci libero. Suspendisse aliquam eu magna ac tristique. Suspendisse potenti. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Curabitur sem erat, suscipit nec faucibus sed, interdum quis enim. Cras id laoreet dolor. Quisque ex odio, consectetur et neque nec, sagittis tempus erat. Donec at maximus purus. Nulla molestie arcu eros, ac pulvinar ligula mattis in. Nulla ut dolor eu metus dignissim auctor. Phasellus auctor quam quis ullamcorper tincidunt.' },
-        { 'company': 'Apple IBS South', 'revenue': '$1,440,443,111', 'sales': '$999,509,433,777,564' }
-      ];
+      $timeout(() => $scope.data = [
+        { 'company': '1.Acme', 'revenue': '$3,452,342', 'sales': '$3,452,342,353', comments: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut non orci libero. Suspendisse aliquam eu magna ac tristique. Suspendisse potenti. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Curabitur sem erat, suscipit nec faucibus sed, interdum quis enim. Cras id laoreet dolor. Quisque ex odio, consectetur et neque nec, sagittis tempus erat. Donec at maximus purus. Nulla molestie arcu eros, ac pulvinar ligula mattis in. Nulla ut dolor eu metus dignissim auctor. Phasellus auctor quam quis ullamcorper tincidunt.' },
+        { 'company': '2.Acme Holdings', 'revenue': '$345,342', 'sales': '$4,452,222,353' },
+        { 'company': '3.Acme Limited', 'revenue': '$344,442', 'sales': '$10,452,444,353' },
+        { 'company': '4.Sterling', 'revenue': '$40,443,111', 'sales': '$50,433,777,564', comments: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut non orci libero. Suspendisse aliquam eu magna ac tristique. Suspendisse potenti. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Curabitur sem erat, suscipit nec faucibus sed, interdum quis enim. Cras id laoreet dolor. Quisque ex odio, consectetur et neque nec, sagittis tempus erat. Donec at maximus purus. Nulla molestie arcu eros, ac pulvinar ligula mattis in. Nulla ut dolor eu metus dignissim auctor. Phasellus auctor quam quis ullamcorper tincidunt.' },
+        { 'company': '5.Apple', 'revenue': '$1,440,443,111', 'sales': '$999,509,433,777,564' },
+        { 'company': '6.Apple IBS', 'revenue': '$1,440,443,111', 'sales': '$999,509,433,777,564', comments: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut non orci libero. Suspendisse aliquam eu magna ac tristique. Suspendisse potenti. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Curabitur sem erat, suscipit nec faucibus sed, interdum quis enim. Cras id laoreet dolor. Quisque ex odio, consectetur et neque nec, sagittis tempus erat. Donec at maximus purus. Nulla molestie arcu eros, ac pulvinar ligula mattis in. Nulla ut dolor eu metus dignissim auctor. Phasellus auctor quam quis ullamcorper tincidunt.' },
+        { 'company': '7.Apple IBS South', 'revenue': '$1,440,443,111', 'sales': '$999,509,433,777,564' },
+        { 'company': '8.Apple IBS 111', 'revenue': '$1,440,443,111', 'sales': '$999,509,433,777,564', comments: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut non orci libero. Suspendisse aliquam eu magna ac tristique. Suspendisse potenti. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Curabitur sem erat, suscipit nec faucibus sed, interdum quis enim. Cras id laoreet dolor. Quisque ex odio, consectetur et neque nec, sagittis tempus erat. Donec at maximus purus. Nulla molestie arcu eros, ac pulvinar ligula mattis in. Nulla ut dolor eu metus dignissim auctor. Phasellus auctor quam quis ullamcorper tincidunt.' },
+        { 'company': '9.Apple IBS South 111', 'revenue': '$1,440,443,111', 'sales': '$999,509,433,777,564' },
+        { 'company': '10.Apple IBS 222', 'revenue': '$1,440,443,111', 'sales': '$999,509,433,777,564', comments: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut non orci libero. Suspendisse aliquam eu magna ac tristique. Suspendisse potenti. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Curabitur sem erat, suscipit nec faucibus sed, interdum quis enim. Cras id laoreet dolor. Quisque ex odio, consectetur et neque nec, sagittis tempus erat. Donec at maximus purus. Nulla molestie arcu eros, ac pulvinar ligula mattis in. Nulla ut dolor eu metus dignissim auctor. Phasellus auctor quam quis ullamcorper tincidunt.' },
+        { 'company': '11.Apple IBS South 222', 'revenue': '$1,440,443,111', 'sales': '$999,509,433,777,564' },
+        { 'company': '12.Apple IBS 333', 'revenue': '$1,440,443,111', 'sales': '$999,509,433,777,564', comments: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut non orci libero. Suspendisse aliquam eu magna ac tristique. Suspendisse potenti. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Curabitur sem erat, suscipit nec faucibus sed, interdum quis enim. Cras id laoreet dolor. Quisque ex odio, consectetur et neque nec, sagittis tempus erat. Donec at maximus purus. Nulla molestie arcu eros, ac pulvinar ligula mattis in. Nulla ut dolor eu metus dignissim auctor. Phasellus auctor quam quis ullamcorper tincidunt.' },
+        { 'company': '13.Apple IBS South 333', 'revenue': '$1,440,443,111', 'sales': '$999,509,433,777,564' },
+        { 'company': '14.Apple IBS 444', 'revenue': '$1,440,443,111', 'sales': '$999,509,433,777,564', comments: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut non orci libero. Suspendisse aliquam eu magna ac tristique. Suspendisse potenti. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Curabitur sem erat, suscipit nec faucibus sed, interdum quis enim. Cras id laoreet dolor. Quisque ex odio, consectetur et neque nec, sagittis tempus erat. Donec at maximus purus. Nulla molestie arcu eros, ac pulvinar ligula mattis in. Nulla ut dolor eu metus dignissim auctor. Phasellus auctor quam quis ullamcorper tincidunt.' },
+        { 'company': '15.Apple IBS South 444', 'revenue': '$1,440,443,111', 'sales': '$999,509,433,777,564' },
+      ]);
 
     });
   </script>

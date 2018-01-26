@@ -42,6 +42,12 @@ export const TableDefaults = {
   headerHeight: 30,
 
   /**
+   * Is the position of header fixed (only grid is vertical scrolled) or not.
+   * @type {boolean}
+   */
+  fixedHeader: true,
+
+  /**
    * Internal options
    * @type {Object}
    */
