@@ -482,6 +482,12 @@
     headerHeight: 30,
 
     /**
+     * Is the position of header fixed (only grid is vertical scrolled) or not.
+     * @type {boolean}
+     */
+    fixedHeader: true,
+
+    /**
      * Internal options
      * @type {Object}
      */
@@ -2745,6 +2751,14 @@
 
         if (this.options.scrollbarV) {
           styles.height = this.options.internal.bodyHeight + 'px';
+        }
+
+        if (this.options.fixedHeader) {
+          if (!this.options.scrollbarV) {
+            var h = this.options.headerHeight + this.options.footerHeight;
+            styles.height = 'calc(calc(100% - ' + h + 'px)';
+          }
+          styles.overflowY = 'auto';
         }
 
         return styles;
