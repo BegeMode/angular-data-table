@@ -468,6 +468,13 @@
     emptyMessage: 'No data to display',
 
     /**
+     * Text to show amount of rows when paging is presented
+     * near by digits (the all rows amount)
+     * @type {string}
+     */
+    totalString: 'total',
+
+    /**
      * The minimum footer height in pixels.
      * pass falsey for no footer
      * @type {number}
@@ -1234,7 +1241,12 @@
     }, {
       key: 'calculatePageSize',
       value: function calculatePageSize() {
-        this.options.paging.size = Math.ceil(this.options.internal.bodyHeight / this.options.rowHeight) + 1;
+        var rest = this.options.internal.bodyHeight % this.options.rowHeight;
+        if (rest === 0) {
+          this.options.paging.size = this.options.internal.bodyHeight / this.options.rowHeight;
+        } else {
+          this.options.paging.size = Math.ceil(this.options.internal.bodyHeight / this.options.rowHeight) + 1;
+        }
       }
     }, {
       key: 'onSorted',
@@ -1582,7 +1594,7 @@
 
         DataTableService.saveColumns(id, columns);
 
-        return '<div class="dt" ng-class="dt.tableCss()" ng-style="dt.tableStyles()" data-column-id="' + id + '">\n          <dt-header options="dt.options"\n                     columns="dt.columnsByPin"\n                     column-widths="dt.columnWidths"\n                     ng-if="dt.options.headerHeight"\n                     on-resize="dt.onResized(column, width)"\n                     selected-rows="dt.selected"\n                     all-rows="dt.rows"\n                     on-sort="dt.onSorted()">\n          </dt-header>\n          <dt-body rows="dt.rows"\n                   selected="dt.selected"\n                   expanded="dt.expanded"\n                   columns="dt.columnsByPin"\n                   on-select="dt.onSelected(rows)"\n                   on-row-click="dt.onRowClicked(row)"\n                   on-row-dbl-click="dt.onRowDblClicked(row)"\n                   column-widths="dt.columnWidths"\n                   options="dt.options"\n                   on-page="dt.onBodyPage(offset, size)"\n                   on-tree-toggle="dt.onTreeToggled(row, cell)"\n                   on-tree-loader="dt.onTreeLoad(row, cell)"   \n                   on-rows-filtered="dt.onRowsFiltered(rows)"   \n                   on-move-row="dt.moveRow(rowFrom, rowTo)">   \n           </dt-body>\n          <dt-footer ng-if="dt.options.footerHeight || dt.options.paging.mode"\n                     ng-style="{ height: dt.options.footerHeight + \'px\' }"\n                     on-page="dt.onFooterPage(offset, size)"\n                     paging="dt.options.paging">\n           </dt-footer>\n        </div>';
+        return '<div class="dt" ng-class="dt.tableCss()" ng-style="dt.tableStyles()" data-column-id="' + id + '">\n          <dt-header options="dt.options"\n                     columns="dt.columnsByPin"\n                     column-widths="dt.columnWidths"\n                     ng-if="dt.options.headerHeight"\n                     on-resize="dt.onResized(column, width)"\n                     selected-rows="dt.selected"\n                     all-rows="dt.rows"\n                     on-sort="dt.onSorted()">\n          </dt-header>\n          <dt-body rows="dt.rows"\n                   selected="dt.selected"\n                   expanded="dt.expanded"\n                   columns="dt.columnsByPin"\n                   on-select="dt.onSelected(rows)"\n                   on-row-click="dt.onRowClicked(row)"\n                   on-row-dbl-click="dt.onRowDblClicked(row)"\n                   column-widths="dt.columnWidths"\n                   options="dt.options"\n                   on-page="dt.onBodyPage(offset, size)"\n                   on-tree-toggle="dt.onTreeToggled(row, cell)"\n                   on-tree-loader="dt.onTreeLoad(row, cell)"   \n                   on-rows-filtered="dt.onRowsFiltered(rows)"   \n                   on-move-row="dt.moveRow(rowFrom, rowTo)">   \n          </dt-body>\n          <dt-footer ng-if="dt.options.footerHeight || dt.options.paging.mode"\n                     ng-style="{ height: dt.options.footerHeight + \'px\' }"\n                     on-page="dt.onFooterPage(offset, size)"\n                     paging="dt.options.paging" total-text="dt.options.totalString">\n           </dt-footer>\n        </div>';
       },
       compile: function compile() {
         return {
@@ -2186,9 +2198,16 @@
 
         for (i = 0; i < this.options.paging.size; i += 1) {
           rowsIndex = this.options.paging.offset * this.options.paging.size + i;
-
-          if (angular.isDefined(this.rows[rowsIndex])) {
+          if (this.treeColumn) {
+            if (angular.isDefined(this.treeRows) && angular.isDefined(this.treeRows[rowsIndex])) {
+              this.tempRows[i] = this.treeRows[rowsIndex];
+            } else {
+              break;
+            }
+          } else if (angular.isDefined(this.rows[rowsIndex])) {
             this.tempRows[i] = this.rows[rowsIndex];
+          } else {
+            break;
           }
         }
       }
@@ -2239,6 +2258,9 @@
       value: function rowsUpdated(newVal, oldVal) {
         var _this10 = this;
 
+        if (newVal && this.options.paging.mode !== 'external') {
+          this.options.paging.count = newVal.length;
+        }
         if (this.noNeedRowsUpdated) {
           this.noNeedRowsUpdated = false;
           return;
@@ -2246,10 +2268,6 @@
         if (!newVal) {
           this.getRows(true);
         } else {
-          if (this.options.paging.mode !== 'external') {
-            this.options.paging.count = newVal.length;
-          }
-
           this.count = newVal.length;
 
           if (this.treeColumn || this.groupColumn) {
@@ -2305,8 +2323,8 @@
     }, {
       key: 'getFirstLastIndexes',
       value: function getFirstLastIndexes() {
-        var firstRowIndex = void 0;
-        var endIndex = void 0;
+        var firstRowIndex = 0;
+        var endIndex = this.count;
 
         if (this.options.scrollbarV) {
           firstRowIndex = Math.max(Math.floor((this.options.internal.offsetY || 0) / this.options.rowHeight, 0), 0);
@@ -2314,9 +2332,9 @@
         } else if (this.options.paging.mode === 'external') {
           firstRowIndex = Math.max(this.options.paging.offset * this.options.paging.size, 0);
           endIndex = Math.min(firstRowIndex + this.options.paging.size, this.count);
-        } else {
+        } /* else {
           endIndex = this.count;
-        }
+          } */
 
         return {
           first: firstRowIndex,
@@ -2671,6 +2689,11 @@
 
         addChildren(this.rows, temp, 0);
 
+        if (this.options.paging.mode === 'internal') {
+          // this array using in paging
+          this.treeRows = temp;
+        }
+
         return temp;
       }
     }, {
@@ -2833,16 +2856,8 @@
       }
     }, {
       key: 'refresh',
-      value: function refresh(type) {
-        if (this.options.scrollbarV) {
-          this.getRows(true);
-        } else {
-          var _tempRows2;
-
-          var values = this[type]();
-          this.tempRows.splice(0, this.tempRows.length);
-          (_tempRows2 = this.tempRows).push.apply(_tempRows2, _toConsumableArray(values));
-        }
+      value: function refresh() {
+        this.getRows(true);
       }
     }, {
       key: 'getRowHasChildren',
@@ -2861,6 +2876,8 @@
     }, {
       key: 'onTreeToggled',
       value: function onTreeToggled(row, cell) {
+        var _this13 = this;
+
         var val = row[this.treeColumn.parentRelationProp];
         var self = this;
         this._hackToAvoidUnwantedScroll_ = true;
@@ -2876,7 +2893,7 @@
             self.loading[val] = false;
           }).catch(function (error) {
             self.loading[val] = false;
-            console.error(error);
+            _this13.$log.error(error);
           });
         } else {
           this.onTreeToggledProcess(row, cell);
@@ -2992,12 +3009,12 @@
     }, {
       key: 'filterPipe',
       value: function filterPipe(filter) {
-        var _this13 = this;
+        var _this14 = this;
 
         var result = this.rows;
 
         var _loop3 = function _loop3(i) {
-          var f = _this13.filters.list[i];
+          var f = _this14.filters.list[i];
           if (i > filter.order) {
             if (!f.phrase) {
               f.rowsBefore = null;
@@ -3133,6 +3150,9 @@
     _createClass(StyleTranslator, [{
       key: 'update',
       value: function update(rows) {
+        if (angular.isUndefined(this.height) || isNaN(+this.height)) {
+          return;
+        }
         var n = 0;
         while (n <= this.map.size) {
           var dom = this.map.get(n);
@@ -3374,7 +3394,7 @@
     }, {
       key: 'checkSubNodes',
       value: function checkSubNodes(row, checkState) {
-        var _this14 = this;
+        var _this15 = this;
 
         if (!row) {
           return;
@@ -3382,11 +3402,11 @@
         if (row) {
           if (row.$$children) {
             row.$$children.forEach(function (child) {
-              var _body$getRowInTree = _this14.body.getRowInTree(child),
+              var _body$getRowInTree = _this15.body.getRowInTree(child),
                   r = _body$getRowInTree.row;
 
-              _this14.checkRow(r, checkState);
-              _this14.checkSubNodes(r, checkState);
+              _this15.checkRow(r, checkState);
+              _this15.checkSubNodes(r, checkState);
             });
           }
         }
@@ -3796,8 +3816,10 @@
                 cellScope.$row = ctrl.row;
                 cellScope.$column = ctrl.column;
                 cellScope.editing = false;
-                //a row was edited before scroll
-                if (ctrl.row._editing) cellScope.editing = ctrl.row._editing[ctrl.column.prop];
+                // a row was edited before scroll
+                if (ctrl.row._editing) {
+                  cellScope.editing = ctrl.row._editing[ctrl.column.prop];
+                }
                 cellScope.editFilter = ctrl.options.editFilter;
                 if (!cellScope.$rowCtrl) {
                   cellScope.$rowCtrl = {
@@ -3872,6 +3894,9 @@
               if (ctrl.column.template) {
                 var tmpl = angular.isFunction(ctrl.column.template) ? ctrl.column.template(cellScope, content[0]) : ctrl.column.template;
                 el = tmpl ? '' + tmpl.trim() : '<span>{{$cell}}</span>';
+                if (el.startsWith('{{')) {
+                  el = '<span>' + el + '</span>';
+                }
               }
               if (editorWrapper) {
                 el = editorWrapper.begin + el + editorWrapper.end;
@@ -3930,12 +3955,12 @@
     }, {
       key: 'init',
       value: function init() {
-        var _this15 = this;
+        var _this16 = this;
 
         this.page = this.paging.offset + 1;
 
         this.$scope.$watch('footer.paging.offset', function (newVal) {
-          _this15.offsetChanged(newVal);
+          _this16.offsetChanged(newVal);
         });
       }
     }, {
@@ -3965,9 +3990,10 @@
       scope: true,
       bindToController: {
         paging: '=',
-        onPage: '&'
+        onPage: '&',
+        totalText: '<'
       },
-      template: '<div class="dt-footer">\n        <div class="page-count">{{footer.paging.count}} total</div>\n        <dt-pager page="footer.page"\n               size="footer.paging.size"\n               count="footer.paging.count"\n               on-page="footer.onPaged(page)"\n               ng-show="footer.paging.count / footer.paging.size > 1">\n         </dt-pager>\n      </div>',
+      template: '<div class="dt-footer">\n        <div class="page-count">{{footer.paging.count}} {{::footer.totalText}}</div>\n        <dt-pager page="footer.page"\n               size="footer.paging.size"\n               count="footer.paging.count"\n               on-page="footer.onPaged(page)"\n               ng-show="footer.paging.count / footer.paging.size > 1">\n         </dt-pager>\n      </div>',
       replace: true
     };
   }
@@ -4000,19 +4026,19 @@
     }, {
       key: 'init',
       value: function init() {
-        var _this16 = this;
+        var _this17 = this;
 
         this.$scope.$watch('pager.count', function () {
-          _this16.findAndSetPages();
+          _this17.findAndSetPages();
         });
 
         this.$scope.$watch('pager.size', function () {
-          _this16.findAndSetPages();
+          _this17.findAndSetPages();
         });
 
         this.$scope.$watch('pager.page', function (newVal) {
-          if (newVal !== 0 && newVal <= _this16.totalPages) {
-            _this16.getPages(newVal);
+          if (newVal !== 0 && newVal <= _this17.totalPages) {
+            _this17.getPages(newVal);
           }
         });
 
@@ -4233,8 +4259,9 @@
          * Displays the popover on the page
          */
         function display() {
-          if ($element[0].width && $scope.$parent.$column && $scope.$parent.$column.width - 5 >= $element[0].width()) {
-            //Text has not overflowed
+          var rect = $element[0].getBoundingClientRect();
+          if (rect.width && $scope.$parent.$column && $scope.$parent.$column.width - 5 >= rect.width) {
+            // Text has not overflowed
             return;
           }
           // Cancel exit timeout
