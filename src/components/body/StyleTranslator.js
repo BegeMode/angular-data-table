@@ -16,6 +16,9 @@ export default class StyleTranslator {
    * @param  {Array} rows
    */
   update(rows) {
+    if (angular.isUndefined(this.height) || isNaN(+this.height)) {
+      return;
+    }
     let n = 0;
     while (n <= this.map.size) {
       const dom = this.map.get(n);

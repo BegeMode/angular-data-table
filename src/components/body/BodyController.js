@@ -142,9 +142,16 @@ export default class BodyController {
 
     for (i = 0; i < this.options.paging.size; i += 1) {
       rowsIndex = (this.options.paging.offset * this.options.paging.size) + i;
-
-      if (angular.isDefined(this.rows[rowsIndex])) {
+      if (this.treeColumn) {
+        if (angular.isDefined(this.treeRows) && angular.isDefined(this.treeRows[rowsIndex])) {
+          this.tempRows[i] = this.treeRows[rowsIndex];
+        } else {
+          break;
+        }
+      } else if (angular.isDefined(this.rows[rowsIndex])) {
         this.tempRows[i] = this.rows[rowsIndex];
+      } else {
+        break;
       }
     }
   }
@@ -177,22 +184,25 @@ export default class BodyController {
 
       this.watchListeners.push(this.$scope.$watch('body.options.paging.offset', (newVal) => {
         if (this.options.paging.size) {
-            if (this.options.paging.mode === 'internal') {
+          if (this.options.paging.mode === 'internal') {
             this.buildInternalPage();
           }
 
-            if (this.onPage) {
+          if (this.onPage) {
             this.onPage({
               offset: newVal,
               size: this.options.paging.size,
             });
           }
-          }
+        }
       }));
     }
   }
 
   rowsUpdated(newVal, oldVal) {
+    if (newVal && this.options.paging.mode !== 'external') {
+      this.options.paging.count = newVal.length;
+    }
     if (this.noNeedRowsUpdated) {
       this.noNeedRowsUpdated = false;
       return;
@@ -200,10 +210,6 @@ export default class BodyController {
     if (!newVal) {
       this.getRows(true);
     } else {
-      if (this.options.paging.mode !== 'external') {
-        this.options.paging.count = newVal.length;
-      }
-
       this.count = newVal.length;
 
       if (this.treeColumn || this.groupColumn) {
@@ -259,8 +265,8 @@ export default class BodyController {
    * Gets the first and last indexes based on the offset, row height, page size, and overall count.
    */
   getFirstLastIndexes() {
-    let firstRowIndex;
-    let endIndex;
+    let firstRowIndex = 0;
+    let endIndex = this.count;
 
     if (this.options.scrollbarV) {
       firstRowIndex = Math.max(Math.floor((
@@ -269,9 +275,9 @@ export default class BodyController {
     } else if (this.options.paging.mode === 'external') {
       firstRowIndex = Math.max(this.options.paging.offset * this.options.paging.size, 0);
       endIndex = Math.min(firstRowIndex + this.options.paging.size, this.count);
-    } else {
+    } /* else {
       endIndex = this.count;
-    }
+    } */
 
     return {
       first: firstRowIndex,
@@ -657,6 +663,11 @@ export default class BodyController {
 
     addChildren(this.rows, temp, 0);
 
+    if (this.options.paging.mode === 'internal') {
+      // this array using in paging
+      this.treeRows = temp;
+    }
+
     return temp;
   }
 
@@ -847,14 +858,8 @@ export default class BodyController {
   }
 
 
-  refresh(type) {
-    if (this.options.scrollbarV) {
-      this.getRows(true);
-    } else {
-      const values = this[type]();
-      this.tempRows.splice(0, this.tempRows.length);
-      this.tempRows.push(...values);
-    }
+  refresh() {
+    this.getRows(true);
   }
 
   /**
@@ -895,7 +900,7 @@ export default class BodyController {
         self.loading[val] = false;
       }).catch((error) => {
         self.loading[val] = false;
-        console.error(error);
+        this.$log.error(error);
       });
     } else {
       this.onTreeToggledProcess(row, cell);

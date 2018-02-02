@@ -174,8 +174,13 @@ export default class DataTableController {
    * @return {[type]}
    */
   calculatePageSize() {
-    this.options.paging.size = Math.ceil(
-      this.options.internal.bodyHeight / this.options.rowHeight) + 1;
+    const rest = this.options.internal.bodyHeight % this.options.rowHeight;
+    if (rest === 0) {
+      this.options.paging.size = this.options.internal.bodyHeight / this.options.rowHeight;
+    } else {
+      this.options.paging.size = Math.ceil(
+        this.options.internal.bodyHeight / this.options.rowHeight) + 1;
+    }
   }
 
   /**

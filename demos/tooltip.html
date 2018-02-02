@@ -59,6 +59,7 @@
         headerHeight: 50,
         rowHeight: 50,
         scrollbarV: true,
+        columnMode: 'flex',
         columns: [
           {
             flexGrow: 2,
@@ -78,6 +79,7 @@
           {
             name: "Comments",
             prop: "comments",
+            flexGrow: 3,
             tooltips: true,
             template: function (scope, elm) {
               return '<span popover popover-id="{{$row.$$index}}" popover-plain="true" popover-placement="left" popover-text="{{$row.comments}}">{{$row.comments}}</span>';
@@ -97,6 +99,7 @@
           company: 'Acme Holdings',
           revenue: '$345,342',
           sales: '$4,452,222,353',
+          comments: 'Lorem ipsum dolor sit amet'
         },
         {
           company: 'Acme Limited',

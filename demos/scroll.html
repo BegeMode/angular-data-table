@@ -50,7 +50,7 @@
   <script>
     var module = angular.module('app', ['data-table']);
 
-    module.controller('HomeController', function ($scope, $http) {
+    module.controller('HomeController', function ($scope, $http, $timeout) {
       $scope.options = {
         rowHeight: 50,
         headerHeight: 50,
@@ -67,7 +67,7 @@
       };
 
       $scope.data = [];
-
+      $timeout(() => {
       for (var i = 0; i < 10; i++) {
         $scope.data.push({
           "name": "Ethel Price",
@@ -79,6 +79,7 @@
           "clearance": "Top Secret"
         })
       };
+    });
 
     });
   </script>
