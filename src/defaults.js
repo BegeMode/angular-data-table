@@ -28,6 +28,13 @@ export const TableDefaults = {
   emptyMessage: 'No data to display',
 
   /**
+   * Text to show amount of rows when paging is presented
+   * near by digits (the all rows amount)
+   * @type {string}
+   */
+  totalString: 'total',
+
+  /**
    * The minimum footer height in pixels.
    * pass falsey for no footer
    * @type {number}

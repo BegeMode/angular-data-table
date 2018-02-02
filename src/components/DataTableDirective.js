@@ -58,11 +58,11 @@ export default function DataTableDirective($window, $timeout, $parse) {
                    on-tree-loader="dt.onTreeLoad(row, cell)"   
                    on-rows-filtered="dt.onRowsFiltered(rows)"   
                    on-move-row="dt.moveRow(rowFrom, rowTo)">   
-           </dt-body>
+          </dt-body>
           <dt-footer ng-if="dt.options.footerHeight || dt.options.paging.mode"
                      ng-style="{ height: dt.options.footerHeight + 'px' }"
                      on-page="dt.onFooterPage(offset, size)"
-                     paging="dt.options.paging">
+                     paging="dt.options.paging" total-text="dt.options.totalString">
            </dt-footer>
         </div>`;
     },

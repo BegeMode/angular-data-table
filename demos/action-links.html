@@ -18,8 +18,18 @@
       -moz-box-sizing: border-box;
       box-sizing: border-box;
     }
+
+    html{
+      height: 100%;
+      box-sizing: border-box;
+    }
+
+    div{
+      box-sizing: border-box;
+    }
     
     body {
+      box-sizing: border-box;
       font-family: 'RobotoDraft', 'Roboto', 'Helvetica Neue, Helvetica, Arial', sans-serif;
       font-style: normal;
       font-weight: 300;
@@ -31,11 +41,15 @@
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
       text-rendering: optimizeLegibility;
+      height: 100%;
+      margin: 0px;
+      padding: 20px 20px;
     }
     
     .dt {
+      margin: 0 auto;
       width: 75%;
-      margin: 50px auto;
+      height: 100%;
     }
     
     a {
@@ -56,7 +70,6 @@
       <a ng-click="display($row);">LOG</a>
     </column>
   </dtable>
-
   <script src="/assets/dataTable.js"></script>
 
   <script>
@@ -69,6 +82,7 @@
         rowHeight: 'auto',
         columnMode: 'flex',
         headerHeight: 40,
+        fixedHeader: true,
         emptyMessage: 'No data available'
       };
 

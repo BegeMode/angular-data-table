@@ -16,7 +16,7 @@ export default function ScrollerDirective() {
       let lastScrollX = 0;
 
       ctrl.options.internal.styleTranslator =
-        new StyleTranslator(ctrl.options.rowHeight);
+          new StyleTranslator(ctrl.options.rowHeight);
 
       ctrl.options.internal.setYOffset = (offsetY) => {
         parent[0].scrollTop = offsetY;

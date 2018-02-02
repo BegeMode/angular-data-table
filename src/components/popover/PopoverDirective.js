@@ -94,8 +94,10 @@ export default function PopoverDirective($animate, $compile, $document, $http,
        * Displays the popover on the page
        */
       function display() {
-        if ($element[0].width && $scope.$parent.$column && ($scope.$parent.$column.width - 5) >= $element[0].width()) {
-          //Text has not overflowed
+        const rect = $element[0].getBoundingClientRect();
+        if (rect.width && $scope.$parent.$column
+          && ($scope.$parent.$column.width - 5) >= rect.width) {
+          // Text has not overflowed
           return;
         }
         // Cancel exit timeout

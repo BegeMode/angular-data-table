@@ -58,9 +58,10 @@ export default function CellDirective($rootScope, $compile) {
               cellScope.$row = ctrl.row;
               cellScope.$column = ctrl.column;
               cellScope.editing = false;
-              //a row was edited before scroll
-              if (ctrl.row._editing)
+              // a row was edited before scroll
+              if (ctrl.row._editing) {
                 cellScope.editing = ctrl.row._editing[ctrl.column.prop];
+              }
               cellScope.editFilter = ctrl.options.editFilter;
               if (!cellScope.$rowCtrl) {
                 cellScope.$rowCtrl = {
@@ -139,6 +140,9 @@ export default function CellDirective($rootScope, $compile) {
             if (ctrl.column.template) {
               const tmpl = angular.isFunction(ctrl.column.template) ? ctrl.column.template(cellScope, content[0]) : ctrl.column.template;
               el = tmpl ? `${tmpl.trim()}` : '<span>{{$cell}}</span>';
+              if (el.startsWith('{{')) {
+                el = `<span>${el}</span>`;
+              }
             }
             if (editorWrapper) {
               el = editorWrapper.begin + el + editorWrapper.end;

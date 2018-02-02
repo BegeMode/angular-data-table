@@ -382,6 +382,13 @@ const TableDefaults = {
   emptyMessage: 'No data to display',
 
   /**
+   * Text to show amount of rows when paging is presented
+   * near by digits (the all rows amount)
+   * @type {string}
+   */
+  totalString: 'total',
+
+  /**
    * The minimum footer height in pixels.
    * pass falsey for no footer
    * @type {number}
@@ -1158,8 +1165,13 @@ class DataTableController {
    * @return {[type]}
    */
   calculatePageSize() {
-    this.options.paging.size = Math.ceil(
-      this.options.internal.bodyHeight / this.options.rowHeight) + 1;
+    const rest = this.options.internal.bodyHeight % this.options.rowHeight;
+    if (rest === 0) {
+      this.options.paging.size = this.options.internal.bodyHeight / this.options.rowHeight;
+    } else {
+      this.options.paging.size = Math.ceil(
+        this.options.internal.bodyHeight / this.options.rowHeight) + 1;
+    }
   }
 
   /**
@@ -1554,11 +1566,11 @@ function DataTableDirective($window, $timeout, $parse) {
                    on-tree-loader="dt.onTreeLoad(row, cell)"   
                    on-rows-filtered="dt.onRowsFiltered(rows)"   
                    on-move-row="dt.moveRow(rowFrom, rowTo)">   
-           </dt-body>
+          </dt-body>
           <dt-footer ng-if="dt.options.footerHeight || dt.options.paging.mode"
                      ng-style="{ height: dt.options.footerHeight + 'px' }"
                      on-page="dt.onFooterPage(offset, size)"
-                     paging="dt.options.paging">
+                     paging="dt.options.paging" total-text="dt.options.totalString">
            </dt-footer>
         </div>`;
     },
@@ -2281,9 +2293,16 @@ class BodyController {
 
     for (i = 0; i < this.options.paging.size; i += 1) {
       rowsIndex = (this.options.paging.offset * this.options.paging.size) + i;
-
-      if (angular.isDefined(this.rows[rowsIndex])) {
+      if (this.treeColumn) {
+        if (angular.isDefined(this.treeRows) && angular.isDefined(this.treeRows[rowsIndex])) {
+          this.tempRows[i] = this.treeRows[rowsIndex];
+        } else {
+          break;
+        }
+      } else if (angular.isDefined(this.rows[rowsIndex])) {
         this.tempRows[i] = this.rows[rowsIndex];
+      } else {
+        break;
       }
     }
   }
@@ -2316,22 +2335,25 @@ class BodyController {
 
       this.watchListeners.push(this.$scope.$watch('body.options.paging.offset', (newVal) => {
         if (this.options.paging.size) {
-            if (this.options.paging.mode === 'internal') {
+          if (this.options.paging.mode === 'internal') {
             this.buildInternalPage();
           }
 
-            if (this.onPage) {
+          if (this.onPage) {
             this.onPage({
               offset: newVal,
               size: this.options.paging.size,
             });
           }
-          }
+        }
       }));
     }
   }
 
   rowsUpdated(newVal, oldVal) {
+    if (newVal && this.options.paging.mode !== 'external') {
+      this.options.paging.count = newVal.length;
+    }
     if (this.noNeedRowsUpdated) {
       this.noNeedRowsUpdated = false;
       return;
@@ -2339,10 +2361,6 @@ class BodyController {
     if (!newVal) {
       this.getRows(true);
     } else {
-      if (this.options.paging.mode !== 'external') {
-        this.options.paging.count = newVal.length;
-      }
-
       this.count = newVal.length;
 
       if (this.treeColumn || this.groupColumn) {
@@ -2398,8 +2416,8 @@ class BodyController {
    * Gets the first and last indexes based on the offset, row height, page size, and overall count.
    */
   getFirstLastIndexes() {
-    let firstRowIndex;
-    let endIndex;
+    let firstRowIndex = 0;
+    let endIndex = this.count;
 
     if (this.options.scrollbarV) {
       firstRowIndex = Math.max(Math.floor((
@@ -2408,9 +2426,9 @@ class BodyController {
     } else if (this.options.paging.mode === 'external') {
       firstRowIndex = Math.max(this.options.paging.offset * this.options.paging.size, 0);
       endIndex = Math.min(firstRowIndex + this.options.paging.size, this.count);
-    } else {
+    } /* else {
       endIndex = this.count;
-    }
+    } */
 
     return {
       first: firstRowIndex,
@@ -2796,6 +2814,11 @@ class BodyController {
 
     addChildren(this.rows, temp, 0);
 
+    if (this.options.paging.mode === 'internal') {
+      // this array using in paging
+      this.treeRows = temp;
+    }
+
     return temp;
   }
 
@@ -2986,14 +3009,8 @@ class BodyController {
   }
 
 
-  refresh(type) {
-    if (this.options.scrollbarV) {
-      this.getRows(true);
-    } else {
-      const values = this[type]();
-      this.tempRows.splice(0, this.tempRows.length);
-      this.tempRows.push(...values);
-    }
+  refresh() {
+    this.getRows(true);
   }
 
   /**
@@ -3034,7 +3051,7 @@ class BodyController {
         self.loading[val] = false;
       }).catch((error) => {
         self.loading[val] = false;
-        console.error(error);
+        this.$log.error(error);
       });
     } else {
       this.onTreeToggledProcess(row, cell);
@@ -3324,6 +3341,9 @@ class StyleTranslator {
    * @param  {Array} rows
    */
   update(rows) {
+    if (angular.isUndefined(this.height) || isNaN(+this.height)) {
+      return;
+    }
     let n = 0;
     while (n <= this.map.size) {
       const dom = this.map.get(n);
@@ -3363,7 +3383,7 @@ function ScrollerDirective() {
       let lastScrollX = 0;
 
       ctrl.options.internal.styleTranslator =
-        new StyleTranslator(ctrl.options.rowHeight);
+          new StyleTranslator(ctrl.options.rowHeight);
 
       ctrl.options.internal.setYOffset = (offsetY) => {
         parent[0].scrollTop = offsetY;
@@ -4084,9 +4104,10 @@ function CellDirective($rootScope, $compile) {
               cellScope.$row = ctrl.row;
               cellScope.$column = ctrl.column;
               cellScope.editing = false;
-              //a row was edited before scroll
-              if (ctrl.row._editing)
+              // a row was edited before scroll
+              if (ctrl.row._editing) {
                 cellScope.editing = ctrl.row._editing[ctrl.column.prop];
+              }
               cellScope.editFilter = ctrl.options.editFilter;
               if (!cellScope.$rowCtrl) {
                 cellScope.$rowCtrl = {
@@ -4165,6 +4186,9 @@ function CellDirective($rootScope, $compile) {
             if (ctrl.column.template) {
               const tmpl = angular.isFunction(ctrl.column.template) ? ctrl.column.template(cellScope, content[0]) : ctrl.column.template;
               el = tmpl ? `${tmpl.trim()}` : '<span>{{$cell}}</span>';
+              if (el.startsWith('{{')) {
+                el = `<span>${el}</span>`;
+              }
             }
             if (editorWrapper) {
               el = editorWrapper.begin + el + editorWrapper.end;
@@ -4256,10 +4280,11 @@ function FooterDirective() {
     bindToController: {
       paging: '=',
       onPage: '&',
+      totalText: '<',
     },
     template:
       `<div class="dt-footer">
-        <div class="page-count">{{footer.paging.count}} total</div>
+        <div class="page-count">{{footer.paging.count}} {{::footer.totalText}}</div>
         <dt-pager page="footer.page"
                size="footer.paging.size"
                count="footer.paging.count"
@@ -4561,8 +4586,10 @@ function PopoverDirective($animate, $compile, $document, $http,
        * Displays the popover on the page
        */
       function display() {
-        if ($element[0].width && $scope.$parent.$column && ($scope.$parent.$column.width - 5) >= $element[0].width()) {
-          //Text has not overflowed
+        const rect = $element[0].getBoundingClientRect();
+        if (rect.width && $scope.$parent.$column
+          && ($scope.$parent.$column.width - 5) >= rect.width) {
+          // Text has not overflowed
           return;
         }
         // Cancel exit timeout
