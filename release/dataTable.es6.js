@@ -1050,7 +1050,7 @@ class DataTableController {
     const tableDefaults = angular.copy(TableDefaults);
     this.options = Object.assign({}, tableDefaults, this.options);
 
-    
+
     angular.forEach(tableDefaults.paging, (v, k) => {
       if (!this.options.paging[k]) {
         this.options.paging[k] = v;
@@ -1170,7 +1170,7 @@ class DataTableController {
       this.options.paging.size = this.options.internal.bodyHeight / this.options.rowHeight;
     } else {
       this.options.paging.size = Math.ceil(
-        this.options.internal.bodyHeight / this.options.rowHeight) + 1;
+        this.options.internal.bodyHeight / this.options.rowHeight) - 1;
     }
   }
 
@@ -1241,7 +1241,7 @@ class DataTableController {
       this.options.internal.setYOffset(0);
     }
   }
-  
+
   /**
    * Invoked when a tree is collasped/expanded
    * @param  {row model}
@@ -1271,7 +1271,7 @@ class DataTableController {
       rows,
     });
   }
-  
+
   /**
    * Invoked when the body triggers a page change.
    * @param  {offset}
@@ -1378,8 +1378,8 @@ class DataTableController {
   moveRow(rowFrom, rowTo) {
     if (!this.$attrs.onMoveRow) {
       return this.$q.resolve();
-    }  
-    let promise = this.onMoveRow({ rowFrom: rowFrom, rowTo: rowTo });
+    }
+    const promise = this.onMoveRow({ rowFrom, rowTo });
     if (!(promise instanceof this.$q)) {
       throw new Error('onMoveRow must return $q instance');
     }
@@ -2426,9 +2426,7 @@ class BodyController {
     } else if (this.options.paging.mode === 'external') {
       firstRowIndex = Math.max(this.options.paging.offset * this.options.paging.size, 0);
       endIndex = Math.min(firstRowIndex + this.options.paging.size, this.count);
-    } /* else {
-      endIndex = this.count;
-    } */
+    }
 
     return {
       first: firstRowIndex,
@@ -2868,7 +2866,7 @@ class BodyController {
     // slice out the old rows so we don't have duplicates
     this.tempRows.splice(0, indexes.last - indexes.first);
 
-    while (rowIndex < indexes.last && rowIndex < this.count) {
+    while (rowIndex <= indexes.last && rowIndex < this.count) {
       const row = temp[rowIndex];
 
       if (row) {
