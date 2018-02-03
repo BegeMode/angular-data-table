@@ -59,7 +59,7 @@ export default class DataTableController {
     const tableDefaults = angular.copy(TableDefaults);
     this.options = Object.assign({}, tableDefaults, this.options);
 
-    
+
     angular.forEach(tableDefaults.paging, (v, k) => {
       if (!this.options.paging[k]) {
         this.options.paging[k] = v;
@@ -179,7 +179,7 @@ export default class DataTableController {
       this.options.paging.size = this.options.internal.bodyHeight / this.options.rowHeight;
     } else {
       this.options.paging.size = Math.ceil(
-        this.options.internal.bodyHeight / this.options.rowHeight) + 1;
+        this.options.internal.bodyHeight / this.options.rowHeight) - 1;
     }
   }
 
@@ -250,7 +250,7 @@ export default class DataTableController {
       this.options.internal.setYOffset(0);
     }
   }
-  
+
   /**
    * Invoked when a tree is collasped/expanded
    * @param  {row model}
@@ -280,7 +280,7 @@ export default class DataTableController {
       rows,
     });
   }
-  
+
   /**
    * Invoked when the body triggers a page change.
    * @param  {offset}
@@ -387,8 +387,8 @@ export default class DataTableController {
   moveRow(rowFrom, rowTo) {
     if (!this.$attrs.onMoveRow) {
       return this.$q.resolve();
-    }  
-    let promise = this.onMoveRow({ rowFrom: rowFrom, rowTo: rowTo });
+    }
+    const promise = this.onMoveRow({ rowFrom, rowTo });
     if (!(promise instanceof this.$q)) {
       throw new Error('onMoveRow must return $q instance');
     }

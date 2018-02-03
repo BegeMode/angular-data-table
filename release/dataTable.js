@@ -1,6 +1,6 @@
 /**
  * angular-data-table - A feature-rich but lightweight ES6 AngularJS Data Table crafted for large data sets!
- * @version v0.9.0
+ * @version v1.0.1
  * @link http://jonshaffer.github.io/angular-data-table/
  * @license MIT
  */
@@ -1245,7 +1245,7 @@
         if (rest === 0) {
           this.options.paging.size = this.options.internal.bodyHeight / this.options.rowHeight;
         } else {
-          this.options.paging.size = Math.ceil(this.options.internal.bodyHeight / this.options.rowHeight) + 1;
+          this.options.paging.size = Math.ceil(this.options.internal.bodyHeight / this.options.rowHeight) - 1;
         }
       }
     }, {
@@ -2332,9 +2332,7 @@
         } else if (this.options.paging.mode === 'external') {
           firstRowIndex = Math.max(this.options.paging.offset * this.options.paging.size, 0);
           endIndex = Math.min(firstRowIndex + this.options.paging.size, this.count);
-        } /* else {
-          endIndex = this.count;
-          } */
+        }
 
         return {
           first: firstRowIndex,
@@ -2742,7 +2740,7 @@
         // slice out the old rows so we don't have duplicates
         this.tempRows.splice(0, indexes.last - indexes.first);
 
-        while (rowIndex < indexes.last && rowIndex < this.count) {
+        while (rowIndex <= indexes.last && rowIndex < this.count) {
           var row = temp[rowIndex];
 
           if (row) {

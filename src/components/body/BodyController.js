@@ -275,9 +275,7 @@ export default class BodyController {
     } else if (this.options.paging.mode === 'external') {
       firstRowIndex = Math.max(this.options.paging.offset * this.options.paging.size, 0);
       endIndex = Math.min(firstRowIndex + this.options.paging.size, this.count);
-    } /* else {
-      endIndex = this.count;
-    } */
+    }
 
     return {
       first: firstRowIndex,
@@ -717,7 +715,7 @@ export default class BodyController {
     // slice out the old rows so we don't have duplicates
     this.tempRows.splice(0, indexes.last - indexes.first);
 
-    while (rowIndex < indexes.last && rowIndex < this.count) {
+    while (rowIndex <= indexes.last && rowIndex < this.count) {
       const row = temp[rowIndex];
 
       if (row) {
