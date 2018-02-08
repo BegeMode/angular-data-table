@@ -403,10 +403,17 @@ const TableDefaults = {
   headerHeight: 30,
 
   /**
-   * Is the position of header fixed (only grid is vertical scrolled) or not.
+   * Is the position of header fixed (not scrolled) or not.
    * @type {boolean}
    */
   fixedHeader: true,
+
+  /**
+   * If partially visible row is disabled
+   * bodyHeight adjusts for an integer number of visible rows
+   * @type {boolean}
+   */
+  enablePartiallyVisibleRow: true,
 
   /**
    * Internal options
@@ -1068,6 +1075,10 @@ class DataTableController {
         });
       }, true);
     }
+
+    if (!this.options.scrollbarV) {
+      this.options.rowHeight = 'auto';
+    }
   }
 
   /**
@@ -1165,12 +1176,23 @@ class DataTableController {
    * @return {[type]}
    */
   calculatePageSize() {
-    const rest = this.options.internal.bodyHeight % this.options.rowHeight;
+    let rest = this.options.internal.bodyHeight % this.options.rowHeight;
+    if (!this.options.enablePartiallyVisibleRow) {
+      if (this.options.footerHeight) {
+        this.options.internal.bodyHeight -= rest;
+        this.options.footerHeight += rest;
+        rest = 0;
+      } else if (this.options.headerHeight) {
+        this.options.internal.bodyHeight -= rest;
+        this.options.headerHeight += rest;
+        rest = 0;
+      }
+    }
     if (rest === 0) {
       this.options.paging.size = this.options.internal.bodyHeight / this.options.rowHeight;
     } else {
       this.options.paging.size = Math.ceil(
-        this.options.internal.bodyHeight / this.options.rowHeight) - 1;
+        this.options.internal.bodyHeight / this.options.rowHeight) + 1;
     }
   }
 
