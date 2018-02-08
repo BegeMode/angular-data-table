@@ -33,12 +33,14 @@
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
         text-rendering: optimizeLegibility;
-      }
+        margin: 0px;
+        padding: 20px 20px;
+        }
 
       .dt {
+        margin: 0 auto;
         height: 100%;
         width:75%;
-        margin: 0 auto;
       }
     </style>
   </head>
@@ -54,10 +56,11 @@
 
           $scope.options = {
             rowHeight: 50,
-            headerHeight: 100,
+            headerHeight: 80,
             footerHeight: false,
             scrollbarV: true,
             selectable: true,
+            //enablePartiallyVisibleRow: false,
             columns: [
             {
               name: "Name",

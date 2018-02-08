@@ -49,10 +49,18 @@ export const TableDefaults = {
   headerHeight: 30,
 
   /**
-   * Is the position of header fixed (only grid is vertical scrolled) or not.
+   * Is the position of header fixed (not scrolled) or not.
    * @type {boolean}
    */
   fixedHeader: true,
+
+  /**
+   * If partially visible row is disabled
+   * bodyHeight adjusts for an integer number of visible rows.
+   * It works with scrollbarV option is true
+   * @type {boolean}
+   */
+  enablePartiallyVisibleRow: true,
 
   /**
    * Internal options

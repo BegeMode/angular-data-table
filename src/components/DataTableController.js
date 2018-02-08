@@ -77,6 +77,10 @@ export default class DataTableController {
         });
       }, true);
     }
+
+    if (!this.options.scrollbarV) {
+      this.options.rowHeight = 'auto';
+    }
   }
 
   /**
@@ -174,12 +178,23 @@ export default class DataTableController {
    * @return {[type]}
    */
   calculatePageSize() {
-    const rest = this.options.internal.bodyHeight % this.options.rowHeight;
+    let rest = this.options.internal.bodyHeight % this.options.rowHeight;
+    if (!this.options.enablePartiallyVisibleRow) {
+      if (this.options.footerHeight) {
+        this.options.internal.bodyHeight -= rest;
+        this.options.footerHeight += rest;
+        rest = 0;
+      } else if (this.options.headerHeight) {
+        this.options.internal.bodyHeight -= rest;
+        this.options.headerHeight += rest;
+        rest = 0;
+      }
+    }
     if (rest === 0) {
       this.options.paging.size = this.options.internal.bodyHeight / this.options.rowHeight;
     } else {
       this.options.paging.size = Math.ceil(
-        this.options.internal.bodyHeight / this.options.rowHeight) - 1;
+        this.options.internal.bodyHeight / this.options.rowHeight) + 1;
     }
   }
 
